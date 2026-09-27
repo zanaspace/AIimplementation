@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Insights</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="dashboard-insights.css">
+<style>
+  /* Page-only layout for the mock "Workflow Dashboard" screen */
+  .wd__bar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+  .wd__card { padding: 14px 16px; margin-top: 14px; min-width: 0; }
+  .wd__card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .wd__card-head h3 { margin: 0; font-size: 15px; }
+  .wd__card-head p { margin: 0; font-size: 12px; color: var(--text-2); }
+  .wd__status { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+  .wd__stat { border-radius: var(--radius); padding: 14px; color: #fff; min-height: 96px; }
+  .wd__stat b { display: block; font-size: 24px; }
+  .wd__stat span { font-size: 13px; opacity: .9; }
+  .wd__stat small { display: block; margin-top: 6px; font-weight: 600; font-size: 11.5px; }
+  .wd__stat--new { background: var(--ok); } .wd__stat--open { background: var(--info); } .wd__stat--prog { background: var(--warn); } .wd__stat--closed { background: var(--bad); }
+  .wd__grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 14px; }
+  .wd__chart { display: flex; align-items: flex-end; gap: 6px; height: 200px; margin-top: 14px; padding: 0 2px; border-bottom: 1px solid var(--border); }
+  .wd__col { flex: 1; display: flex; flex-direction: column-reverse; min-width: 0; height: 100%; }
+  .wd__col i { display: block; width: 100%; }
+  .wd__col .o { background: var(--gov-green-600); } .wd__col .c { background: var(--bad); } .wd__col .p { background: var(--warn); }
+  .wd__labels { display: flex; gap: 6px; font-size: 10px; color: var(--text-3); margin-top: 4px; }
+  .wd__labels span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; }
+  .wd__legend { display: flex; gap: 14px; justify-content: center; font-size: 11.5px; color: var(--text-2); margin-top: 8px; flex-wrap: wrap; }
+  .wd__legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  .wd__q { display: flex; justify-content: space-between; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); margin-top: 8px; transition: box-shadow .3s, border-color .3s; }
+  .wd__q-name { font-size: 13px; }
+  .wd__q-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+  .wd__q-total { text-align: right; font-weight: 700; font-size: 14px; }
+  .wd__q-total span { display: block; font-weight: 400; font-size: 11px; color: var(--text-3); }
+  .wd__q--hl { border-color: var(--ai-500); box-shadow: 0 0 0 3px var(--ai-100); background: var(--ai-50); }
+  .wd__pins { margin-top: 14px; display: none; }
+  .wd__pins--on { display: block; }
+  .wd__pin { font-size: 12.5px; padding: 8px 10px; border-left: 3px solid var(--ai-500); background: var(--surface-2); border-radius: 6px; margin-top: 6px; }
+  @media (max-width: 1100px) { .wd__grid { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .wd__status { grid-template-columns: 1fr 1fr; } .wd__chart { height: 150px; gap: 3px; } .wd__labels { gap: 3px; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Dashboard</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-D1 · E-D2 · E-D4 · Priority 1</span>
+      <h1>Dashboard Insights</h1>
+      <p>Turns the Workflow Dashboard's charts into plain-English findings. Each card and chart gets an <b>✦ Explain</b> button, an <b>Insights strip</b> at the top flags stalled queues and other anomalies, and admins see a <b>Data consistency</b> warning when the dashboard disagrees with other ECMS screens. Clicking an insight highlights the queue it refers to.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Dashboard → Workflow Dashboard</span><span class="g-chip">Component: &lt;ai-dashboard-insights&gt;</span><span class="g-chip">Endpoint: /ecms/dashboard/insights · /explain</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the ECMS <b>Workflow Dashboard</b> with the tenant's real figures. The Insights strip loads on its own. Click an alert such as <i>"Order Fulfilment is stalled"</i> to highlight that queue, click <b>✦ Explain</b> on Task Status, Workflow Tasks Summary or Top Queues, then <b>Pin to dashboard</b>. You are viewing as an admin, so the Data consistency warning is shown.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Workflow Dashboard">
+      <div class="shell__content" id="wf-dashboard" data-ai-crosscheck='{"allTasksOpen":15395,"utilAvg":0,"utilAssigned":644,"utilOpened":15945}'>
+        <h2 class="shell__title">Workflow Dashboard</h2>
+        <div data-ai-spot="CICOD-AI · Insights strip + admin consistency warning">
+          <ai-dashboard-insights source="#wf-dashboard" viewer-role="admin"></ai-dashboard-insights>
+        </div>
+        <div class="wd__bar" style="margin-top:12px"><button class="g-btn" type="button">General Filter</button></div>
+
+        <div class="g-card wd__card" data-ai-explain="status" data-ai-data='{"new":0,"total":16102,"open":161,"progress":26,"closed":14}'>
+          <div class="wd__card-head"><h3>Task Status</h3><span data-ai-spot="CICOD-AI · Explain" data-ai-explain-slot></span></div>
+          <div class="wd__status">
+            <div class="wd__stat wd__stat--new"><b>0</b><span>New tasks</span><small>Total tasks created: 16102</small></div>
+            <div class="wd__stat wd__stat--open"><b>161</b><span>Tasks open</span></div>
+            <div class="wd__stat wd__stat--prog"><b>26</b><span>Tasks in progress</span></div>
+            <div class="wd__stat wd__stat--closed"><b>14</b><span>Tasks closed</span></div>
+          </div>
+          <div data-ai-explain-out></div>
+        </div>
+
+        <div class="wd__grid">
+          <div class="g-card wd__card" data-ai-explain="summary" id="wd-summary">
+            <div class="wd__card-head"><h3>Workflow Tasks Summary</h3><span data-ai-spot="CICOD-AI · Explain" data-ai-explain-slot></span></div>
+            <div class="wd__chart" id="wd-chart" aria-label="Stacked bars of open, closed and in-progress tasks per workflow"></div>
+            <div class="wd__labels" id="wd-labels"></div>
+            <div class="wd__legend"><span><i style="background:var(--gov-green-600)"></i>Open</span><span><i style="background:var(--bad)"></i>Closed</span><span><i style="background:var(--warn)"></i>In progress</span></div>
+            <div data-ai-explain-out></div>
+          </div>
+          <div class="g-card wd__card" data-ai-explain="queues">
+            <div class="wd__card-head"><div><h3>Top Queues</h3><p>Queues with the most number of tasks</p></div><span data-ai-spot="CICOD-AI · Explain" data-ai-explain-slot></span></div>
+            <div id="wd-queues"></div>
+            <div data-ai-explain-out></div>
+          </div>
+        </div>
+
+        <div class="g-card wd__card wd__pins" id="wd-pins"><div class="wd__card-head"><h3>Pinned insights</h3></div><div id="wd-pin-list"></div></div>
+
+        <div class="g-card wd__card">
+          <div class="wd__card-head"><div><h3>Workflow Summary</h3><p>The various stages in the life-cyle of your queues</p></div></div>
+          <p style="font-size:12px;color:var(--text-2);margin:8px 0 0">CICOD test · Total tasks: 70 · regression test 4: 4 task(s)</p>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Top of <code>/ecms/dashboard/workflow</code> (strip), plus an Explain button in the header of each card and chart</div>
+      <div class="doc__where-item"><b>Also appears in</b>Status Dashboard and Resource Utilization (same Explain buttons), the Workspace Daily Brief, and an InMail alert for high-severity anomalies</div>
+      <div class="doc__where-item"><b>Trigger</b>Insights run when the dashboard loads or General Filter changes. Explain runs on click</div>
+      <div class="doc__where-item"><b>Who sees it</b>Anyone with dashboard access. Data consistency warnings are shown only to tenant admins</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">The numbers come from rules and statistics over the same aggregates the charts use. The LLM only writes the sentences, and every figure in a sentence is checked against the source.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The dashboard's aggregates (status counts, per-workflow bars, top queues) plus the same counts from All Tasks and Resource Utilization go to <code>/ecms/dashboard/insights</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Only counts and queue names leave the page, with no task text or personal data. The gateway applies the tenant's classification policy and keeps the call on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Detect</h4><p>Rules and a per-queue time-series model flag stalled queues (closure rate under 0.5%), work piling up in progress, 0-closure departments and sudden spikes. A reconciliation job compares each figure with its source screen.</p></div>
+      <div class="doc__step"><h4>Narrate</h4><p>An LLM turns the detected facts into two or three sentences. A checker rejects any sentence whose numbers don't match the facts list.</p></div>
+      <div class="doc__step"><h4>Output</h4><p>Alert cards linked to a queue, inline explanations with the facts behind them, and an admin-only list of consistency gaps with the screen each figure came from.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Users pin, edit or dismiss explanations, and admins mark gaps as known or open a reconciliation. Every decision goes to <code>/feedback</code> and tunes the alert thresholds.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant, 27 Sep 2026. Improvement figures are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">2 of 11,006</div><h4>Stalled queues surfaced</h4><p>Order Fulfilment has closed 2 of its 11,006 tasks. Today nothing on the dashboard says so; the strip shows it first.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">161 vs 15,395</div><h4>Trust in the numbers</h4><p>The open-task card disagrees with All Tasks by 95×, and utilisation shows 0% with 644 tasks assigned. Admins see both gaps immediately.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&lt; 1 day</div><h4>Mean time to detect</h4><p>Target: anomalies such as a complaints spike are flagged within a day instead of at the next manual review.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−70%</div><h4>Time to brief management</h4><p>Target: pinned explanations replace the weekly manual write-up of dashboard figures.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Workflow Dashboard)</h4>
+<pre class="doc__code">&lt;div id="wf-dashboard"
+     data-ai-crosscheck='{"allTasksOpen":15395,
+       "utilAvg":0,"utilAssigned":644}'&gt;
+  &lt;ai-dashboard-insights source="#wf-dashboard"
+      viewer-role="admin"&gt;&lt;/ai-dashboard-insights&gt;
+
+  &lt;div data-ai-explain="status"
+       data-ai-data='{"open":161,"closed":14}'&gt;
+    &lt;h3&gt;Task Status&lt;/h3&gt;
+    &lt;span data-ai-explain-slot&gt;&lt;/span&gt;
+    …
+    &lt;div data-ai-explain-out&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div data-queue="Order Fulfilment" data-open="11003"
+       data-progress="1" data-closed="2"&gt;…&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-insight-focus', e =&gt;
+  dashboard.highlightQueue(e.detail.queue));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Expose the dashboard aggregates (status, per-workflow, top queues) as one JSON the page already has.</li>
+            <li>Add <code>data-ai-explain</code>, <code>data-ai-explain-slot</code> and <code>data-ai-explain-out</code> to each card.</li>
+            <li>Build the reconciliation job that compares each dashboard figure with All Tasks and Resource Utilization every hour.</li>
+            <li>Train per-queue baselines on 90 days of daily open/close counts for spike and stall detection.</li>
+            <li>Add the narrative step with a numeric checker, and run it read-only for 2 weeks with admins.</li>
+            <li>Send high-severity anomalies to the Daily Brief and InMail once precision is above 80%.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/dashboard/insights
+{
+  "status": { "new": 0, "total": 16102, "open": 161,
+              "progress": 26, "closed": 14 },
+  "queues": [{ "name": "Order Fulfilment", "open": 11003,
+               "progress": 1, "closed": 2 }, …],
+  "crosscheck": { "allTasksOpen": 15395, "utilAvg": 0,
+                  "utilAssigned": 644 },
+  "role": "admin"
+}
+→ 200
+{
+  "model": "cicod-insights-v1",
+  "anomalies": [{ "id": "stalled", "severity": "bad",
+     "queue": "Order Fulfilment", "title": "…", "detail": "…" }],
+  "consistency": [{ "id": "open-count",
+     "source": "Tasks → All Tasks", "title": "…" }]
+}
+
+POST /ai/ecms/dashboard/explain
+{ "metric": "queues", "data": {…}, "queues": […] }
+→ { "narrative": "…", "facts": ["…"],
+    "confidence": 0.88, "queue": "Order Fulfilment" }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.dashboardInsights</code> in ECMS Settings, on/off per tenant.</li>
+            <li>Alert thresholds (stall below 0.5% closure, in-progress above 3× closed) are set per tenant.</li>
+            <li>Every insight shown, pinned or dismissed is written to the ECMS Audit Log (feature: <i>CICOD-AI Insights</i>).</li>
+            <li>Insights only cover queues the viewer can already see. Consistency warnings require the admin role.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script>
+  // Mock screen data (real cicod figures), rendered before the component reads it.
+  const QUEUES = [['Order Fulfilment', 11003, 1, 2, 11006], ['Complaints', 2248, 108, 25, 2381], ['TEST AUTOMATION', 560, 10, 25, 595], ['IT Support', 479, 72, 33, 584], ['Product development', 165, 18, 7, 191]];
+  document.getElementById('wd-queues').innerHTML = QUEUES.map(([name, o, p, c, t]) => `<div class="wd__q" data-queue="${name}" data-open="${o}" data-progress="${p}" data-closed="${c}">
+    <div><div class="wd__q-name">${name}</div><div class="wd__q-tags"><span class="g-chip g-chip--ok">Open:${o.toLocaleString('en-GB')}</span><span class="g-chip g-chip--warn">In progress: ${p}</span><span class="g-chip g-chip--bad">Closed: ${c}</span></div></div>
+    <div class="wd__q-total">${t.toLocaleString('en-GB')}<span>Tasks</span></div></div>`).join('');
+  const WF = [['New CICOD apps', 34, 0, 6], ['Lagos intake', 22, 0, 0], ['Bid evaluation', 20, 1, 1], ['Exam results', 6, 1, 0], ['qa regression', 9, 0, 1], ['New hire', 21, 0, 0], ['max test', 58, 22, 0], ['Approvals', 12, 0, 3], ['Test Queue', 18, 1, 4], ['new CICOD apps', 6, 0, 0], ['TEST AUTOMATION', 3, 0, 1], ['Friday test', 1, 0, 0], ['test type', 14, 2, 3], ['REPAIR DETAILS', 5, 0, 2]];
+  const max = Math.max(...WF.map(w => w[1] + w[2] + w[3]));
+  document.getElementById('wd-chart').innerHTML = WF.map(([n, o, c, p]) => `<div class="wd__col" title="${n}: ${o} open, ${c} closed, ${p} in progress"><i class="o" style="height:${o / max * 100}%"></i><i class="c" style="height:${c / max * 100}%"></i><i class="p" style="height:${p / max * 100}%"></i></div>`).join('');
+  document.getElementById('wd-labels').innerHTML = WF.map(w => `<span>${w[0].slice(0, 3)}...</span>`).join('');
+  document.getElementById('wd-summary').dataset.aiData = JSON.stringify(WF.map(([name, open, closed, progress]) => ({ name, open, closed, progress })));
+</script>
+<script src="dashboard-insights.js"></script>
+<script>
+  // Host-page wiring: the component emits events, and the page highlights queues and shows pinned notes.
+  document.addEventListener('ai-insight-focus', e => {
+    document.querySelectorAll('.wd__q--hl').forEach(x => x.classList.remove('wd__q--hl'));
+    const row = e.detail.queue && document.querySelector(`.wd__q[data-queue="${CSS.escape(e.detail.queue)}"]`);
+    if (row) { row.classList.add('wd__q--hl'); row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  });
+  document.addEventListener('ai-insight-pin', e => {
+    const box = document.getElementById('wd-pins');
+    box.classList.add('wd__pins--on');
+    const d = document.createElement('div');
+    d.className = 'wd__pin';
+    d.textContent = e.detail.text;
+    document.getElementById('wd-pin-list').prepend(d);
+  });
+  document.addEventListener('ai-consistency-action', e => {
+    if (e.detail.action !== 'reconcile' || e.detail.check !== 'open-count') return;
+    const stat = document.querySelector('.wd__stat--open');
+    if (!stat.querySelector('small.rec')) stat.insertAdjacentHTML('beforeend', '<small class="rec">⚠ Under reconciliation</small>');
+  });
+</script>
+</body>
+</html>

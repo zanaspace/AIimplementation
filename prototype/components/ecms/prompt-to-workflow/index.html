@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prompt-to-Workflow</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="prompt-to-workflow.css">
+<style>
+  /* Page-only layout for the mock "Create Workflow" wizard */
+  .wf__bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .wf__crumb { font-size: 13px; color: var(--text-3); }
+  .wf__crumb b { color: var(--text); }
+  .wf__tabs { display: flex; gap: 4px 16px; flex-wrap: wrap; border-bottom: 1px solid var(--border); margin: 14px 0 12px; }
+  .wf__tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: 6px 2px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+  .wf__tab--on { color: var(--gov-green-600); border-bottom-color: var(--gov-green-600); font-weight: 600; }
+  .wf__tab i { font-style: normal; color: var(--ai-500); font-size: 11px; margin-left: 3px; }
+  .wf__card { padding: 16px; }
+  .wf__card h3 { margin: 0 0 12px; font-size: 15px; }
+  .wf__form { max-width: 540px; display: flex; flex-direction: column; gap: 12px; }
+  .wf__lblrow { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+  .wf__link { font-size: 12px; color: var(--gov-green-600); font-weight: 600; }
+  .wf__toggle { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+  .wf__statuses { display: flex; flex-wrap: wrap; gap: 6px; }
+  .wf__foot { display: flex; justify-content: flex-end; padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--border); }
+  .wf__empty { color: var(--text-3); font-size: 13px; }
+  .wf__flash { animation: wf-flash 1.4s ease; }
+  @keyframes wf-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); } 100% { box-shadow: none; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Workflows</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-W1 · Priority 2</span>
+      <h1>Prompt-to-Workflow</h1>
+      <p>Building a new workflow in ECMS usually requires manually clicking through multiple tabs to configure queues, status flows, forms, escalation timers, and approval rules. Prompt-to-Workflow automates all of this. Simply <b>describe your business process in one sentence</b>, and the CICOD-AI instantly generates a complete, editable workflow draft. It also checks for common mistakes—like missing escalation paths or assigning approvals to empty roles—before automatically filling out all the setup tabs for your review.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Workflows → Create Workflow</span><span class="g-chip">Component: &lt;ai-workflow-builder&gt;</span><span class="g-chip">Endpoint: /ecms/workflow/draft</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the ECMS <b>Create Workflow</b> wizard. Click the <i>Vehicle repair</i> example (or write your own, e.g. <i>"Leave request: staff submits → HOD approval → HR review → close, escalate after 24h"</i>), click <i>Generate draft</i>, read the checks, then <i>Apply to wizard</i>. Click through the Process, Form, Escalation and Approval tabs to see what was filled.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Create Workflow">
+      <div class="shell__content">
+        <div class="wf__bar"><span class="wf__crumb">Workflows › <b>New</b></span><button class="g-btn g-btn--sm" type="button">ⓘ Help Guide</button></div>
+        <div data-ai-spot="CICOD-AI · Describe your process">
+          <ai-workflow-builder></ai-workflow-builder>
+        </div>
+        <div class="wf__tabs" role="tablist">
+          <button class="wf__tab wf__tab--on" data-tab="process" type="button">Process</button>
+          <button class="wf__tab" data-tab="form" type="button">Form</button>
+          <button class="wf__tab" data-tab="escalation" type="button">Escalation</button>
+          <button class="wf__tab" data-tab="approval" type="button">Approval</button>
+        </div>
+        <div class="g-card wf__card">
+          <div data-panel="process">
+            <h3>Process</h3>
+            <div class="wf__form">
+              <div><div class="wf__lblrow"><label class="g-label" for="wf-queue">Queue *</label><span class="wf__link">+ Create Queue</span></div>
+                <select class="g-select" id="wf-queue"><option value="">Select a queue</option><option>AUTO MOBILE REPAIR</option><option>IT Support</option><option>Complaints</option><option>Order Fulfilment</option><option>TEST AUTOMATION</option><option>CICOD-AI IMPLEMENTATION</option><option>Product development</option></select></div>
+              <div><div class="wf__lblrow"><label class="g-label" for="wf-type">Queue Type *</label><span class="wf__link">+ Create Queue Type</span></div>
+                <input class="g-input" id="wf-type" placeholder="No queue types available"></div>
+              <label class="wf__toggle"><input type="checkbox" id="wf-single"> Single user workflow</label>
+              <div><label class="g-label">Statuses</label><div class="wf__statuses" id="wf-statuses"><span class="wf__empty">OPEN and CLOSED are added by default.</span></div></div>
+            </div>
+          </div>
+          <div data-panel="form" hidden><h3>Form</h3><div id="wf-form"><p class="wf__empty">No form fields yet.</p></div></div>
+          <div data-panel="escalation" hidden><h3>Escalation</h3><div id="wf-esc"><p class="wf__empty">No escalation rules yet.</p></div></div>
+          <div data-panel="approval" hidden><h3>Approval</h3><div id="wf-appr"><p class="wf__empty">No approval levels yet.</p></div></div>
+          <div class="wf__foot"><button class="g-btn g-btn--primary" id="wf-next" type="button">Next</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Above the wizard tabs on <code>/ecms/workflows/new?step=process</code></div>
+      <div class="doc__where-item"><b>Also appears in</b>The CICOD-AI IMPLEMENTATION form (uploaded process documents become a draft, R5) and My Workflows → "Duplicate with CICOD-AI"</div>
+      <div class="doc__where-item"><b>Trigger</b>"Generate draft" click. Nothing is saved until the officer clicks Create at the end of the wizard</div>
+      <div class="doc__where-item"><b>Who sees it</b>Workflow administrators. Roles and departments offered come only from this tenant</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">An LLM constrained to the ECMS workflow JSON schema writes the draft. A validator then checks it against the tenant's queues, roles and users.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The officer's description plus the tenant's queue, queue-type and role catalogue are sent to <code>/ecms/workflow/draft</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway removes any personal names or contact details from the prompt. Only role names and counts, not user details, are shared with the model.</p></div>
+      <div class="doc__step"><h4>Generate</h4><p>The model must return JSON that matches the ECMS schema (queue, queue type, statuses, form fields, escalation, approval levels). Amounts like "₦200k" and times like "48h" are turned into thresholds and timers.</p></div>
+      <div class="doc__step"><h4>Lint</h4><p>Graph checks flag stages with no escalation, approver roles with no active users (e.g. "Fleet Officer" has 0), missing end states and near-duplicates of the 290 existing workflows.</p></div>
+      <div class="doc__step"><h4>Fill the wizard</h4><p>"Apply to wizard" fills Process, Form, Escalation and Approval. The officer edits any tab before clicking Create.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Accepted, edited, regenerated and discarded drafts are recorded via <code>/feedback</code>, along with how much the officer changed before Create.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines from the cicod tenant (My Workflows, Roles), 27 Sep 2026. Other figures are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Days → minutes</div><h4>Workflow build time</h4><p>Target: a four-tab workflow drafted in under 5 minutes, instead of days of set-up and back-and-forth.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">290 workflows</div><h4>Fewer duplicates</h4><p>The tenant has 290 workflows, many test copies (e.g. "REPAIR DEATAILS", "Testiing"). Near-duplicates are flagged before a new one is created.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0 stuck stages</div><h4>Every stage can escalate</h4><p>Target: no live stage without an escalation timer or with an approver role that has no users.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Thresholds built in</div><h4>Correct approval levels</h4><p>Amount rules like "HOD approval if above ₦200k" become approval levels, not free text in a description.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Create Workflow page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/prompt-to-workflow.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/prompt-to-workflow.js"&gt;&lt;/script&gt;
+
+&lt;ai-workflow-builder&gt;&lt;/ai-workflow-builder&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-workflow-apply', e =&gt; {
+  const d = e.detail.draft;   // the wizard store owns state
+  wizard.process.set({ queue: d.queue, queueType: d.queueType,
+                       statuses: d.statuses });
+  wizard.form.setFields(d.fields);
+  wizard.escalation.set(d.escalation);
+  wizard.approval.set(d.approvals);
+});
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Publish the ECMS workflow model as a JSON schema (queue, queue type, statuses, fields, escalation, approvals).</li>
+            <li>Expose <code>/ecms/workflow/draft</code> on the CICOD-AI Gateway with schema-constrained output and the tenant catalogue in the prompt.</li>
+            <li>Write the lint rules: escalation coverage, active users per approver role, end states, duplicate detection.</li>
+            <li>Add the component above the wizard and wire <code>ai-workflow-apply</code> to the wizard store.</li>
+            <li>Seed with 20 real MDA processes (vehicle repair, leave, procurement) and measure edits before Create.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/workflow/draft
+{ "prompt": "Vehicle repair request: requester → …",
+  "tenantQueues": ["AUTO MOBILE REPAIR", "IT Support", "…"] }
+→ 200
+{ "model": "cicod-workflow-gen-v1", "confidence": 0.9,
+  "draft": {
+    "queue": "AUTO MOBILE REPAIR", "queueIsNew": false,
+    "queueType": "VEHICLE REPAIR REQUEST",
+    "statuses": [{ "name": "Inspection", "role": "Fleet Officer",
+                   "escalation": 48 }, …],
+    "fields": [{ "label": "Vehicle registration number",
+                 "type": "Text", "required": true }],
+    "escalation": [{ "status": "Inspection", "after": "48h",
+                     "to": "Director", "level": 1 }],
+    "approvals": [{ "level": 1, "role": "HOD Works",
+                    "condition": "amount &gt; ₦200,000" }] },
+  "lint": [{ "level": "bad",
+    "text": "Role \"Fleet Officer\" has no active users" }] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.promptToWorkflow</code> in ECMS Settings, on/off per tenant.</li>
+            <li>Blockers (e.g. an approver role with no users) must be resolved before Create is enabled.</li>
+            <li>Every generated and applied draft is written to the ECMS Audit Log (feature: <i>CICOD-AI Workflow</i>).</li>
+            <li>Only workflow administrators see the component; drafts can only use roles and departments in this tenant.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="prompt-to-workflow.js"></script>
+<script>
+  // Host-page wiring: the wizard owns its tabs; the component only hands over a draft.
+  const tabs = [...document.querySelectorAll('[data-tab]')];
+  const show = name => {
+    tabs.forEach(t => t.classList.toggle('wf__tab--on', t.dataset.tab === name));
+    document.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== name; });
+    document.getElementById('wf-next').textContent = name === 'approval' ? 'Create' : 'Next';
+  };
+  tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.tab)));
+  document.getElementById('wf-next').addEventListener('click', () => {
+    const i = tabs.findIndex(t => t.classList.contains('wf__tab--on'));
+    if (i < tabs.length - 1) show(tabs[i + 1].dataset.tab);
+  });
+  const esc = window.AIGateway.esc;
+  const table = (heads, rows) => `<div class="g-table-wrap"><table class="g-table"><thead><tr>${heads.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  const flash = el => { el.classList.remove('wf__flash'); void el.offsetWidth; el.classList.add('wf__flash'); };
+  document.addEventListener('ai-workflow-apply', e => {
+    const d = e.detail.draft;
+    const q = document.getElementById('wf-queue');
+    if (![...q.options].some(o => o.text === d.queue)) q.add(new Option(d.queue + ' (new)', d.queue));
+    q.value = d.queue;
+    document.getElementById('wf-type').value = d.queueType;
+    document.getElementById('wf-single').checked = !!d.singleUser;
+    document.getElementById('wf-statuses').innerHTML = d.statuses.map(s => `<span class="g-chip ${s.name === 'OPEN' || s.name === 'CLOSED' ? 'g-chip--ok' : 'g-chip--ai'}">${esc(s.name)}</span>`).join('');
+    document.getElementById('wf-form').innerHTML = table(['Field', 'Type', 'Required', 'Validation / options'], d.fields.map(f => [f.label, f.type, f.required ? 'Yes' : 'No', f.validation || f.options || '']));
+    document.getElementById('wf-esc').innerHTML = d.escalation.length ? table(['Status', 'Level', 'After', 'Escalate to'], d.escalation.map(x => [x.status, 'Level ' + x.level, x.after, x.to])) : '<p class="wf__empty">No escalation rules in the draft. Add them here.</p>';
+    document.getElementById('wf-appr').innerHTML = table(['Level', 'Approver role', 'Condition'], d.approvals.map(a => ['Level ' + a.level, a.role, a.condition]));
+    tabs.forEach(t => { if (!t.querySelector('i')) t.insertAdjacentHTML('beforeend', '<i>✦</i>'); });
+    show('process');
+    flash(document.querySelector('.wf__card'));
+  });
+</script>
+</body>
+</html>

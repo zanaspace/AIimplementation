@@ -1,0 +1,41 @@
+/* <ai-workflow-builder>: "Describe your process" prompt and the generated workflow draft.
+   All classes are prefixed `aiwb-` so the component can be dropped into any ECMS page. */
+ai-workflow-builder { display: block; min-width: 0; }
+
+.aiwb { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.aiwb__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aiwb__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aiwb__body { padding: 12px 14px; }
+.aiwb__prompt { min-height: 70px; font-size: 13px; }
+.aiwb__row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.aiwb__muted { color: var(--text-3); font-size: 12px; }
+.aiwb__mode { margin-left: auto; font-size: 11px; }
+
+.aiwb__res { margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; background: var(--surface-2); }
+.aiwb__res-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-bottom: 8px; }
+.aiwb__res h5 { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 12px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+
+.aiwb__kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.aiwb__kv label { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 6px; align-items: center; font-size: 12px; }
+.aiwb__kv label > span { grid-column: 1 / -1; font-weight: 600; color: var(--text-2); }
+.aiwb__kv em { font-style: normal; }
+
+.aiwb__flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 6px; }
+.aiwb__node { display: flex; flex-direction: column; gap: 3px; min-width: 110px; max-width: 180px; padding: 8px 10px; border-radius: var(--radius); background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 30%, var(--border)); font-size: 11.5px; color: var(--text-2); }
+.aiwb__node b { font-size: 12.5px; color: var(--text); }
+.aiwb__node .g-chip { align-self: flex-start; }
+.aiwb__node--end { background: var(--gov-green-50); border-color: var(--gov-green-100); }
+.aiwb__cond { color: var(--ai-600); font-weight: 600; }
+.aiwb__arrow { align-self: center; color: var(--text-3); font-weight: 700; }
+.aiwb__st-edit { display: flex; gap: 6px; margin-top: 8px; }
+
+.aiwb__cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.aiwb__cols > div { min-width: 0; }
+.aiwb__list { margin: 0; padding-left: 16px; font-size: 12px; color: var(--text-2); }
+.aiwb__list li { margin: 2px 0; }
+.aiwb__list b { color: var(--text); }
+
+.aiwb__lint { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.aiwb__lint li { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; }
+.aiwb__lint .g-chip { flex: none; }
+.aiwb__st-edit[hidden] { display: none; }

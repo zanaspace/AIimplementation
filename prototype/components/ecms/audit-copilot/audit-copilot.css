@@ -1,0 +1,33 @@
+/* <ai-audit-copilot>: "Ask the audit log" box with cited answers, and the anomaly panel.
+   Classes are prefixed `aiac-`. */
+ai-audit-copilot { display: block; }
+
+.aiac { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+.aiac__ask, .aiac__anom { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; min-width: 0; }
+.aiac__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 10px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aiac__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aiac__form { display: flex; gap: 8px; padding: 12px 14px 6px; }
+.aiac__form .g-input { flex: 1; min-width: 0; }
+.aiac__examples { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 14px 12px; }
+.aiac__ex { cursor: pointer; font-family: inherit; }
+.aiac__answer { padding: 0 14px 14px; }
+.aiac__answer:empty { display: none; }
+.aiac__muted { font-size: 11.5px; color: var(--text-3); margin: 0; }
+.aiac__card { padding: 10px 12px; border-radius: var(--radius); background: var(--surface-2); }
+.aiac__text { margin: 0 0 8px; font-size: 13px; }
+.aiac__meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.aiac__q { margin: 8px 0; font-size: 12px; color: var(--text-2); }
+.aiac__q code { display: block; margin-top: 4px; font-family: var(--mono); font-size: 11.5px; overflow-wrap: anywhere; }
+.aiac__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.aiac__anom-list { padding: 8px 14px 12px; max-height: 420px; overflow-y: auto; }
+.aiac__item { padding: 10px 0 10px 10px; border-left: 3px solid var(--info); border-bottom: 1px dashed var(--border); }
+.aiac__item--bad { border-left-color: var(--bad); }
+.aiac__item--warn { border-left-color: var(--warn); }
+.aiac__item--done { opacity: .6; }
+.aiac__item-title { border: 0; background: none; padding: 0; text-align: left; font-weight: 700; font-size: 13px; cursor: pointer; color: var(--text); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.aiac__item-title:hover { color: var(--ai-600); }
+.aiac__item p { margin: 4px 0 8px; font-size: 12px; color: var(--text-2); }
+.aiac__item-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+@media (max-width: 1000px) { .aiac { grid-template-columns: 1fr; } }

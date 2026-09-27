@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CICOD-AI Form Builder</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="prompt-to-form.css">
+<style>
+  /* Page-only layout for the mock "Create Form" screen */
+  .fm__crumb { font-size: 13px; color: var(--text-3); margin-bottom: 12px; }
+  .fm__crumb b { color: var(--text); }
+  .fm__card { max-width: 640px; margin: 16px auto 0; padding: 16px; }
+  .fm__card h3 { margin: 0; font-size: 15px; }
+  .fm__card > p { margin: 2px 0 14px; font-size: 13px; color: var(--text-2); }
+  .fm__hint { font-size: 12px; color: var(--text-2); margin: 0 0 8px; }
+  .fm__banner { border: 2px dashed var(--border-strong); border-radius: var(--radius); padding: 20px; text-align: center; font-size: 12px; color: var(--text-2); margin-bottom: 14px; }
+  .fm__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .fm__desc { border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; margin-top: 12px; }
+  .fm__desc-bar { display: flex; gap: 10px; padding: 6px 10px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-2); }
+  .fm__desc textarea { border: 0; border-radius: 0; min-height: 90px; }
+  .fm__count { text-align: right; font-size: 11px; color: var(--text-3); padding: 4px 10px; background: var(--surface-2); }
+  .fm__fields { margin-top: 14px; }
+  .fm__fields h4 { margin: 0 0 6px; font-size: 13px; }
+  .fm__create { width: 100%; justify-content: center; margin-top: 14px; }
+  .fm__done { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--ok-bg); font-size: 13px; }
+  .fm__flash { animation: fm-flash 1.4s ease; }
+  @keyframes fm-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); border-color: var(--ai-500); } 100% { box-shadow: none; } }
+  @media (max-width: 600px) { .fm__grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Forms</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-W2 · Priority 2</span>
+      <h1>CICOD-AI Form Builder</h1>
+      <p>Most MDA forms still exist on paper. The officer either <b>describes the form</b> in a sentence or <b>uploads a photo or PDF of the paper form</b>. The CICOD-AI returns a field list with labels, types, required flags, validation and options, and a <b>live preview</b>. It also suggests Nigerian validation rules (phone format, NIN 11 digits, NUBAN 10 digits). Every field can be edited before "Use these fields".</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Forms → Create Form</span><span class="g-chip">Component: &lt;ai-form-builder&gt;</span><span class="g-chip">Endpoint: /ecms/form/draft · /from-scan</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the ECMS <b>Create Form</b> screen. Pick the <i>Upload paper form</i> tab and click <i>Use sample paper form</i> to see OCR turn a scanned Expense Request form into fields. Or describe one, e.g. <i>"Public scholarship application for citizens: full name, NIN, date of birth, state of origin, phone"</i>. Apply the validation suggestions, edit any row, watch the preview, then click <i>Use these fields</i>.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Create Form">
+      <div class="shell__content">
+        <div class="fm__crumb">Forms › <b>New</b></div>
+        <div data-ai-spot="CICOD-AI · Describe or upload a paper form">
+          <ai-form-builder max-description="1500"></ai-form-builder>
+        </div>
+        <div class="g-card fm__card" id="fm-card">
+          <h3>New Form</h3>
+          <p>The form tool enables you to collect information from either internal or external users.</p>
+          <label class="g-label">Upload Form Banner</label>
+          <p class="fm__hint">Supported formats: jpeg, jpg, png, gif. Max size: 2 MB. Recommended dimensions: 748×159</p>
+          <div class="fm__banner">⤒<br>Drop your banner here or click to select a file</div>
+          <div class="fm__grid">
+            <div><label class="g-label" for="fm-name">Form Name *</label><input class="g-input" id="fm-name" placeholder="My new form"></div>
+            <div><label class="g-label" for="fm-type">Form Type *</label><select class="g-select" id="fm-type"><option>Internal</option><option>External</option><option>Capture</option><option>Inter MDA</option><option>Status</option></select></div>
+          </div>
+          <label class="g-label" for="fm-desc" style="margin-top:12px">Description *</label>
+          <div class="fm__desc" style="margin-top:0">
+            <div class="fm__desc-bar" aria-hidden="true"><span>↶</span><span>↷</span><b>B</b><i>I</i><u>U</u><span>T</span><span>¶</span><b>H</b><span>≡</span><span>1.</span><span>•</span></div>
+            <textarea class="g-textarea" id="fm-desc" maxlength="1500" placeholder="Enter description"></textarea>
+            <div class="fm__count"><span id="fm-count">0</span>/1500 characters</div>
+          </div>
+          <div class="fm__fields" data-ai-spot="CICOD-AI · Fields added from CICOD-AI">
+            <h4>Form fields (<span id="fm-nf">0</span>)</h4>
+            <div id="fm-fields"><p class="fm__hint">No fields yet. Fields are added after the form is created, or from the CICOD-AI builder above.</p></div>
+          </div>
+          <button class="g-btn g-btn--primary fm__create" id="fm-create" type="button">+ Create</button>
+          <div id="fm-done"></div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Above the New Form card on <code>/ecms/forms/new</code></div>
+      <div class="doc__where-item"><b>Also appears in</b>The form designer (add fields to an existing form), Workflows → Form tab, and Form Analytics ("simplify this form", E-W6)</div>
+      <div class="doc__where-item"><b>Trigger</b>"Generate fields" click, or a photo/PDF dropped on the upload tab</div>
+      <div class="doc__where-item"><b>Who sees it</b>Users who can create forms. Uploaded scans are stored in the tenant's Drive and processed in-country</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Document intelligence reads the paper form's layout. An LLM turns labels and boxes, or a description, into typed fields, and a rules library adds Nigerian validation.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>Either the description text goes to <code>/ecms/form/draft</code>, or the uploaded photo/PDF goes to <code>/ecms/form/from-scan</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Scans are processed on the in-country document model. A filled-in form's handwritten values are discarded; only printed labels are kept, so no citizen data is stored.</p></div>
+      <div class="doc__step"><h4>Read the form</h4><p>OCR plus layout analysis finds labels, blank lines, boxes and tick-boxes, with a confidence per line. Low-confidence lines are highlighted for checking.</p></div>
+      <div class="doc__step"><h4>Design fields</h4><p>The LLM chooses a type for each label (Date, Currency, Dropdown, Signature…), marks required fields and suggests options, e.g. 36 states + FCT, GL 01–17.</p></div>
+      <div class="doc__step"><h4>Validate</h4><p>A rules library proposes Nigerian formats: phone numbers (11 digits or +234), NIN and BVN (11 digits), NUBAN (10 digits), vehicle plates, and date order.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer edits, adds or removes rows, then clicks "Use these fields". Accepted suggestions and edits go to <code>/feedback</code>.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Targets from the CICOD-AI augmentation analysis and <i>newFeatures.md</i> ("current form builder to optimise with CICOD-AI").</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">1 hr → 5 min</div><h4>Time to build a form</h4><p>Target: a 15-field form from a scan in minutes, instead of adding fields one by one.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Paper → digital</div><h4>Digitising at scale</h4><p>Registries can photograph existing paper forms and have them online the same day.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Bad data ↓</div><h4>Validation by default</h4><p>NIN, phone and account numbers are checked at entry, not corrected later by staff.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Consistent</div><h4>Same field types everywhere</h4><p>"State of origin" and "Grade level" use the same dropdowns on every form, which makes reports comparable.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Create Form page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/prompt-to-form.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/prompt-to-form.js"&gt;&lt;/script&gt;
+
+&lt;ai-form-builder max-description="1500"&gt;&lt;/ai-form-builder&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-form-apply', e =&gt; {
+  const d = e.detail;           // host owns the form draft
+  formDraft.set({ name: d.name, type: d.formType,
+                  description: d.description });
+  formDraft.setFields(d.fields);
+});
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Map the ECMS form field types to a JSON schema (label, type, required, validation, options).</li>
+            <li>Build the validation rules library (phone, NIN, BVN, NUBAN, plates, date order) and shared option lists (states, LGAs, grade levels).</li>
+            <li>Expose <code>/ecms/form/draft</code> and <code>/ecms/form/from-scan</code> (document intelligence, then LLM) on the CICOD-AI Gateway.</li>
+            <li>Mount the component on Create Form and wire <code>ai-form-apply</code> to the form draft.</li>
+            <li>Pilot with 20 paper forms from Registry; measure fields kept unchanged.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/form/draft
+{ "description": "Staff leave application: name, IPPIS …" }
+
+POST /ai/ecms/form/from-scan
+{ "file": "drive:upload/88213", "pages": 1 }
+→ 200
+{ "model": "cicod-docintel-v1 → cicod-docgen-v2",
+  "confidence": 0.87,
+  "ocr": [{ "text": "NIN: ______", "confidence": 0.84 }],
+  "name": "Expense Request",
+  "formType": "Internal",
+  "description": "…",
+  "fields": [{ "label": "NIN", "type": "NIN",
+               "required": true, "validation": "",
+               "options": "" }],
+  "suggestions": [{ "label": "NIN",
+    "text": "Exactly 11 digits",
+    "validation": "Exactly 11 digits · NIMC check" }] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.promptToForm</code> in ECMS Settings, on/off per tenant.</li>
+            <li>OCR lines below 85% confidence are highlighted and must be reviewed.</li>
+            <li>Generated and applied forms are written to the ECMS Audit Log (feature: <i>CICOD-AI Forms</i>).</li>
+            <li>Only users with form-creation permission see the component; scans inherit the uploader's Drive permissions.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="prompt-to-form.js"></script>
+<script>
+  // Host-page wiring: the Create Form screen owns its fields; the component only proposes them.
+  const $ = id => document.getElementById(id);
+  const esc = window.AIGateway.esc;
+  const desc = $('fm-desc');
+  desc.addEventListener('input', () => { $('fm-count').textContent = desc.value.length; });
+  const flash = el => { el.classList.remove('fm__flash'); void el.offsetWidth; el.classList.add('fm__flash'); };
+  document.addEventListener('ai-form-apply', e => {
+    const d = e.detail;
+    $('fm-name').value = d.name; $('fm-type').value = d.formType;
+    desc.value = d.description.slice(0, 1500); $('fm-count').textContent = desc.value.length;
+    $('fm-nf').textContent = d.fields.length;
+    $('fm-fields').innerHTML = `<div class="g-table-wrap"><table class="g-table"><thead><tr><th>#</th><th>Label</th><th>Type</th><th>Required</th><th>Validation</th></tr></thead><tbody>${d.fields.map((f, i) => `<tr><td>${i + 1}</td><td>${esc(f.label)}</td><td>${esc(f.type)}</td><td>${f.required ? 'Yes' : 'No'}</td><td>${esc(f.validation || f.options || '—')}</td></tr>`).join('')}</tbody></table></div>`;
+    [$('fm-name'), $('fm-type'), desc, $('fm-fields')].forEach(flash);
+    $('fm-card').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
+  $('fm-create').addEventListener('click', () => {
+    const n = $('fm-nf').textContent;
+    $('fm-done').innerHTML = $('fm-name').value ? `<div class="fm__done">Form "<b>${esc($('fm-name').value)}</b>" (${esc($('fm-type').value)}) created with ${esc(n)} fields. (Demo only)</div>` : '<div class="fm__done" style="background:var(--warn-bg)">Form Name is required.</div>';
+  });
+</script>
+</body>
+</html>

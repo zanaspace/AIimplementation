@@ -1,0 +1,57 @@
+/* <ai-registry-guardian>: KPI sanity checks, master-data duplicates and reorder forecast for the Asset Registry.
+   All classes are prefixed `airg-` so the component can be dropped into any IMS page. */
+ai-registry-guardian { display: block; min-width: 0; }
+
+.airg { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.airg__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.airg__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+
+.airg__tabs { display: flex; gap: 2px; padding: 0 10px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.airg__tab { border: 0; background: transparent; padding: 10px 8px; font-size: 12.5px; font-weight: 500; color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+.airg__tab b { display: inline-block; min-width: 16px; margin-left: 2px; font-size: 11px; color: var(--ai-600); }
+.airg__tab b:empty { display: none; }
+.airg__tab--on { color: var(--ai-600); border-bottom-color: var(--ai-500); font-weight: 600; }
+
+.airg__body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.airg__empty { color: var(--text-3); font-size: 12.5px; margin: 0; }
+.airg__body > .g-btn { align-self: flex-start; }
+
+.airg__card { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; background: var(--surface); }
+.airg__card--focus { animation: airg-focus 1.6s ease; }
+@keyframes airg-focus { 0% { box-shadow: 0 0 0 3px var(--ai-100); border-color: var(--ai-500); } 100% { box-shadow: none; } }
+.airg__card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.airg__card-head b { flex: 1 1 200px; min-width: 0; }
+.airg__dl { display: grid; grid-template-columns: 72px 1fr; gap: 2px 8px; margin: 8px 0 0; font-size: 12px; }
+.airg__dl dt { color: var(--text-3); font-weight: 600; text-transform: uppercase; font-size: 10.5px; letter-spacing: .05em; padding-top: 2px; }
+.airg__dl dd { margin: 0; min-width: 0; }
+.airg__why, .airg__cause, .airg__fix { margin: 8px 0 0; font-size: 12px; color: var(--text-2); }
+.airg__cause { padding: 8px 10px; background: var(--warn-bg); border-radius: var(--radius-sm); color: var(--text); }
+.airg__fix b, .airg__cause b { color: var(--text); }
+
+.airg__row-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+.airg__done { font-size: 12px; color: var(--ok); font-weight: 600; }
+.airg__keep { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
+.airg__keep .g-select { width: auto; min-height: 28px; padding: 2px 8px; }
+
+.airg__members { margin: 8px 0 0; padding-left: 18px; font-size: 12px; font-family: var(--mono); color: var(--text-2); }
+.airg__members li { overflow-wrap: anywhere; }
+
+.airg__passed { padding: 10px 12px; background: var(--ok-bg); border-radius: var(--radius); font-size: 12px; }
+.airg__passed h5 { margin: 0 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ok); }
+.airg__passed ul { margin: 0; padding-left: 16px; color: var(--text-2); }
+
+.airg__controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.airg__controls label { font-size: 11.5px; font-weight: 600; color: var(--text-2); display: flex; flex-direction: column; gap: 4px; }
+.airg__note { margin: 0; font-size: 11.5px; color: var(--text-3); }
+
+.airg__fc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); }
+.airg__fc--urgent { border-color: color-mix(in srgb, var(--bad) 45%, var(--border)); background: color-mix(in srgb, var(--bad-bg) 55%, var(--surface)); }
+.airg__fc-name { min-width: 0; display: flex; flex-direction: column; font-size: 13px; }
+.airg__fc-name span { font-size: 11.5px; color: var(--text-3); }
+.airg__fc-num { display: flex; flex-direction: column; font-size: 13px; min-width: 0; }
+.airg__fc-num > span { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); font-weight: 600; }
+.airg__fc-num small { font-size: 11px; color: var(--text-3); }
+.airg__fc-num .g-input { min-height: 28px; padding: 2px 8px; width: 80px; }
+.airg__fc-name, .airg__fc .airg__row-actions { grid-column: 1 / -1; }
+.airg__fc .airg__row-actions { margin-top: 0; }
+.airg__bad { color: var(--bad); }

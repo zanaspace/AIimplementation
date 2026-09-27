@@ -1,0 +1,32 @@
+/* Replica of the CICOD app chrome (app rail + module sidebar + top bar) used to show
+   exactly where each CICOD-AI component sits inside the real screen. */
+.shell { display: grid; grid-template-columns: 64px 220px 1fr; min-height: 640px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.shell__rail { background: var(--surface-2); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 14px 0; }
+.shell__rail-app { width: 52px; text-align: center; font-size: 9px; color: var(--text-2); line-height: 1.2; }
+.shell__rail-icon { width: 32px; height: 32px; margin: 0 auto 3px; border-radius: 8px; background: var(--gov-green-100); color: var(--gov-green-600); display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+.shell__rail-app--active .shell__rail-icon { background: var(--gov-green-600); color: #fff; }
+
+.shell__side { background: var(--surface); border-right: 1px solid var(--border); padding: 14px 10px; overflow-y: auto; }
+.shell__brand { display: flex; align-items: center; gap: 8px; font-weight: 700; margin: 0 6px 14px; }
+.shell__brand-logo { width: 26px; height: 26px; border-radius: 6px; background: var(--gov-green-600); }
+.shell__nav-group { font-size: 13px; color: var(--text); padding: 6px 8px; border-radius: 8px; display: flex; justify-content: space-between; }
+.shell__nav-item { font-size: 13px; color: var(--text-2); padding: 6px 8px 6px 22px; border-radius: 8px; }
+.shell__nav-item--active, .shell__nav-group--active { background: var(--gov-green-100); color: var(--gov-green-600); font-weight: 600; }
+
+.shell__main { display: flex; flex-direction: column; min-width: 0; }
+.shell__top { height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 16px; }
+.shell__top-spacer { flex: 1; }
+.shell__avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border); display: grid; place-items: center; font-size: 11px; font-weight: 600; }
+.shell__content { padding: 20px; overflow: auto; flex: 1; position: relative; }
+.shell__title { font-size: 18px; font-weight: 700; margin: 0 0 14px; }
+
+/* Placement markers: elements tagged data-ai-spot get a labelled dashed outline when
+   the "Show CICOD-AI placement" toggle is on. */
+.show-spots [data-ai-spot] { outline: 2px dashed var(--ai-500); outline-offset: 4px; border-radius: 10px; position: relative; }
+.show-spots [data-ai-spot]::after { content: attr(data-ai-spot); position: absolute; top: -12px; right: 8px; background: var(--ai-500); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; z-index: 5; pointer-events: none; white-space: nowrap; }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; }
+  .shell__rail, .shell__side { display: none; }
+  .shell__content { padding: 14px; }
+}

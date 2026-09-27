@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit Copilot</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="audit-copilot.css">
+<style>
+  /* Page-only layout for the mock "Audit Logs" screen */
+  .al__bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .al__bar .shell__title { margin: 0; }
+  .al__tools { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px; border-bottom: 1px solid var(--border); }
+  .al__tools .g-input { max-width: 360px; flex: 1 1 200px; }
+  .al__tools div { display: flex; gap: 6px; }
+  .al__table td small { display: block; font-size: 11px; color: var(--text-3); }
+  .al__table tr { transition: background .3s; }
+  .al__table tr.al--cited td { background: var(--ai-50); }
+  .al__table tr.al--cited td:first-child { box-shadow: inset 3px 0 0 var(--ai-500); }
+  .al__tag { margin-left: 6px; }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Reports</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-A1 · E-A2 · Priority 1</span>
+      <h1>Audit Copilot</h1>
+      <p>Lets auditors ask the ECMS Audit Log questions in plain English, such as <i>"Who approved task 16363?"</i>. Each answer cites the log rows it is based on, and those rows are highlighted. An anomaly panel flags patterns a person would miss when scrolling: the <b>same user approving task 16363 twice</b>, approvals outside working hours, and a <b>new IP address for a super admin</b>.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Reports → Audit Log</span><span class="g-chip">Component: &lt;ai-audit-copilot&gt;</span><span class="g-chip">Endpoint: /ecms/audit/ask · /anomalies</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the ECMS <b>Audit Logs</b> screen with the tenant's real entries from 26/09/2026 (IP last octets and emails are masked; times are from the underlying log record). Click <i>"Who approved task 16363?"</i> or type your own question, such as <i>"What did api support do?"</i>, and the cited rows light up. In the anomaly panel, click a title to highlight its rows, then <b>Mark reviewed</b> or <b>Open investigation</b>.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Audit Log">
+      <div class="shell__content">
+        <div class="al__bar">
+          <h2 class="shell__title">Audit Logs</h2>
+          <button class="g-btn g-btn--primary" type="button">Download</button>
+        </div>
+        <div data-ai-spot="CICOD-AI · Ask the audit log + anomaly panel">
+          <ai-audit-copilot source="#audit-table" work-hours="08:00-18:00"></ai-audit-copilot>
+        </div>
+        <div class="g-card" style="margin-top:14px">
+          <div class="al__tools"><input class="g-input" placeholder="Search by feature..." aria-label="Search by feature"><div><button class="g-btn" type="button">Filters</button><button class="g-btn" type="button">Custom View</button></div></div>
+          <div class="g-table-wrap">
+            <table class="g-table al__table" id="audit-table">
+              <thead><tr><th>Date</th><th>User</th><th>IP Address</th><th>Feature</th><th>Action</th><th>Description</th></tr></thead>
+              <tbody id="al-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Above the table on <code>/ecms/reports/audit-logs</code>, next to Download, Filters and Custom View</div>
+      <div class="doc__where-item"><b>Also appears in</b>CICOD Drive Audit Log and Approval Log, Asset Mgmt Settings → Audit, and an InMail alert to security admins for high-severity anomalies</div>
+      <div class="doc__where-item"><b>Trigger</b>Questions run on Ask. The anomaly scan runs when the page opens and every 15 minutes on new entries</div>
+      <div class="doc__where-item"><b>Who sees it</b>Users with the Audit Log permission. Only security admins can open an investigation</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Questions are turned into a filter over the log, not answered from memory, so every sentence points to real rows. Anomalies come from rules plus a per-user behaviour baseline.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The question and the log entries in scope (date range, filters) are sent to <code>/ecms/audit/ask</code>. The anomaly scan sends new entries to <code>/ecms/audit/anomalies</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Emails in descriptions are masked and IP addresses are replaced with pseudonymous IDs before any model sees them. Audit data is classified Restricted, so it stays on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Query &amp; detect</h4><p>An LLM maps the question to a structured filter (task ID, user, action, time window, IP) that runs on the log. Rules catch repeat approvals and off-hours actions; a 30-day baseline per user catches new IPs and unusual volumes.</p></div>
+      <div class="doc__step"><h4>Answer</h4><p>The LLM writes a short answer from the matching rows only, and returns the row IDs it used. If nothing matches, it says so instead of guessing.</p></div>
+      <div class="doc__step"><h4>Output</h4><p>An answer with cited rows highlighted and the interpreted filter shown; an anomaly list with severity, reason and the rows behind it.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Auditors mark answers helpful or not, and mark anomalies reviewed or open an investigation. Every decision goes to <code>/feedback</code> and lowers the score of patterns that are repeatedly dismissed.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod Audit Log, 26 Sep 2026. Improvement figures are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">3 tasks × 2</div><h4>Repeat approvals caught</h4><p>Praise approved 16363, 15815 and 16369 twice each on 26/09. Nothing on the screen flags this today.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−80%</div><h4>Investigation time</h4><p>Target: "who approved X?" takes seconds instead of paging through the log and exporting to Excel.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&lt; 15 min</div><h4>Time to detect</h4><p>Target: off-hours approvals and new admin IPs are flagged within one scan cycle.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">100%</div><h4>Answers with evidence</h4><p>Every answer cites the rows it came from, so it can be checked and attached to an investigation.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Audit Log page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/audit-copilot.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/audit-copilot.js"&gt;&lt;/script&gt;
+
+&lt;ai-audit-copilot source="#audit-table"
+                  work-hours="08:00-18:00"&gt;&lt;/ai-audit-copilot&gt;
+&lt;table id="audit-table"&gt;
+  &lt;tr data-row="r3" data-time="26/09/2026 18:41"
+      data-user="Praise" data-ip-id="ip-b"
+      data-action="Approve Task with ID 16363" …&gt;
+&lt;/table&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-audit-cite', e =&gt;
+  auditTable.highlight(e.detail.rows));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Add full timestamps and a stable row ID to each audit entry in the table markup (the API already stores them).</li>
+            <li>Build the IP pseudonymiser in the gateway and a 30-day per-user IP and hour baseline.</li>
+            <li>Expose <code>/ecms/audit/ask</code> (question → filter → rows → answer) and <code>/ecms/audit/anomalies</code>.</li>
+            <li>Block duplicate approvals at the API, and keep the anomaly rule to catch other paths.</li>
+            <li>Connect "Open investigation" to a Complaints-style case queue for the security team.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/audit/ask
+{ "question": "Who approved task 16363?",
+  "rows": [{ "row": "r3", "time": "26/09/2026 18:41",
+     "user": "Praise", "ipId": "ip-b",
+     "action": "Approve Task with ID 16363" }, …] }
+→ 200
+{ "model": "cicod-audit-qa-v1", "confidence": 0.9,
+  "answer": "Task 16363 was approved 3 times…",
+  "rows": ["r3", "r5", "r15"],
+  "query": "description contains 16363 AND action = Approve" }
+
+POST /ai/ecms/audit/anomalies
+{ "rows": […], "workHours": "08:00-18:00" }
+→ { "anomalies": [{ "id": "dup-Praise",
+      "severity": "bad", "kind": "Repeat approval",
+      "title": "Duplicate approval of 16363 …",
+      "rows": ["r3", "r5", …] }] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.auditCopilot</code> in ECMS Settings, on/off per tenant.</li>
+            <li>Working hours, off-hours severity and the IP baseline window (default 30 days) are set per tenant.</li>
+            <li>Every question, answer and anomaly decision is itself written to the Audit Log (feature: <i>CICOD-AI Audit</i>), so the copilot is auditable too.</li>
+            <li>Answers only use entries the asker can already see; a department admin cannot query other departments' logs.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script>
+  // Mock audit entries: real cicod rows from 26/09/2026. IP last octets and emails are masked.
+  const IP = { 'ip-a': '102.219.152.•••', 'ip-a2': '102.219.152.•••', 'ip-b': '102.88.108.•••', 'ip-c': '102.88.166.•••' };
+  const ROWS = [
+    ['r1', '22:14', 'Prince', 'Super Admin', 'ip-a', 'LinkTask', 'Link Task', '1 Task(s): 17569 Linked by a***@cicod.com to #17572'],
+    ['r2', '22:12', 'Prince', 'Super Admin', 'ip-a', 'Tasks', 'Add Remark', 'Comment added on Task ID: 17572'],
+    ['r3', '18:41', 'Praise', 'Approver', 'ip-b', 'Tasks', 'Approve Task with ID 16363', 'Task ID: 16363 was Approved!'],
+    ['r4', '18:41', 'Praise', 'Approver', 'ip-b', 'Tasks', 'Approve Task with ID 15815', 'Task ID: 15815 was Approved!'],
+    ['r5', '18:40', 'Praise', 'Approver', 'ip-b', 'Tasks', 'Approve Task with ID 16363', 'Task ID: 16363 was Approved!'],
+    ['r6', '18:40', 'Praise', 'Approver', 'ip-b', 'Tasks', 'Approve Task with ID 16369', 'Task ID: 16369 was Approved!'],
+    ['r7', '18:39', 'Praise', 'Approver', 'ip-b', 'Tasks', 'Approve Task with ID 15815', 'Task ID: 15815 was Approved!'],
+    ['r8', '18:39', 'Praise', 'Approver', 'ip-b', 'Tasks', 'Approve Task with ID 16369', 'Task ID: 16369 was Approved!'],
+    ['r9', '16:22', 'Prince', 'Super Admin', 'ip-a2', 'Tasks', 'Task assigned with ID: 17572', 'Task ID: 17572 assigned to group Tori'],
+    ['r10', '16:21', 'Prince', 'Super Admin', 'ip-a2', 'Tasks', 'Create Task', 'Task was created with ID: 17572'],
+    ['r11', '16:05', 'Prince', 'Super Admin', 'ip-a2', 'Tasks', 'Approve Task with ID 15708', 'Task ID: 15708 was Approved!'],
+    ['r12', '16:04', 'Prince', 'Super Admin', 'ip-a2', 'Tasks', 'Approve Task with ID 15715', 'Task ID: 15715 was Approved!'],
+    ['r13', '11:30', 'Prince', 'Super Admin', 'ip-a', 'Tasks', 'Approve Task with ID 15684', 'Task ID: 15684 was Approved!'],
+    ['r14', '10:04', 'Prince', 'Super Admin', 'ip-a2', 'Tasks', 'Approve Task with ID 15815', 'Task ID: 15815 was Approved!'],
+    ['r15', '10:02', 'Prince', 'Super Admin', 'ip-a2', 'Tasks', 'Approve Task with ID 16363', 'Task ID: 16363 was Approved!'],
+    ['r16', '09:12', 'api support', 'Integration', 'ip-c', 'Tasks', 'Link policy file', 'Link policy file on Task with ID 17571'],
+  ];
+  const attr = s => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  document.getElementById('al-body').innerHTML = ROWS.map(([row, t, user, role, ipId, feature, action, desc]) => `<tr data-row="${row}" data-time="26/09/2026 ${t}" data-user="${user}" data-role="${role}" data-ip="${IP[ipId]}" data-ip-id="${ipId}" data-feature="${feature}" data-action="${attr(action)}" data-desc="${attr(desc)}">
+    <td>26/09/2026<small>${t}</small></td><td>${user}</td><td>${IP[ipId]}</td><td>${feature}</td><td>${action}</td><td data-desc-cell>${desc}</td></tr>`).join('');
+</script>
+<script src="audit-copilot.js"></script>
+<script>
+  // Host-page wiring: the component cites rows and reports anomaly decisions; the page updates its table.
+  document.addEventListener('ai-audit-cite', e => {
+    document.querySelectorAll('#audit-table tr.al--cited').forEach(r => r.classList.remove('al--cited'));
+    const rows = e.detail.rows.map(id => document.querySelector(`#audit-table tr[data-row="${id}"]`)).filter(Boolean);
+    rows.forEach(r => r.classList.add('al--cited'));
+    if (rows[0]) rows[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+  let inv = 41;
+  document.addEventListener('ai-audit-anomaly', e => {
+    const label = e.detail.action === 'investigate' ? `INV-2026-${String(++inv).padStart(3, '0')}` : 'Reviewed';
+    e.detail.rows.forEach(id => {
+      const cell = document.querySelector(`#audit-table tr[data-row="${id}"] [data-desc-cell]`);
+      if (!cell) return;
+      cell.querySelector('.al__tag')?.remove();
+      cell.insertAdjacentHTML('beforeend', `<span class="g-chip al__tag ${e.detail.action === 'investigate' ? 'g-chip--info' : 'g-chip--ok'}">${label}</span>`);
+    });
+  });
+</script>
+</body>
+</html>

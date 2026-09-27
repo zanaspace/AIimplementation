@@ -1,0 +1,56 @@
+/* Layout for each feature's explainer page: hero, then live placement, how it works,
+   benefits and integration. */
+.doc { max-width: 1280px; margin: 0 auto; padding: 24px 24px 64px; }
+.doc__crumbs { font-size: 12px; color: var(--text-3); margin-bottom: 10px; }
+.doc__crumbs a { color: var(--text-2); text-decoration: none; }
+.doc__hero { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 20px; }
+.doc__hero h1 { font-size: 26px; line-height: 1.2; margin: 6px 0 8px; letter-spacing: -.01em; }
+.doc__hero p { margin: 0; color: var(--text-2); max-width: 760px; }
+.doc__meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.doc__toolbar { display: flex; gap: 8px; align-items: center; }
+
+.doc__section { margin-top: 32px; }
+.doc__section > h2 { font-size: 17px; margin: 0 0 4px; }
+.doc__section > .doc__lede { color: var(--text-2); margin: 0 0 14px; font-size: 13px; }
+
+.doc__placement { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.doc__where { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.doc__where-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.doc__where-item b { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin-bottom: 3px; }
+.doc__where-item code { font-family: var(--mono); font-size: 12px; }
+
+.doc__flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; counter-reset: step; }
+.doc__step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; position: relative; }
+.doc__step::before { counter-increment: step; content: counter(step); display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--ai-100); color: var(--ai-600); font-weight: 700; font-size: 12px; margin-bottom: 8px; }
+.doc__step h4 { margin: 0 0 4px; font-size: 13px; }
+.doc__step p { margin: 0; font-size: 12.5px; color: var(--text-2); }
+
+.doc__benefits { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.doc__benefit { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
+.doc__benefit-kpi { font-size: 22px; font-weight: 700; color: var(--gov-green-600); letter-spacing: -.01em; }
+.doc__benefit h4 { margin: 2px 0 4px; font-size: 13px; }
+.doc__benefit p { margin: 0; font-size: 12.5px; color: var(--text-2); }
+
+.doc__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.doc__code { background: #0f1422; color: #e4e7ec; font-family: var(--mono); font-size: 12px; line-height: 1.55; padding: 14px 16px; border-radius: var(--radius); overflow-x: auto; white-space: pre; margin: 0; }
+.doc__list { margin: 0; padding-left: 18px; color: var(--text-2); font-size: 13px; }
+.doc__list li { margin: 4px 0; }
+.doc__panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+.doc__panel h4 { margin: 0 0 8px; font-size: 13px; }
+
+.doc__toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-2); cursor: pointer; user-select: none; }
+.doc__toggle input { accent-color: var(--ai-500); }
+
+@media (max-width: 800px) {
+  .doc { padding: 16px 16px 48px; }
+  .doc__cols { grid-template-columns: 1fr; }
+  .doc__hero h1 { font-size: 21px; }
+}
+
+.doc__audit { background: #0f1422; color: #9fe3bf; font-family: var(--mono); font-size: 11px; line-height: 1.6; border-radius: var(--radius); padding: 10px 12px; min-height: 64px; }
+.doc__audit:empty::before { content: "CICOD-AI gateway calls will appear here as you use the demo…"; color: #6b7280; }
+.doc__legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--text-2); }
+
+/* Grid children default to min-width:auto; without this, long code blocks push the page wider than a phone screen */
+.doc__cols > *, .doc__where > *, .doc__flow > *, .doc__benefits > *, .doc__panel { min-width: 0; }
+.doc code { overflow-wrap: anywhere; }

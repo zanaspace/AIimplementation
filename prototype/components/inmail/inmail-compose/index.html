@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InMail Smart Compose</title>
+  <link rel="stylesheet" href="../../../shared/tokens.css">
+  <link rel="stylesheet" href="../../../shared/shell.css">
+  <link rel="stylesheet" href="../../../shared/doc.css">
+  <link rel="stylesheet" href="inmail-compose.css">
+  <style>
+    /* Page-only layout for the mock CICOD InMail screen */
+    .im__top {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .im__search {
+      max-width: 420px;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .im__compose {
+      position: relative;
+    }
+
+    .im__menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      z-index: 15;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 6px;
+      min-width: 150px;
+    }
+
+    .im__menu[hidden] {
+      display: none;
+    }
+
+    .im__menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: 0;
+      background: transparent;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .im__menu button:hover {
+      background: var(--gov-green-50);
+    }
+
+    .im__bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin: 12px 0 6px;
+      font-size: 12px;
+    }
+
+    .im__bar-l {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .im__tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .im__tab {
+      text-align: center;
+      padding: 8px;
+      font-size: 14px;
+      color: var(--text-2);
+    }
+
+    .im__tab--on {
+      color: var(--gov-green-600);
+      font-weight: 700;
+      border-bottom: 3px solid var(--gov-green-600);
+    }
+
+    .im__grid {
+      display: grid;
+      grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .im__list {
+      overflow: hidden;
+    }
+
+    .im__row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 4px 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      font-size: 12.5px;
+    }
+
+    .im__row:last-child {
+      border-bottom: 0;
+    }
+
+    .im__row:hover,
+    .im__row--on {
+      background: var(--gov-green-50);
+    }
+
+    .im__row b {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .im__row[data-unread="true"] b::before {
+      content: "● ";
+      color: var(--gov-green-600);
+    }
+
+    .im__row small {
+      color: var(--text-3);
+      white-space: nowrap;
+    }
+
+    .im__row .im__subj {
+      grid-column: 1 / -1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text);
+    }
+
+    .im__row .im__snip {
+      grid-column: 1 / -1;
+      color: var(--text-3);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .im__read {
+      padding: 14px 16px;
+      min-width: 0;
+    }
+
+    .im__read-h {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    .im__read-h h3 {
+      margin: 0;
+      font-size: 16px;
+      overflow-wrap: anywhere;
+    }
+
+    .im__msg {
+      border-top: 1px solid var(--border);
+      padding: 10px 0;
+      font-size: 13px;
+    }
+
+    .im__msg header {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--text-2);
+      font-size: 12px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+
+    .im__msg header b {
+      color: var(--text);
+    }
+
+    .im__msg p {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .im__cmp {
+      margin-top: 14px;
+      padding: 16px;
+    }
+
+    .im__cmp[hidden] {
+      display: none;
+    }
+
+    .im__cmp-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .im__fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .im__full {
+      grid-column: 1 / -1;
+    }
+
+    .im__cmp h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .im__cmp textarea[name=body] {
+      min-height: 220px;
+      font-size: 12.5px;
+    }
+
+    .im__toast {
+      margin: 10px 0 0;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      background: var(--ok-bg);
+      font-size: 13px;
+    }
+
+    .im__toast:empty {
+      display: none;
+    }
+
+    .im__flash {
+      animation: im-flash 1.2s ease;
+    }
+
+    @keyframes im-flash {
+      0% {
+        box-shadow: 0 0 0 3px var(--ai-100);
+        border-color: var(--ai-500);
+      }
+
+      100% {
+        box-shadow: none;
+      }
+    }
+
+    @media (max-width: 1150px) {
+
+      .im__grid,
+      .im__cmp-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .im__fields {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="doc">
+    <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD InMail</div>
+    <header class="doc__hero">
+      <div>
+        <span class="ai-badge">CICOD · M1 · M2 · M5 · Phase 1</span>
+        <h1>InMail Smart Compose &amp; Summaries</h1>
+        <p>Adds three things to CICOD InMail. <b>Summarise</b> gives a TL;DR of a long thread, and <b>Summarise
+            unread</b> does the same for the inbox. <b>Draft from notes</b> turns bullet points into an official letter
+          or circular in the MDA format, with a tone selector. For circulars it <b>suggests the audience</b>
+          (departments and grade levels) and writes a plain-language summary. A <b>pre-send check</b> catches problems
+          such as Secret content going to an external address.</p>
+        <div class="doc__meta"><span class="g-chip">Screen: InMail → Compose / Inbox / Circular</span><span
+            class="g-chip">Component: &lt;ai-mail-assist&gt;</span><span class="g-chip">Endpoint: /inmail/summarise,
+            /inmail/draft, /inmail/presend-check</span></div>
+      </div>
+      <div class="doc__toolbar">
+        <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+        <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+      </div>
+    </header>
+
+    <!-- 1. LIVE PLACEMENT -->
+    <section class="doc__section">
+      <h2>1. Where it goes: live demo</h2>
+      <p class="doc__lede">This is a copy of the <b>CICOD InMail</b> inbox. Click <b>Summarise unread</b>, then
+        <b>Summarise</b> on the open thread. Next click <b>Compose → Circular</b> and type notes such as <i>"remind all
+          staff APER forms due 31 Oct on PMS; supervisors countersign by 7 Nov; training 3 Oct 10am Prince Room"</i>,
+        then click <b>Draft</b>. To see the pre-send check, choose <b>Compose → Message</b>, set Classification to
+        <b>Secret</b>, add <i>a.bello@examplemail.com</i> to To, and press <b>Send</b>.
+      </p>
+      <div id="screen" class="shell" data-app="inmail" data-active="Inbox">
+        <div class="shell__content">
+          <div class="im__top">
+            <input class="g-input im__search" placeholder="Search Mail" aria-label="Search Mail">
+            <div class="im__compose"><button class="g-btn g-btn--primary" type="button" id="im-compose-btn">⊕ Compose
+                ›</button>
+              <div class="im__menu" id="im-menu" hidden><button type="button" data-new="Message">✉
+                  Message</button><button type="button" data-new="Circular">📣 Circular</button></div>
+            </div>
+          </div>
+          <div class="im__bar">
+            <div class="im__bar-l"><input type="checkbox" aria-label="Select all"> <span>⟳</span> <b>PAGES</b> <span
+                class="g-chip">10</span> <span>1 of 1</span></div>
+            <div data-ai-spot="CICOD-AI · Summarise unread"><ai-mail-assist mode="inbox" source="#im-list"></ai-mail-assist>
+            </div>
+          </div>
+          <div class="im__tabs"><span class="im__tab im__tab--on">Primary</span><span
+              class="im__tab">Notification</span></div>
+          <div class="im__toast" id="im-toast" role="status"></div>
+          <div class="im__grid">
+            <div class="g-card im__list" id="im-list">
+              <div class="im__row im__row--on" data-msg data-id="t1" data-unread="true" data-from="Zana"
+                data-subject="RE: Q3 Budget Performance Review, inputs needed by Friday"
+                data-snippet="Please send Administration's Q3 capital spend and a short note on the 29% unspent balance by Friday."
+                data-summary="Please send over the Administration's">
+                <b>Zana</b><small>09:15</small><span class="im__subj">RE: Q3 Budget Performance Review, inputs needed by
+                  Friday</span><span class="im__snip">Please send Administration's Q3 capital spend…</span>
+              </div>
+              <div class="im__row" data-msg data-id="t2" data-unread="true"
+                data-from="Office of the Permanent Secretary" data-subject="Circular: Resumption of 2026 APER exercise"
+                data-snippet="All officers must complete their 2026 APER forms on CICOD PMS by 31 October."
+                data-summary="APER forms are due on CICOD PMS by 31 October. Countersigning officers must sign off by 7 November.">
+                <b>Office of the Permanent Secretary</b><small>10:42</small><span class="im__subj">Circular: Resumption
+                  of 2026 APER exercise</span><span class="im__snip">All officers must complete their 2026 APER
+                  forms…</span>
+              </div>
+              <div class="im__row" data-msg data-id="t3" data-unread="true" data-from="Zana"
+                data-subject="Operations Tour Costs: Lagos "
+                data-snippet="Your hardware replacement request  15:00 today so Finance can pay before Monday."
+                data-summary="Asks you to approve his ₦185,000 Kaduna expense request before 15:00 today.">
+                <b>Zana</b><small>08:02</small><span class="im__subj">Opex: Sale Invoice</span><span
+                  class="im__snip">Your hardware replacement request 15:00…</span>
+              </div>
+              <div class="im__row" data-msg data-id="t4" data-unread="true" data-from="ICT Department"
+                data-subject="Scheduled downtime: CICOD Drive maintenance Saturday 02:00–04:00"
+                data-snippet="CICOD Drive will be unavailable on Saturday from 02:00 to 04:00 for maintenance."
+                data-summary="CICOD Drive is down Saturday 02:00–04:00. No action needed."><b>ICT
+                  Department</b><small>Yesterday</small><span class="im__subj">Scheduled downtime: CICOD Drive
+                  maintenance Saturday 02:00–04:00</span><span class="im__snip">CICOD Drive will be unavailable on
+                  Saturday…</span></div>
+              <div class="im__row" data-msg data-id="t5" data-unread="false" data-from="Superman"
+                data-subject="Printer on 2nd floor: replacement toner approved"
+                data-snippet="Toner has been issued from Central Store."><b>Eyitayo
+                  Abidogun</b><small>Yesterday</small><span class="im__subj">Printer on 2nd floor: replacement toner
+                  approved</span><span class="im__snip">Toner has been issued from Central Store.</span></div>
+              <div class="im__row" data-msg data-id="t6" data-unread="false" data-from="Faith Egbe"
+                data-subject="Leave handover notes" data-snippet="Attached are my handover notes for 1–7 October.">
+                <b>Faith Egbe</b><small>25 Sep</small><span class="im__subj">Leave handover notes</span><span
+                  class="im__snip">Attached are my handover notes for 1–7 October.</span>
+              </div>
+              <div class="im__row" data-msg data-id="t7" data-unread="false" data-from="Ann Nya"
+                data-subject="Minutes: Management meeting 20 Sep"
+                data-snippet="Minutes are saved in General Documents / MINUTES_OF_MEETINGS."><b>Ann Nya</b><small>21
+                  Sep</small><span class="im__subj">Minutes: Management meeting 20 Sep</span><span
+                  class="im__snip">Minutes are saved in General Documents…</span></div>
+            </div>
+            <div class="g-card im__read" id="im-thread">
+              <div class="im__read-h">
+                <h3 data-thread-subject id="im-subject"></h3>
+                <div data-ai-spot="CICOD-AI · Thread TL;DR"><ai-mail-assist mode="thread" source="#im-thread"
+                    id="im-thread-ai"></ai-mail-assist></div>
+              </div>
+              <div id="im-msgs"></div>
+            </div>
+          </div>
+
+          <div class="g-card im__cmp" id="im-cmp" hidden>
+            <h3><span id="im-cmp-title">New Message</span><button class="g-btn g-btn--sm" type="button"
+                id="im-cmp-close">Close</button></h3>
+            <div class="im__cmp-grid">
+              <form id="im-form" onsubmit="return false">
+                <input type="hidden" name="type" value="Message">
+                <div class="im__fields">
+                  <div class="im__full" id="im-to-wrap"><label class="g-label" for="im-to">To</label><input
+                      class="g-input" id="im-to" name="to"
+                      placeholder="Name or @cicod.com address, separated by commas"></div>
+                  <div class="im__full" id="im-aud-wrap" hidden><label class="g-label"
+                      for="im-aud">Audience</label><input class="g-input" id="im-aud" name="audience"
+                      placeholder="Departments and grade levels"></div>
+                  <div><label class="g-label" for="im-cc">Cc</label><input class="g-input" id="im-cc" name="cc"></div>
+                  <div><label class="g-label" for="im-class">Classification</label><select class="g-select"
+                      id="im-class" name="classification">
+                      <option>Public</option>
+                      <option selected>Restricted</option>
+                      <option>Confidential</option>
+                      <option>Secret</option>
+                    </select></div>
+                  <div class="im__full"><label class="g-label" for="im-subj">Subject</label><input class="g-input"
+                      id="im-subj" name="subject"></div>
+                  <div class="im__full"><label class="g-label" for="im-body">Message</label><textarea class="g-textarea"
+                      id="im-body" name="body"></textarea></div>
+                  <div class="im__full" id="im-sum-wrap" hidden><label class="g-label" for="im-sum">Plain-language
+                      summary (shown at the top of the circular)</label><textarea class="g-textarea" id="im-sum"
+                      name="summary" style="min-height:60px"></textarea></div>
+                </div>
+                <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="g-btn g-btn--primary"
+                    type="button" data-send>Send</button><button class="g-btn" type="button">Save draft</button><button
+                    class="g-btn" type="button" data-attachments="0">+ Attach</button></div>
+              </form>
+              <div data-ai-spot="CICOD-AI · Draft from notes + pre-send check"><ai-mail-assist mode="compose" form="#im-form"
+                  sender="Prince Ekpenyong" mda="CICOD" id="im-compose-ai"></ai-mail-assist></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="doc__where" style="margin-top:12px">
+        <div class="doc__where-item"><b>Primary placement</b><code>/CICOD Mail/inbox</code>: header button, thread
+          header, and a right rail in Compose (Message and Circular)</div>
+        <div class="doc__where-item"><b>Also appears in</b>Circular → Draft circulars, Broadcast, and replies in the
+          reading pane ("Draft a reply from this")</div>
+        <div class="doc__where-item"><b>Trigger</b>On click for summaries and drafts. The pre-send check runs on every
+          Send</div>
+        <div class="doc__where-item"><b>Who sees it</b>Every InMail user. Circular audience suggestions only list
+          departments the sender may address</div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="doc__audit" data-audit-log></div>
+      </div>
+    </section>
+
+    <!-- 2. HOW IT WORKS -->
+    <section class="doc__section">
+      <h2>2. How it works</h2>
+      <p class="doc__lede">A sovereign LLM with MDA letter and circular templates, the staff directory for audiences,
+        and a rules + classifier data-loss check before Send.</p>
+      <div class="doc__flow">
+        <div class="doc__step">
+          <h4>Capture</h4>
+          <p>Summaries send the visible messages (sender, date, body). Drafts send the notes, tone and message type. The
+            pre-send check sends recipients, classification, subject, body and attachment count.</p>
+        </div>
+        <div class="doc__step">
+          <h4>Protect</h4>
+          <p>Mail is Restricted by default, so all three calls stay on the sovereign model. NIN and phone numbers are
+            masked before the prompt. Secret threads can be summarised but not sent to any external model.</p>
+        </div>
+        <div class="doc__step">
+          <h4>Draft</h4>
+          <p>The LLM fills the tenant's letter template (Ref, Date, Subject, body, sign-off "For: Permanent Secretary")
+            or the numbered circular template in the chosen tone.</p>
+        </div>
+        <div class="doc__step">
+          <h4>Target</h4>
+          <p>For circulars, topic keywords are matched to the directory: APER goes to every department at GL 07–17,
+            budget notes to Finance, Audit and Planning. The LLM writes a plain-language summary.</p>
+        </div>
+        <div class="doc__step">
+          <h4>Check</h4>
+          <p>Rules and a classifier flag Secret content with non-@cicod.com recipients (this blocks the send), a
+            mentioned but missing attachment, an empty subject, personal numbers and a circular with no audience.</p>
+        </div>
+        <div class="doc__step">
+          <h4>Confirm &amp; learn</h4>
+          <p>Insert, Regenerate, Discard, each Fix and every Send anyway go to <code>/feedback</code>. Overrides are
+            also written to the audit log.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. BENEFITS -->
+    <section class="doc__section">
+      <h2>3. Benefits to this feature</h2>
+      <p class="doc__lede">Numbers are pilot targets. The cicod inbox was empty on 27 Sep 2026, so there is no live
+        baseline yet.</p>
+      <div class="doc__benefits">
+        <div class="doc__benefit">
+          <div class="doc__benefit-kpi">−60%</div>
+          <h4>Writing time (target)</h4>
+          <p>A circular goes from notes to the MDA format in one step, with numbered paragraphs and the sign-off block.
+          </p>
+        </div>
+        <div class="doc__benefit">
+          <div class="doc__benefit-kpi">−50%</div>
+          <h4>Reading time (target)</h4>
+          <p>A four-message budget thread becomes three lines plus "Asked of you".</p>
+        </div>
+        <div class="doc__benefit">
+          <div class="doc__benefit-kpi">0 Secret leaks</div>
+          <h4>Safer sending</h4>
+          <p>Secret content can't reach an external address without the high-severity issue being fixed first.</p>
+        </div>
+        <div class="doc__benefit">
+          <div class="doc__benefit-kpi">+ reach</div>
+          <h4>Circulars reach the right people</h4>
+          <p>Suggested departments and grade levels replace "send to all". The plain-language summary helps junior
+            grades act on it.</p>
+        </div>
+        <div class="doc__benefit">
+          <div class="doc__benefit-kpi">Fewer "see attached"</div>
+          <h4>Fewer follow-ups</h4>
+          <p>Missing attachments and empty subjects are caught before Send.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. INTEGRATION -->
+    <section class="doc__section">
+      <h2>4. How to implement it in InMail</h2>
+      <div class="doc__cols">
+        <div>
+          <div class="doc__panel">
+            <h4>Mount (inbox, thread, compose)</h4>
+            <pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/inmail-compose.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/inmail-compose.js"&gt;&lt;/script&gt;
+
+&lt;ai-mail-assist mode="inbox"  source="#message-list"&gt;&lt;/ai-mail-assist&gt;
+&lt;ai-mail-assist mode="thread" source="#reading-pane"&gt;&lt;/ai-mail-assist&gt;
+&lt;ai-mail-assist mode="compose" form="#compose-form"
+                sender="Prince Ekpenyong" mda="CICOD"&gt;&lt;/ai-mail-assist&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-mail-insert', e =&gt; compose.fill(e.detail));
+document.addEventListener('ai-mail-fix',    e =&gt; compose.set(e.detail.field, e.detail.value));
+document.addEventListener('ai-mail-send',   e =&gt; compose.send({ aiOverride: e.detail.overridden }));
+&lt;/script&gt;</pre>
+          </div>
+          <div class="doc__panel" style="margin-top:12px">
+            <h4>Build steps</h4>
+            <ol class="doc__list">
+              <li>Load the tenant's letter and circular templates (letterhead, Ref format, sign-off) into the gateway's
+                template store.</li>
+              <li>Expose <code>/inmail/summarise</code> and <code>/inmail/draft</code> on the sovereign LLM.</li>
+              <li>Expose the directory (departments, grade levels, head counts) to the audience suggester.</li>
+              <li>Build <code>/inmail/presend-check</code>: domain allow-list, classification rules, attachment and PII
+                detectors.</li>
+              <li>Route Send through the check. High-severity issues block the send; the others allow Send anyway with
+                an audit entry.</li>
+            </ol>
+          </div>
+        </div>
+        <div>
+          <div class="doc__panel">
+            <h4>API contract</h4>
+            <pre class="doc__code">POST /ai/inmail/draft
+{ "type": "Circular", "tone": "formal",
+  "notes": "remind all staff APER forms due 31 Oct…" }
+→ { "subject": "APER forms due 31 Oct on PMS",
+    "body": "CIRCULAR NO. GT/HR/C/2026/014 …",
+    "audience": { "departments": ["Administration", "…"],
+                  "grades": "GL 07–17 …" },
+    "summary": "What this means for you: …" }
+
+POST /ai/inmail/summarise
+{ "scope": "thread", "messages": [{ "from": "Zana", "body": "…" }] }
+→ { "tldr": "…", "points": ["…"],
+    "asks": [{ "who": "Zana", "what": "…", "due": "Friday" }] }
+
+POST /ai/inmail/presend-check
+{ "to": ["a.bello@examplemail.com"], "classification": "Secret",
+  "subject": "…", "body": "…", "attachments": 0 }
+→ { "ok": false, "issues": [{ "severity": "high",
+    "code": "secret-external", "text": "…",
+    "fix": { "field": "to", "value": "", "label": "Remove external recipients" } }] }</pre>
+          </div>
+          <div class="doc__panel" style="margin-top:12px">
+            <h4>Controls</h4>
+            <ul class="doc__list">
+              <li>Feature flag <code>ai.cicod.inmailCompose</code> in Administration, with separate switches for
+                summaries, drafting and the pre-send check.</li>
+              <li>Allowed recipient domains for Secret and Confidential mail are set per tenant. The default is
+                <code>@cicod.com</code> only.
+              </li>
+              <li>Drafts, fixes and every Send anyway are written to the InMail audit log (feature: <i>CICOD-AI Compose</i>).
+              </li>
+              <li>Permission trimming: summaries only include messages in the user's own mailbox. Audience suggestions
+                only list groups the sender may address.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../../../shared/shell.js"></script>
+  <script src="../../../shared/ai-gateway.js"></script>
+  <script src="../../../shared/doc.js"></script>
+  <script src="inmail-compose.js"></script>
+  <script>
+    // Host-page wiring: InMail owns the mailbox and the compose form; the component only suggests.
+    const esc = AIGateway.esc;
+    const THREADS = {
+      t1: {
+        subject: 'RE: Q3 Budget Performance Review, inputs needed by Friday', msgs: [
+          ['Zana', '22 Sep, 11:04', 'Q3 capital releases came to ₦412m and 71% has been spent so far. I am preparing the performance report for Wednesday\'s management meeting.'],
+          ['Prince', '23 Sep, 09:30', 'ICT has spent ₦38m of its ₦45m release. The balance is for the data centre UPS, which is awaiting delivery.'],
+          ['Prince', '24 Sep, 14:12', 'Procurement confirms the UPS contract was signed on 19 Sep. Delivery is expected in October.'],
+          ['Zana', 'Today, 09:15', 'Thanks. Prince, please send Administration\'s Q3 capital spend and a short note explaining the 29% unspent balance by Friday. The draft report is shared with you on CICOD Drive.'],
+        ]
+      },
+      t2: { subject: 'Circular: Resumption of 2026 APER exercise', msgs: [['Office of the Permanent Secretary', 'Today, 10:42', 'All officers must complete their 2026 APER forms on CICOD PMS by 31 October 2026. Countersigning officers should sign off by 7 November. A briefing holds on 3 October at 10:00 in Prince Room.']] },
+      t3: { subject: 'Expense request retirement: Kaduna trip', msgs: [['Zana', 'Today, 08:02', 'Your hardware replacement request has been logged and assigned to the technical support queue. You will receive an update once the unit inspection and asset sign-off are completed']] },
+
+    };
+    const toast = document.getElementById('im-toast');
+    const flash = el => { el.classList.remove('im__flash'); void el.offsetWidth; el.classList.add('im__flash'); };
+
+    function openThread(id) {
+      const t = THREADS[id]; if (!t) return;
+      document.querySelectorAll('#im-list [data-msg]').forEach(r => r.classList.toggle('im__row--on', r.dataset.id === id));
+      document.getElementById('im-subject').textContent = t.subject;
+      document.getElementById('im-msgs').innerHTML = t.msgs.map(([from, date, body]) => `<article class="im__msg" data-thread-msg data-from="${esc(from)}" data-date="${esc(date)}"><header><b>${esc(from)}</b><span>${esc(date)}</span></header><p data-body>${esc(body)}</p></article>`).join('');
+      document.getElementById('im-thread-ai').reset?.();
+    }
+    document.querySelectorAll('#im-list [data-msg]').forEach(r => r.addEventListener('click', () => { r.dataset.unread = 'false'; openThread(r.dataset.id); }));
+    openThread('t1');
+
+    // Compose
+    const cmp = document.getElementById('im-cmp'), form = document.getElementById('im-form'), menu = document.getElementById('im-menu');
+    document.getElementById('im-compose-btn').addEventListener('click', () => { menu.hidden = !menu.hidden; });
+    function openCompose(type) {
+      menu.hidden = true; cmp.hidden = false;
+      form.reset(); form.type.value = type;
+      document.getElementById('im-cmp-title').textContent = type === 'Circular' ? 'New Circular' : 'New Message';
+      document.getElementById('im-to-wrap').hidden = type === 'Circular';
+      document.getElementById('im-aud-wrap').hidden = type !== 'Circular';
+      document.getElementById('im-sum-wrap').hidden = type !== 'Circular';
+      form.dispatchEvent(new CustomEvent('ai-type-change'));
+      cmp.scrollIntoView({ block: 'nearest' });
+    }
+    menu.querySelectorAll('[data-new]').forEach(b => b.addEventListener('click', () => openCompose(b.dataset.new)));
+    document.getElementById('im-cmp-close').addEventListener('click', () => { cmp.hidden = true; });
+
+    document.addEventListener('ai-mail-open', e => { openThread(e.detail.id); toast.textContent = `Opened: ${THREADS[e.detail.id].subject}`; });
+    document.addEventListener('ai-mail-reply', e => {
+      openCompose('Message');
+      form.subject.value = e.detail.subject; form.to.value = 'rebecca.saku@cicod.com';
+      document.getElementById('im-compose-ai').setNotes(e.detail.notes);
+    });
+    document.addEventListener('ai-mail-insert', e => {
+      const d = e.detail;
+      form.subject.value = d.subject; form.body.value = d.body; flash(form.subject); flash(form.body);
+      if (form.type.value === 'Circular') { form.audience.value = d.audience.length ? `${d.audience.join(', ')} · ${d.grades}` : ''; form.summary.value = d.summary; flash(form.audience); flash(form.summary); }
+    });
+    document.addEventListener('ai-mail-fix', e => { const el = form[e.detail.field]; if (el) { el.value = e.detail.value; flash(el); } });
+    document.addEventListener('ai-mail-send', e => {
+      const type = form.type.value;
+      toast.textContent = `${type} "${form.subject.value || '(no subject)'}" sent${e.detail.overridden ? ' with warnings (override logged)' : ''}. It now appears in ${type === 'Circular' ? 'Circular → All Circulars' : 'Sent'}.`;
+      cmp.hidden = true;
+    });
+  </script>
+</body>
+
+</html>

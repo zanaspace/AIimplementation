@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact Dedup and 360</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="contact-dedup.css">
+<style>
+  /* Page-only layout for the mock "Contacts" screen */
+  .cn__bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .cn__bar .shell__title { margin: 0; }
+  .cn__meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 12px 0 8px; font-size: 13px; color: var(--text-2); }
+  .cn__who { display: flex; gap: 8px; align-items: center; }
+  .cn__av { width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--gov-green-100); color: var(--gov-green-600); display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  .cn__who small { display: block; font-size: 11px; color: var(--text-3); }
+  .cn__table tbody tr { cursor: pointer; }
+  .cn__table tbody tr:hover { background: var(--surface-2); }
+  .cn__table tr.is-archived { opacity: .45; text-decoration: line-through; cursor: default; }
+  .cn__table tr.is-merged td { background: var(--ok-bg); }
+  .cn__flash { animation: cn-flash 1.4s ease; }
+  @keyframes cn-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Contacts</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-C1 – E-C4 · Priority 1</span>
+      <h1>Contact Dedup &amp; 360 Summary</h1>
+      <p>The cicod contact list has the same person on several records (<i>Eyitay Abidogun</i> #175, <i>Solomon</i> #165 and #168), junk entries such as <i>"ewdrftgyh drftgy"</i> #174, and Lifecycle Stage set to N/A almost everywhere. This component scans all contacts, proposes merges with the surviving values pre-selected, cleans junk, and gives a one-glance <b>contact 360</b> summary with an inferred lifecycle stage.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Contacts</span><span class="g-chip">Component: &lt;ai-contact-insights&gt;</span><span class="g-chip">Endpoint: /ecms/contacts/quality · /summary</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the ECMS <b>Contacts</b> list with the tenant's real names (emails and phone numbers are masked). Click <b>Review duplicates</b> in the banner, change a surviving value if you like, and press <b>Merge</b>: the extra rows disappear and the total drops. Then open <b>Junk &amp; invalid</b> and archive the junk records. Click any row, for example <i>Rebecca Saku</i>, to see its contact 360 card and apply the inferred stage.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Contacts">
+      <div class="shell__content">
+        <div class="cn__bar">
+          <h2 class="shell__title">Contacts</h2>
+          <button class="g-btn g-btn--primary" type="button">Add Contact</button>
+        </div>
+        <div data-ai-spot="CICOD-AI · Duplicates &amp; data quality + contact 360">
+          <ai-contact-insights source="#contacts-table" total="169"></ai-contact-insights>
+        </div>
+        <div class="cn__meta"><span>Total contacts: <b id="cn-total">169</b></span><button class="g-btn g-btn--sm" type="button">Sync</button></div>
+        <div class="g-card g-table-wrap">
+          <table class="g-table cn__table" id="contacts-table">
+            <thead><tr><th>ID</th><th>Contact</th><th>Email</th><th>Phone Number</th><th>Lifecycle Stage</th></tr></thead>
+            <tbody id="cn-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Banner above the table on <code>/ecms/contacts</code>, with the merge drawer sliding in from the right</div>
+      <div class="doc__where-item"><b>Also appears in</b>Contact Details header (<code>/ecms/contacts/:id?tab=overview</code>) for the 360 card, and Add Contact ("this person may already exist")</div>
+      <div class="doc__where-item"><b>Trigger</b>A nightly tenant-wide scan plus a check on every new contact. The 360 card loads when a row is opened</div>
+      <div class="doc__where-item"><b>Who sees it</b>Contact managers see the banner and can merge. Everyone with contact access sees the 360 card</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Deterministic matching finds the candidates, an LLM judge settles the borderline pairs and writes the reasons, and the officer makes every merge.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>Contact names, created dates, lifecycle stage and hashed email and phone values are sent to <code>/ecms/contacts/quality</code>. The 360 card sends the contact ID only.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Emails and phone numbers never leave ECMS in clear text: the gateway compares salted hashes and shows masked values (t***@gmail.com, +234•••6456). Processing stays on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Match</h4><p>Blocking on surname and phone, then edit distance on names (≤ 2 letters) and exact hash matches. An LLM judge reviews borderline pairs. Junk is scored by keyboard-mash patterns, test keywords and zero activity.</p></div>
+      <div class="doc__step"><h4>Summarise</h4><p>For the 360 card, the contact's tasks, emails and portal visits are summarised into requests, complaints, topic, last contact and sentiment, and rules infer the lifecycle stage.</p></div>
+      <div class="doc__step"><h4>Output</h4><p>A banner with counts, a side-by-side merge view with surviving values pre-picked, a junk list with reasons, and suggested field fixes.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer merges, changes a surviving value, or marks "Not duplicates". Merged records are archived for 30 days. Every decision goes to <code>/feedback</code> and tunes the match threshold.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant, 27 Sep 2026 (169 contacts). Improvement figures are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">3 → 1</div><h4>Single citizen view</h4><p>Solomon's three records become one, so all their requests and history are in one place.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">~100% N/A → set</div><h4>Lifecycle stage filled in</h4><p>Almost every contact shows Lifecycle Stage N/A today. The inferred stage makes segmentation and reporting possible.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&lt; 1%</div><h4>Duplicate rate target</h4><p>Target share of duplicate contacts after the first clean-up and with the check on Add Contact.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−60 s</div><h4>Prep time per call</h4><p>Target: the 360 card replaces opening the Tasks and Notes tabs before talking to a citizen.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Contacts page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/contact-dedup.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/contact-dedup.js"&gt;&lt;/script&gt;
+
+&lt;ai-contact-insights source="#contacts-table"
+                     total="169"&gt;&lt;/ai-contact-insights&gt;
+&lt;table id="contacts-table"&gt;
+  &lt;tr data-contact-id="175" data-name="Eyitay Abidogun"
+      data-email="e***@gmail.com" data-phone="+234•••6456"
+      data-created="22/09/2026" data-stage="N/A"&gt;…&lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-contact-merge', e =&gt;
+  contacts.merge(e.detail.survivorId, e.detail.mergedIds,
+                 e.detail.values));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Add a merge API to ECMS Contacts that moves tasks, notes and history to the survivor and archives the others.</li>
+            <li>Store salted hashes of normalised email and phone for matching.</li>
+            <li>Run the scan nightly and on Add Contact; expose <code>/ecms/contacts/quality</code> on the CICOD-AI Gateway.</li>
+            <li>Add <code>/ecms/contacts/summary</code> over the contact's tasks, InMail threads and portal engagements.</li>
+            <li>Pilot with contact managers: start with groups above 90% confidence, then lower the threshold as acceptance allows.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/contacts/quality
+{ "contacts": [{ "id": "175", "name": "Eyitay Abidogun",
+    "emailHash": "…", "phoneHash": "…",
+    "created": "22/09/2026" }, …] }
+→ 200
+{
+  "model": "cicod-entity-resolver-v1",
+  "groups": [{ "id": "g165", "confidence": 0.95,
+     "reasons": ["Names differ by 1 letter(s)…"],
+     "records": [{ "id": "175" }, { "id": "168" }, { "id": "165" }],
+     "survivor": { "id": "165", "name": "Solomon" } }],
+  "junk": [{ "id": "174", "reason": "Random keyboard characters" }],
+  "invalid": [{ "id": "158", "field": "phone",
+     "fix": { "value": "N/A", "moveTo": "lastName" } }]
+}
+
+POST /ai/ecms/contacts/summary { "id": "176" }
+→ { "requests": 5, "complaints": 2, "sentiment": "negative",
+    "lastContact": "22/09/2026", "stage": "At risk",
+    "summary": "5 requests since July, 2 complaints…" }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.contactDedup</code> in ECMS Settings, on/off per tenant.</li>
+            <li>Groups below 75% confidence are not shown. Auto-merge is never enabled; a person always confirms.</li>
+            <li>Every merge, archive and stage change is written to the ECMS Audit Log (feature: <i>CICOD-AI Contacts</i>) and can be undone for 30 days.</li>
+            <li>Only users with the contact-manager permission can merge or archive. The 360 card only uses tasks the viewer can see.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script>
+  // Mock contacts: real names and IDs from cicod; emails and phones are masked placeholders.
+  const CONTACTS = [
+    ['176', 'Rebecca Saku', '24/09/2026', 'r***@gmail.com', '+234•••1180'],
+    ['175', 'Solomon', '22/09/2026', 'e***@gmail.com', '+234•••6456'],
+    ['174', 'ewdrftgyh drftgy', '22/09/2026', 'd***@yahoo.com', '+234•••0000'],
+    ['173', 'TEST ACCOUNT', '22/09/2026', 't***@cicod.com', '+234•••1234'],
+    ['172', 'Solomon', '16/09/2026', 'a***@cicod.com', '+234•••3321'],
+    ['171', 'Prince', '12/09/2026', 'f***@gmail.com', 'N/A'],
+    ['170', 'Solomon', '11/09/2026', 'a***@gmail.com', '+234•••7719'],
+    ['169', 'Solomon', '02/09/2026', 'n***@gmail.com', '+234•••5502'],
+    ['168', 'Solomon', '26/08/2026', 'e***@gmail.com', '+234•••6456'],
+    ['167', 'Solomon', '11/08/2026', 'a***@yahoo.com', '+234•••9043'],
+    ['166', 'Zana', '25/07/2026', 'a***@gmail.com', '+233•••4410'],
+    ['165', 'Solomon', '23/07/2026', 'e***@cicod.com', '+234•••6456'],
+    ['158', 'Solomon', '20/05/2026', 'm***@gmail.com', 'Cole'],
+  ];
+  const initials = n => n.replace(/^Mr\s+/, '').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  document.getElementById('cn-body').innerHTML = CONTACTS.map(([id, name, created, email, phone]) => `<tr data-contact-id="${id}" data-name="${name}" data-email="${email}" data-phone="${phone}" data-created="${created}" data-stage="N/A">
+    <td>${id}</td><td><div class="cn__who"><span class="cn__av">${initials(name)}</span><span><span data-cell="name">${name}</span><small>${created}</small></span></div></td>
+    <td data-cell="email">${email}</td><td data-cell="phone">${phone}</td><td data-cell="stage">N/A</td></tr>`).join('');
+</script>
+<script src="contact-dedup.js"></script>
+<script>
+  // Host-page wiring: the component emits events, and the page updates its own table.
+  const totalEl = document.getElementById('cn-total');
+  const rowOf = id => document.querySelector(`tr[data-contact-id="${id}"]`);
+  const flash = el => { el.classList.remove('cn__flash'); void el.offsetWidth; el.classList.add('cn__flash'); };
+  document.addEventListener('ai-contact-merge', e => {
+    const { survivorId, mergedIds, values } = e.detail;
+    mergedIds.forEach(id => rowOf(id)?.remove());
+    totalEl.textContent = +totalEl.textContent - mergedIds.length;
+    const row = rowOf(survivorId);
+    if (!row) return;
+    Object.entries(values).forEach(([k, v]) => { const c = row.querySelector(`[data-cell="${k}"]`); if (c) c.textContent = v; if (k !== 'id') row.dataset[k] = v; });
+    row.classList.add('is-merged'); flash(row);
+  });
+  document.addEventListener('ai-contact-archive', e => {
+    e.detail.ids.forEach(id => { const r = rowOf(id); if (r) { r.classList.add('is-archived'); r.querySelector('[data-cell="stage"]').textContent = 'Archived'; } });
+    totalEl.textContent = +totalEl.textContent - e.detail.ids.length;
+  });
+  document.addEventListener('ai-contact-fix', e => {
+    const r = rowOf(e.detail.id); if (!r) return;
+    r.querySelector('[data-cell="phone"]').textContent = e.detail.value; r.dataset.phone = e.detail.value;
+    if (e.detail.moveTo === 'lastName') { const n = r.querySelector('[data-cell="name"]'); n.textContent = `${n.textContent} ${e.detail.moved}`; r.dataset.name = n.textContent; }
+    flash(r);
+  });
+  document.addEventListener('ai-contact-stage', e => {
+    const r = rowOf(e.detail.id); if (!r) return;
+    r.querySelector('[data-cell="stage"]').textContent = e.detail.stage; r.dataset.stage = e.detail.stage; flash(r);
+  });
+</script>
+</body>
+</html>

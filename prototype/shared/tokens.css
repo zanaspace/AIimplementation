@@ -1,0 +1,110 @@
+/* CICOD design tokens, matched to the live cicod UI (green primary, Inter, soft cards).
+   Every component and page uses these variables and never hard-codes colours. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --gov-green-900: #0f3d27;
+  --gov-green-700: #1b5e3c;
+  --gov-green-600: #21714b;   /* primary: login button, active nav */
+  --gov-green-500: #2e8b5e;
+  --gov-green-100: #e6f2eb;   /* active nav background */
+  --gov-green-50:  #f2f8f4;
+
+  /* CICOD-AI accent: kept separate from the brand green so CICOD-AI surfaces are recognisable */
+  --ai-500: #6d4ae8;
+  --ai-600: #5a37d6;
+  --ai-100: #efeafe;
+  --ai-50:  #f7f5ff;
+  --ai-grad: linear-gradient(135deg, #6d4ae8 0%, #2e8b5e 100%);
+
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f9fafb;
+  --border: #e4e7ec;
+  --border-strong: #d0d5dd;
+  --text: #101928;
+  --text-2: #475467;
+  --text-3: #98a2b3;
+
+  --ok: #12b76a;   --ok-bg: #e7f8ef;
+  --warn: #f79009; --warn-bg: #fef4e6;
+  --bad: #f04438;  --bad-bg: #feeceb;
+  --info: #2e90fa; --info-bg: #eaf4ff;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(16,24,40,.06);
+  --shadow: 0 4px 12px rgba(16,24,40,.08);
+  --shadow-lg: 0 12px 32px rgba(16,24,40,.14);
+
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --gov-green-100: #16392a; --gov-green-50: #10251b;
+    --ai-100: #2a2150; --ai-50: #1c1733;
+    --bg: #0c111d; --surface: #141a29; --surface-2: #1a2133;
+    --border: #283045; --border-strong: #354059;
+    --text: #f2f4f7; --text-2: #b4bccb; --text-3: #7a8499;
+    --ok-bg: #0f2e21; --warn-bg: #33240d; --bad-bg: #3a1614; --info-bg: #0f2540;
+    --shadow: 0 4px 12px rgba(0,0,0,.4); --shadow-lg: 0 12px 32px rgba(0,0,0,.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --gov-green-100: #16392a; --gov-green-50: #10251b;
+  --ai-100: #2a2150; --ai-50: #1c1733;
+  --bg: #0c111d; --surface: #141a29; --surface-2: #1a2133;
+  --border: #283045; --border-strong: #354059;
+  --text: #f2f4f7; --text-2: #b4bccb; --text-3: #7a8499;
+  --ok-bg: #0f2e21; --warn-bg: #33240d; --bad-bg: #3a1614; --info-bg: #0f2540;
+  --shadow: 0 4px 12px rgba(0,0,0,.4); --shadow-lg: 0 12px 32px rgba(0,0,0,.5);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: var(--font); font-size: 14px; line-height: 1.5; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--gov-green-600); }
+
+/* Shared primitives that every component may use */
+.g-btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); cursor: pointer; font-weight: 500; font-size: 13px; white-space: nowrap; }
+.g-btn:hover { background: var(--surface-2); }
+.g-btn--primary { background: var(--gov-green-600); border-color: var(--gov-green-600); color: #fff; }
+.g-btn--primary:hover { background: var(--gov-green-700); }
+.g-btn--ai { background: var(--ai-500); border-color: var(--ai-500); color: #fff; }
+.g-btn--ai:hover { background: var(--ai-600); }
+.g-btn--ghost { border-color: transparent; background: transparent; }
+.g-btn--sm { height: 28px; padding: 0 10px; font-size: 12px; }
+.g-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+.g-input, .g-select, .g-textarea { width: 100%; min-height: 36px; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); }
+.g-textarea { min-height: 80px; resize: vertical; }
+.g-input:focus, .g-select:focus, .g-textarea:focus { outline: 2px solid color-mix(in srgb, var(--gov-green-600) 30%, transparent); border-color: var(--gov-green-600); }
+.g-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
+
+.g-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.g-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); }
+.g-chip--ok { background: var(--ok-bg); color: var(--ok); border-color: transparent; }
+.g-chip--warn { background: var(--warn-bg); color: var(--warn); border-color: transparent; }
+.g-chip--bad { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+.g-chip--info { background: var(--info-bg); color: var(--info); border-color: transparent; }
+.g-chip--ai { background: var(--ai-100); color: var(--ai-600); border-color: transparent; }
+
+.g-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.g-table th { text-align: left; font-weight: 600; color: var(--text-2); font-size: 12px; background: var(--surface-2); padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.g-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.g-table-wrap { overflow-x: auto; }
+
+/* The one mark every CICOD-AI surface shares: a sparkle badge */
+.ai-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--ai-100); color: var(--ai-600); font-size: 11px; font-weight: 700; letter-spacing: .02em; }
+.ai-badge::before { content: "✦"; }
+.ai-confidence { font-family: var(--mono); font-size: 11px; color: var(--text-2); }
+.ai-skeleton { background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%); background-size: 200% 100%; animation: ai-shimmer 1.2s infinite; border-radius: 6px; height: 12px; margin: 6px 0; }
+@keyframes ai-shimmer { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .ai-skeleton { animation: none; } }

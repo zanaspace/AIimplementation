@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CICOD-AI Daily Brief</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="daily-brief.css">
+<style>
+  /* Page-only layout for the mock Workspace Home screen */
+  .wh { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+  .wh__date { display: inline-block; font-size: 12px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text-2); margin-bottom: 10px; }
+  .wh__head { display: flex; justify-content: space-between; align-items: center; margin: 18px 0 8px; }
+  .wh__head h3 { margin: 0; font-size: 12px; letter-spacing: .06em; color: var(--text-2); }
+  .wh__head a { font-size: 12.5px; text-decoration: none; }
+  .wh__cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .wh__card { position: relative; border-radius: var(--radius-lg); padding: 16px; color: #fff; min-height: 104px; overflow: hidden; transition: transform .3s; }
+  .wh__card b { display: block; font-size: 24px; line-height: 1.1; }
+  .wh__card span { font-size: 13px; }
+  .wh__card--workflows { background: var(--gov-green-500); }
+  .wh__card--tasks { background: var(--info); }
+  .wh__card--approvals { background: var(--warn); }
+  .wh__badge { display: inline-block; margin-bottom: 8px; background: var(--surface); color: var(--ai-600); font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+  .wh__panel { margin-top: 12px; }
+  .wh__panel-h { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .wh__panel-h h4 { margin: 0; font-size: 14px; }
+  .wh__panel-h p { margin: 0; font-size: 12px; color: var(--text-2); }
+  .wh__row { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 9px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .wh__row:last-child { border-bottom: 0; }
+  .wh__row small { display: block; color: var(--text-3); font-size: 11.5px; }
+  .wh__apps { padding: 14px 16px; }
+  .wh__apps h3 { margin: 0 0 10px; font-size: 12px; letter-spacing: .06em; color: var(--text-2); }
+  .wh__tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; font-size: 11px; color: var(--text-2); }
+  .wh__tile i { display: grid; place-items: center; width: 40px; height: 40px; margin: 0 auto 4px; border-radius: 10px; background: var(--gov-green-100); color: var(--gov-green-600); font-style: normal; font-weight: 700; }
+  .wh__toast { margin-top: 12px; padding: 10px 14px; border-radius: var(--radius); background: var(--ok-bg); font-size: 13px; }
+  .wh__toast:empty { display: none; }
+  .wh__flash { animation: wh-flash 1.4s ease; }
+  @keyframes wh-flash { 0% { box-shadow: 0 0 0 4px var(--ai-100); outline: 2px solid var(--ai-500); } 100% { box-shadow: none; outline: 0; } }
+  @media (max-width: 1100px) { .wh { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .wh__cards { grid-template-columns: 1fr; } .wh__tiles { grid-template-columns: repeat(3, 1fr); } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD / Workspace</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · H1 · H3 · Phase 1</span>
+      <h1>CICOD-AI Daily Brief</h1>
+      <p>Today the Workspace Home greeting only counts things: <i>"You have 0 approvals, 0 tasks and 0 new files awaiting you."</i> The CICOD-AI Daily Brief reads the same approvals, tasks, shared files, meetings and CICOD Mail notifications and turns them into a <b>ranked list of what to do first</b>. It flags SLA breaches, prepares the next meeting and re-orders the <b>Needs you today</b> cards. The user opens, snoozes or accepts every item.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Workspace → Home</span><span class="g-chip">Component: &lt;ai-daily-brief&gt;</span><span class="g-chip">Endpoint: /workspace/daily-brief</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of <b>Workspace → Home</b> for a busy day (4 approvals, 7 tasks, 2 files). The brief loads by itself. Try <b>Rank by → Meetings first</b>, click <b>Why this order?</b>, <b>Snooze</b> an item, then click <b>Apply order to Needs you today</b> and watch the three coloured cards re-order with priority badges.</p>
+    <div id="screen" class="shell" data-app="workspace" data-active="Home">
+      <div class="shell__content">
+        <div class="wh">
+          <div>
+            <span class="wh__date">Sunday, 27 September</span>
+            <div data-ai-spot="CICOD-AI · Daily brief (greeting card)">
+              <ai-daily-brief feed="#db-feed" user="Prince" now="2026-09-27T14:10:00+01:00"></ai-daily-brief>
+            </div>
+            <div class="wh__toast" id="wh-toast" role="status"></div>
+
+            <div class="wh__head"><h3>NEEDS YOU TODAY</h3><a href="#">Open ECMS →</a></div>
+            <div class="wh__cards" id="wh-cards" data-ai-spot="CICOD-AI · Priority order + badges">
+              <div class="wh__card wh__card--workflows" data-card="workflows"><b>3</b><span>My Workflows</span></div>
+              <div class="wh__card wh__card--tasks" data-card="tasks"><b>7</b><span>Tasks Assigned To Me</span></div>
+              <div class="wh__card wh__card--approvals" data-card="approvals"><b>4</b><span>Pending Approvals</span></div>
+            </div>
+
+            <div class="g-card wh__panel" id="wh-notif">
+              <div class="wh__panel-h"><h4>Notifications</h4><p>From your CICOD Mail notifications</p></div>
+              <div class="wh__row"><span>Circular: Resumption of 2026 APER exercise<small>Office of the Permanent Secretary · 10:42</small></span><span class="g-chip g-chip--info">Unread</span></div>
+              <div class="wh__row"><span>RE: Q3 Budget Performance Review, inputs needed by Friday<small>Rebecca Saku · 09:15</small></span><span class="g-chip g-chip--info">Unread</span></div>
+              <div class="wh__row"><span>Scheduled downtime: CICOD Drive maintenance Saturday 02:00–04:00<small>ICT Department · Yesterday</small></span><span class="g-chip">Read</span></div>
+            </div>
+            <div class="g-card wh__panel" id="wh-shared">
+              <div class="wh__panel-h"><h4>Shared with me</h4><p>Files pending your acceptance on CICOD Drive</p></div>
+              <div class="wh__row" data-file="f1"><span>Q3 Budget Performance Report.pdf<small>Rebecca Saku · Finance · Confidential · 25 Sep</small></span><button class="g-btn g-btn--sm" type="button" data-accept>Accept</button></div>
+              <div class="wh__row" data-file="f2"><span>Staff Data Capture batch 3.xlsx<small>Ann Nya · Human Resources · Restricted · 26 Sep</small></span><button class="g-btn g-btn--sm" type="button" data-accept>Accept</button></div>
+            </div>
+            <div class="g-card wh__panel">
+              <div class="wh__panel-h"><h4>Recent documents</h4><p>Across your registry and shared folders</p></div>
+              <div class="wh__row"><span>MINUTES_OF_MEETINGS / Management meeting 20 Sep 2026.docx<small>General Documents · edited 2 days ago</small></span></div>
+              <div class="wh__row"><span>CICOD Drive User Manual.pdf<small>General Documents · opened 4 days ago</small></span></div>
+            </div>
+          </div>
+          <aside>
+            <div class="g-card wh__apps">
+              <h3>OPEN AN APP</h3>
+              <div class="wh__tiles">
+                <div class="wh__tile"><i>E</i>ECMS</div><div class="wh__tile"><i>M</i>InMail</div><div class="wh__tile"><i>C</i>Conference</div><div class="wh__tile"><i>D</i>Drive</div><div class="wh__tile"><i>A</i>Assets</div><div class="wh__tile"><i>P</i>PMS</div>
+              </div>
+            </div>
+            <div class="g-card wh__apps" style="margin-top:12px">
+              <h3>OTHER APPS AND DOWNLOADS</h3>
+              <p style="margin:0;font-size:12.5px;color:var(--text-2)"><b>What's new on CICOD cloud?</b><br>Latest features &amp; improvements, shaped by user feedback. <a href="#">Learn more</a></p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Replaces the greeting card at the top of <code>/admin/tenant</code> (Workspace Home)</div>
+      <div class="doc__where-item"><b>Also appears in</b>The Needs You Today cards (order and badges), a 07:30 InMail digest, and the CICOD mobile app home screen</div>
+      <div class="doc__where-item"><b>Trigger</b>On page load (cached for 15 min), on Regenerate, and when a new approval or task arrives with less than 6 h of SLA left</div>
+      <div class="doc__where-item"><b>Who sees it</b>Every signed-in user. It only covers items the user can already open in ECMS, InMail, Drive and Conference</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">A scoring model decides the order and an LLM writes the sentences. The model never sees more than the user can already open.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The page sends the user's open approvals, tasks and workflows (ECMS), unread CICOD Mail notifications, CICOD Drive files pending acceptance and today's Conference meetings to <code>/workspace/daily-brief</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway sends titles and metadata only, never document bodies. Personal data is redacted. Items marked Secret are summarised on the sovereign model and shown by title only.</p></div>
+      <div class="doc__step"><h4>Score</h4><p>Each item gets a score from SLA hours left (the E-T3 SLA-risk model), the sender's grade level from ECMS Users &amp; Roles, and consequence (repeat complaint, payment, blocks a meeting you chair).</p></div>
+      <div class="doc__step"><h4>Write</h4><p>An LLM writes the headline, one line of reasoning per item and three meeting-prep points taken from the previous minutes in <i>MINUTES_OF_MEETINGS</i>.</p></div>
+      <div class="doc__step"><h4>Show</h4><p>The top 5 items get Open and Snooze. Everything else is grouped into one line. The Needs you today cards get a proposed order and P1/P2/P3 badges.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Open, Snooze, Apply order and Not useful are each sent to <code>/feedback</code>. Items the user opens first teach the ranking weights for that user's role.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant on 27 Sep 2026. Numbers marked "target" are goals for the pilot.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">3 counters → 1 plan</div><h4>From counts to actions</h4><p>The live greeting shows three numbers and six empty panels. The brief says what to do first and why.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−50% missed SLAs</div><h4>Fewer SLA breaches (target)</h4><p>Approvals within 6 h of breach are always ranked first and named in the headline.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&lt; 2 min</div><h4>Time to first action (target)</h4><p>Measured from Home page load to the first Open click on a ranked item.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&gt; 70%</div><h4>SLA-critical items actioned first (target)</h4><p>The H3 KPI: share of days where the first item opened was a P1 item.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0 surprises</div><h4>Better meetings</h4><p>Files a meeting needs are surfaced before it starts, instead of sitting unaccepted in Shared with me.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in Workspace</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Workspace Home)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/daily-brief.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/daily-brief.js"&gt;&lt;/script&gt;
+
+&lt;script type="application/json" id="db-feed"&gt;
+  [ /* approvals, tasks, files, meetings, mail */ ]
+&lt;/script&gt;
+&lt;ai-daily-brief feed="#db-feed" user="Prince"&gt;&lt;/ai-daily-brief&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-brief-reorder', e =&gt;
+  needsYouToday.setOrder(e.detail.order));
+document.addEventListener('ai-brief-open', e =&gt;
+  router.open(e.detail.item.app, e.detail.item.id));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Add a Home feed endpoint that returns the user's open approvals, tasks, workflows, pending shared files, today's meetings and unread notifications, with SLA timers.</li>
+            <li>Reuse the E-T3 SLA-risk model for hours-to-breach. Add grade level from ECMS Users &amp; Roles.</li>
+            <li>Expose <code>/workspace/daily-brief</code> on the CICOD-AI Gateway: score, then LLM wording, then meeting prep from the last minutes.</li>
+            <li>Replace the greeting card with the component. Wire <code>ai-brief-reorder</code> to the Needs you today cards.</li>
+            <li>Pilot with Directors and Heads of Unit for 4 weeks. Compare SLA breaches with a control group.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/workspace/daily-brief
+{
+  "user": "Prince", "now": "2026-09-27T14:10+01:00",
+  "focus": "balanced" | "sla" | "meetings",
+  "snoozed": ["t2"],
+  "items": [{ "id": "a1", "kind": "approval",
+    "title": "Expense request: Ayo Toriola",
+    "app": "ECMS", "slaHours": 0.8,
+    "seniority": 2, "consequence": 3 }]
+}
+→ 200
+{
+  "model": "cicod-brief-v1",
+  "headline": "2 approvals breach SLA today, …",
+  "stats": { "approvals": 4, "tasks": 7, "files": 2, "breaches": 2 },
+  "priorities": [{ "id": "a1", "rank": 1, "risk": "breach",
+                   "due": "SLA in 50 min", "why": "…" }],
+  "meetingPrep": { "title": "…", "time": "15:30", "points": ["…"] },
+  "order": [{ "card": "approvals", "rank": 1,
+              "badge": "P1 · 2 breach SLA today" }]
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.cicod.dailyBrief</code> in Administration, on/off per tenant and per role.</li>
+            <li>SLA-breach threshold defaults to 6 h and is set per tenant. The Needs you today order only changes when the user clicks Apply.</li>
+            <li>Every brief, Open, Snooze and Apply is written to the Workspace audit log (feature: <i>CICOD-AI Daily Brief</i>).</li>
+            <li>Permission trimming: the feed is built with the user's own token, so the brief can't mention an item the user can't open.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="application/json" id="db-feed">
+[
+  { "id": "a1", "kind": "approval", "app": "ECMS", "title": "Expense request: Ayo Toriola, ₦185,000 for Kaduna trip", "from": "Ayo Toriola", "slaHours": 0.8, "dueAt": "15:00", "seniority": 2, "consequence": 3, "consequenceText": "travel is on Monday, so the payment must clear today" },
+  { "id": "a2", "kind": "approval", "app": "ECMS", "title": "Asset request: 3 laptops for ICT from Central Store", "from": "Eyitayo Abidogun", "slaHours": 2.8, "dueAt": "17:00", "seniority": 2, "consequence": 2 },
+  { "id": "a3", "kind": "approval", "app": "ECMS", "title": "Leave request: Faith Egbe, 5 days from 1 Oct", "from": "Faith Egbe", "slaHours": 22, "dueAt": "tomorrow 12:00", "seniority": 1, "consequence": 1 },
+  { "id": "a4", "kind": "approval", "app": "ECMS", "title": "Memo: Q4 procurement plan", "from": "the Permanent Secretary's office", "slaHours": 70, "dueAt": "30 Sep", "seniority": 5, "consequence": 2 },
+  { "id": "t1", "kind": "task", "app": "ECMS · IT Support", "title": "#17572 Printer on 2nd floor not working", "from": "Ann Nya", "slaHours": 3.8, "dueAt": "18:00", "seniority": 1, "consequence": 2 },
+  { "id": "t2", "kind": "task", "app": "ECMS · Complaints", "title": "#17569 Order not delivered, third complaint", "from": "citizen via Portal", "slaHours": 20, "dueAt": "tomorrow 10:00", "seniority": 1, "consequence": 3, "consequenceText": "third follow-up from the same citizen" },
+  { "id": "t-rest", "kind": "task", "app": "ECMS", "title": "5 other tasks", "count": 5, "grouped": true },
+  { "id": "m1", "kind": "meeting", "app": "Conference", "title": "Management meeting (you chair)", "short": "management meeting", "room": "Prince Room", "dueAt": "15:30", "slaHours": 1.3, "attendees": 6, "seniority": 3, "consequence": 2,
+    "prep": ["Last meeting (20 Sep) left 2 actions open: the APER timetable and the complaints backlog plan.", "Complaints queue has 7 open tasks, 1 of them a third follow-up.", "Rebecca Saku will present Q3 budget performance: 71% of the capital release is spent."] },
+  { "id": "f1", "kind": "file", "app": "CICOD Drive", "title": "Q3 Budget Performance Report.pdf", "from": "Rebecca Saku", "slaHours": 30, "seniority": 3, "consequence": 2, "neededFor": "the 15:30 management meeting" },
+  { "id": "f2", "kind": "file", "app": "CICOD Drive", "title": "Staff Data Capture batch 3.xlsx", "from": "Ann Nya", "slaHours": 90, "seniority": 1, "consequence": 1 },
+  { "id": "n1", "kind": "mail", "app": "InMail", "title": "Circular: Resumption of 2026 APER exercise", "from": "the Permanent Secretary's office", "slaHours": 96, "seniority": 5, "consequence": 1, "note": "read before the meeting; no action today" }
+]
+</script>
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="daily-brief.js"></script>
+<script>
+  // Host-page wiring: the component suggests, and the page re-orders its own cards and panels.
+  const toast = document.getElementById('wh-toast');
+  const cards = document.getElementById('wh-cards');
+  const flash = el => { if (!el) return; el.classList.remove('wh__flash'); void el.offsetWidth; el.classList.add('wh__flash'); };
+  const TARGET = { approval: '[data-card="approvals"]', task: '[data-card="tasks"]', file: '#wh-shared', mail: '#wh-notif', meeting: null };
+
+  document.addEventListener('ai-brief-reorder', e => {
+    e.detail.order.forEach(o => {
+      const card = cards.querySelector(`[data-card="${o.card}"]`);
+      card.querySelector('.wh__badge')?.remove();
+      card.insertAdjacentHTML('afterbegin', `<span class="wh__badge">${AIGateway.esc(o.badge)}</span>`);
+      cards.appendChild(card);
+      flash(card);
+    });
+    toast.textContent = 'Needs you today re-ordered by priority.';
+  });
+  document.addEventListener('ai-brief-open', e => {
+    const it = e.detail.item || {};
+    toast.textContent = it.kind === 'meeting' ? `Opening Conference → Prince Room (starts ${it.dueAt}).` : `Opening ${it.app}: ${it.title}`;
+    const sel = it.kind === 'file' ? `[data-file="${it.id}"]` : TARGET[it.kind];
+    if (sel) flash(document.querySelector(sel));
+  });
+  document.addEventListener('ai-brief-snooze', e => { toast.textContent = `Snoozed until ${e.detail.until}: ${e.detail.item.title}`; });
+  document.querySelectorAll('[data-accept]').forEach(b => b.addEventListener('click', () => { b.textContent = 'Accepted ✓'; b.disabled = true; }));
+</script>
+</body>
+</html>

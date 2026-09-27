@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memo Copilot</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="memo-copilot.css">
+<style>
+  /* Page-only layout for the mock "Create Memo" editor */
+  .mc__crumb { font-size: 13px; color: var(--text-3); margin-bottom: 6px; }
+  .mc__crumb b { color: var(--text); }
+  .mc__titlebar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 6px 0 8px; }
+  .mc__title { flex: 1 1 220px; min-width: 0; font-weight: 700; font-size: 15px; background: var(--surface-2); border: 0; border-bottom: 2px solid var(--border-strong); border-radius: 6px 6px 0 0; padding: 6px 8px; }
+  .mc__tabs { display: flex; gap: 16px; border-bottom: 1px solid var(--border); margin-bottom: 12px; font-size: 13px; }
+  .mc__tabs span { padding: 6px 2px; color: var(--text-2); }
+  .mc__tabs .mc__tab--on { color: var(--gov-green-600); border-bottom: 2px solid var(--gov-green-600); font-weight: 600; }
+  .mc { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+  .mc__editor { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); overflow: hidden; min-width: 0; }
+  .mc__toolbar { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 8px 10px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 12px; }
+  .mc__tool { height: 28px; min-width: 28px; padding: 0 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--text-2); cursor: default; }
+  .mc__tool--dd { border-color: var(--border); min-width: 64px; text-align: left; }
+  .mc__sep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; }
+  .mc__canvas { padding: 18px; }
+  .mc__page { background: var(--surface); max-width: 720px; margin: 0 auto; border-radius: 4px; box-shadow: var(--shadow-sm); padding: 18px 28px 28px; }
+  .mc__lh { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; flex-wrap: wrap; border-bottom: 1px dashed var(--border); padding-bottom: 10px; margin-bottom: 14px; font-size: 13px; }
+  .mc__lh-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .04em; }
+  .mc__lh-logo { width: 34px; height: 34px; border-radius: 6px; background: var(--gov-green-600); }
+  .mc__body { min-height: 260px; outline: none; font-size: 13.5px; line-height: 1.6; overflow-wrap: anywhere; }
+  .mc__body:focus { box-shadow: 0 0 0 2px var(--gov-green-100); border-radius: 4px; }
+  .mc__foot { display: flex; justify-content: flex-end; gap: 10px; padding: 6px 12px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-2); background: var(--surface); }
+  .mc__flash { animation: mc-flash 1.4s ease; }
+  @keyframes mc-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+  .mc__settings { margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--text-2); }
+  @media (max-width: 1100px) { .mc { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .mc__page { padding: 14px; } .mc__canvas { padding: 8px; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Memos</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-M1 · E-M2 · Priority 1</span>
+      <h1>Memo Copilot</h1>
+      <p>Turns an officer's bullet points into a properly formatted <b>official executive memo</b>: Ref No, Date, To / Through / From, SUBJECT in capitals, numbered paragraphs, the amount in figures and words, and a Recommendation. Select any sentence to rewrite it as <b>Formal, Concise, For Hon. Minister</b> or with grammar fixed. A chip also suggests the <b>classification</b> (Official / Confidential / Secret, E-M7) and says why. The officer places every change.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Memos → Create Memo</span><span class="g-chip">Component: &lt;ai-memo-copilot&gt;</span><span class="g-chip">Endpoint: /ecms/memo/draft · /rewrite · /classify</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the ECMS <b>Create Memo</b> editor. Try three things: <b>(1)</b> in the right panel click <i>Use example</i> (or type your own points, e.g. <i>"To: Permanent Secretary / 3 laptops for ICT, ₦450k, urgent"</i>), then <i>Draft memo</i> and <i>Replace memo body</i>. <b>(2)</b> Highlight the rough sentence in the memo and pick a rewrite from the pop-up. <b>(3)</b> Type <i>"salary arrears"</i> or <i>"national security"</i> in the memo and watch the classification chip change.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Create Memo">
+      <div class="shell__content">
+        <div class="mc__crumb">Memos › <b>New</b></div>
+        <span class="g-chip g-chip--warn" id="mc-status">Draft</span>
+        <div class="mc__titlebar">
+          <input class="mc__title" id="mc-title" value="Untitled Memo" aria-label="Memo title">
+          <button class="g-btn" type="button" id="mc-save">Save</button>
+          <button class="g-btn g-btn--primary" type="button">Publish</button>
+        </div>
+        <div class="mc__tabs"><span class="mc__tab--on">Edit</span><span>Preview</span><span>Settings</span></div>
+        <div class="mc">
+          <div class="mc__editor">
+            <div class="mc__toolbar" aria-hidden="true">
+              <button class="mc__tool mc__tool--dd" type="button" tabindex="-1">Default ▾</button>
+              <button class="mc__tool mc__tool--dd" type="button" tabindex="-1">12pt ▾</button>
+              <span class="mc__sep"></span>
+              <button class="mc__tool" type="button" tabindex="-1"><b>H</b></button><button class="mc__tool" type="button" tabindex="-1"><b>B</b></button><button class="mc__tool" type="button" tabindex="-1"><i>I</i></button><button class="mc__tool" type="button" tabindex="-1"><u>U</u></button><button class="mc__tool" type="button" tabindex="-1"><s>S</s></button>
+              <span class="mc__sep"></span>
+              <button class="mc__tool" type="button" tabindex="-1">≡</button><button class="mc__tool" type="button" tabindex="-1">•</button><button class="mc__tool" type="button" tabindex="-1">1.</button><button class="mc__tool" type="button" tabindex="-1">⊞</button>
+            </div>
+            <div class="mc__canvas">
+              <div class="mc__page">
+                <div class="mc__lh"><span class="mc__lh-brand"><span class="mc__lh-logo"></span>CICOD</span><span id="mc-date">27/09/2026</span></div>
+                <div class="mc__body" id="memo-body" contenteditable="true" spellcheck="false">
+                  <p>pls be informed that the laptops in ICT unit is very old and we need new ones asap because staff cant work on the CICOD desktop app.</p>
+                </div>
+              </div>
+            </div>
+            <div class="mc__foot"><span>−</span><span>100%</span><span>+</span></div>
+          </div>
+          <div data-ai-spot="CICOD-AI · Draft with CICOD-AI panel">
+            <ai-memo-copilot editor="#memo-body" from="Director (ICT)" mda="CICOD"></ai-memo-copilot>
+          </div>
+        </div>
+        <div class="mc__settings" data-ai-spot="CICOD-AI · Classification in Settings"><b>Settings → Classification:</b><select class="g-select" id="mc-class" style="width:auto"><option>Official</option><option>Confidential</option><option>Secret</option></select><span id="mc-class-note"></span></div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>"✦ Draft with CICOD-AI" panel beside the editor on <code>/ecms/memos/new</code></div>
+      <div class="doc__where-item"><b>Also appears in</b>A floating Rewrite bar on any text selection in the memo editor, and the Classification field under memo Settings</div>
+      <div class="doc__where-item"><b>Trigger</b>"Draft memo" click; text selection in the editor; classification is re-checked 900 ms after typing stops</div>
+      <div class="doc__where-item"><b>Who sees it</b>Anyone who can create memos. Secret-classified text is only processed on the sovereign model</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">An LLM fills the MDA's own memo template. Rewrites use the same model with a style instruction, and a small classifier checks sensitivity as the officer types.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The officer's bullet points, the logged-in user's role and department, and the MDA short name are sent to <code>/ecms/memo/draft</code>. For rewrites, only the selected text is sent.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway redacts NIN, BVN, phone numbers and emails before the prompt. Text the classifier marks Confidential or Secret is only sent to the sovereign model hosted in-country.</p></div>
+      <div class="doc__step"><h4>Draft</h4><p>The model fills the MDA memo template (Ref No, Date, To/Through/From, SUBJECT, numbered paragraphs, Recommendation). A style guide based on the enterprise Rules and Financial Regulations supplies the phrasing ("may wish to kindly approve"). Amounts are written in figures and words by code, not by the model.</p></div>
+      <div class="doc__step"><h4>Rewrite</h4><p>Four fixed styles: Formal, Concise, For Hon. Minister (third person, "the Ministry"), and Fix grammar. Each result lists what changed.</p></div>
+      <div class="doc__step"><h4>Classify</h4><p>A sensitive-content classifier suggests Official, Confidential or Secret and quotes the words that triggered it, so the officer can judge the suggestion.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Nothing enters the memo until the officer clicks Replace, Insert or Apply. Every accept, reject and edit goes to <code>/feedback</code>, and the draft is marked "CICOD-AI-generated" until a human edits and publishes it.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Targets from the CICOD-AI augmentation analysis. Baselines will be measured in the cicod tenant during the pilot.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−70%</div><h4>Drafting time</h4><p>Target: a routine approval memo goes from about 30 minutes of drafting to under 10 minutes of review.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">100%</div><h4>Template compliance</h4><p>Every CICOD-AI draft has a Ref No, Date, To/Through/From, a SUBJECT and a Recommendation, in that order.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fewer returns</div><h4>First-time-right memos</h4><p>Target: fewer memos returned for wrong tone, missing amount-in-words or the wrong "Through" officer.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Mis-classification ↓</div><h4>Right classification</h4><p>Personnel, tender and security content is flagged before it is published to a wide audience.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">1 click</div><h4>Memos for the Hon. Minister</h4><p>A briefing version for the Minister without rewriting the whole memo by hand.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Create Memo page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/memo-copilot.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/memo-copilot.js"&gt;&lt;/script&gt;
+
+&lt;ai-memo-copilot editor="#memo-body"
+                 from="Director (ICT)"
+                 mda="CICOD"&gt;&lt;/ai-memo-copilot&gt;
+
+&lt;script&gt;
+// the editor stays owned by the host page
+on('ai-memo-insert', e =&gt; editor.setContent(e.detail.html, e.detail.mode));
+on('ai-memo-replace-selection', e =&gt; editor.replaceRange(e.detail.range, e.detail.text));
+on('ai-memo-classify', e =&gt; memoSettings.set('classification', e.detail.level));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Collect 3–5 approved memo templates per MDA (letterhead, Ref No pattern, sign-off) and store them in Memo Settings.</li>
+            <li>Write the style guide prompt from the enterprise Rules and Financial Regulations; add number-to-words and Ref No generation as code.</li>
+            <li>Expose <code>/ecms/memo/draft</code>, <code>/rewrite</code> and <code>/classify</code> on the CICOD-AI Gateway.</li>
+            <li>Mount the panel in the Create Memo editor and wire the three events to the editor API and Settings.</li>
+            <li>Pilot with two departments; track how much of each draft is kept unchanged at publish.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/memo/draft
+{ "bullets": "To: Permanent Secretary\n- 3 laptops, ₦450k",
+  "from": "Director (ICT)", "mda": "CICOD" }
+→ 200
+{ "model": "cicod-docgen-v2", "confidence": 0.86,
+  "memo": { "refNo": "CICOD/ICT/MEM/2026/412",
+    "date": "27/09/2026", "to": "The Permanent Secretary",
+    "through": "Director, Finance &amp; Accounts",
+    "from": "Director (ICT)", "subject": "REQUEST FOR …",
+    "paras": ["I write to seek …"], "recommendation": "…" },
+  "notes": ["…"] }
+
+POST /ai/ecms/memo/rewrite
+{ "text": "…", "style": "formal|concise|minister|grammar" }
+→ { "text": "…", "changes": ["…"] }
+
+POST /ai/ecms/memo/classify
+{ "text": "…" }
+→ { "level": "Confidential", "confidence": 0.9,
+    "reason": "…", "signals": ["salary"] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.memoCopilot</code> in ECMS Settings, on/off per tenant.</li>
+            <li>The classification chip only suggests. Publishing a Secret memo still needs the officer's own choice in Settings.</li>
+            <li>Every draft, rewrite and classification decision is written to the ECMS Audit Log (feature: <i>CICOD-AI Memo</i>).</li>
+            <li>The "Through" chain is only suggested from roles the author can address; drafts never include content from files the author can't open.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="memo-copilot.js"></script>
+<script>
+  // Host-page wiring: the component emits events; the page changes its own editor and settings.
+  const body = document.getElementById('memo-body');
+  const flash = el => { el.classList.remove('mc__flash'); void el.offsetWidth; el.classList.add('mc__flash'); };
+  document.addEventListener('ai-memo-insert', e => {
+    if (e.detail.mode === 'replace') body.innerHTML = e.detail.html;
+    else body.insertAdjacentHTML('beforeend', e.detail.html);
+    document.getElementById('mc-title').value = e.detail.memo.subject.charAt(0) + e.detail.memo.subject.slice(1).toLowerCase();
+    document.getElementById('mc-date').textContent = e.detail.memo.date;
+    document.getElementById('mc-status').textContent = 'Draft · CICOD-AI-generated';
+    flash(body);
+    body.dispatchEvent(new Event('input'));
+  });
+  document.addEventListener('ai-memo-replace-selection', e => {
+    const r = e.detail.range;
+    r.deleteContents();
+    const span = document.createElement('span');
+    span.textContent = e.detail.text;
+    r.insertNode(span);
+    flash(span);
+    document.getSelection().removeAllRanges();
+    body.dispatchEvent(new Event('input'));
+  });
+  document.addEventListener('ai-memo-classify', e => {
+    document.getElementById('mc-class').value = e.detail.level;
+    document.getElementById('mc-class-note').textContent = 'Set from CICOD-AI suggestion';
+    document.getElementById('mc-status').textContent = 'Draft · ' + e.detail.level;
+    flash(document.getElementById('mc-class'));
+  });
+</script>
+</body>
+</html>

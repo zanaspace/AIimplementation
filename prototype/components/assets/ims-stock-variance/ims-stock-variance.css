@@ -1,0 +1,61 @@
+/* <ai-variance-explainer>: risk badge per stock count, a summary bar with safe bulk approval,
+   and an explanation drawer. All classes are prefixed `aisv-`. */
+ai-variance-explainer { display: block; }
+
+.aisv { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); overflow: hidden; }
+.aisv__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 14px; background: var(--ai-50); }
+.aisv__title { font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; }
+.aisv__load { flex: 1; min-width: 160px; }
+.aisv__summary { font-size: 12.5px; color: var(--text-2); flex: 1 1 280px; min-width: 0; }
+.aisv__n { font-weight: 600; white-space: nowrap; }
+.aisv__n--low { color: var(--ok); }
+.aisv__n--medium { color: var(--warn); }
+.aisv__n--high { color: var(--bad); }
+.aisv__bar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.aisv__bar-actions .g-btn { white-space: normal; height: auto; min-height: 28px; }
+.aisv__note { font-size: 11px; color: var(--text-3); }
+
+/* Badge that sits in the host table's CICOD-AI Risk cell */
+.aisv__skel { width: 76px; height: 20px; margin: 0; }
+.aisv__badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; border: 1px solid transparent; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.aisv__badge--low { background: var(--ok-bg); color: var(--ok); }
+.aisv__badge--medium { background: var(--warn-bg); color: var(--warn); }
+.aisv__badge--high { background: var(--bad-bg); color: var(--bad); }
+.aisv__badge:hover, .aisv__badge:focus-visible { border-color: currentColor; outline: none; }
+.aisv__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.aisv__why { font-weight: 500; color: var(--ai-600); margin-left: 2px; text-decoration: underline; }
+.aisv__done { font-size: 11px; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+
+/* Drawer */
+.aisv__backdrop { position: fixed; inset: 0; background: color-mix(in srgb, var(--text) 30%, transparent); z-index: 40; }
+.aisv__drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100vw); background: var(--surface); border-left: 1px solid var(--border); box-shadow: var(--shadow-lg); z-index: 41; display: flex; flex-direction: column; }
+.aisv__drawer[hidden], .aisv__backdrop[hidden] { display: none; }
+.aisv__dhead { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aisv__dbody { padding: 14px; overflow-y: auto; flex: 1; font-size: 13px; }
+.aisv__item { font-size: 13px; line-height: 1.5; }
+.aisv__item span { font-size: 12px; color: var(--text-3); }
+.aisv__risk { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 4px; }
+.aisv__h { margin: 14px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aisv__p { margin: 0; color: var(--text-2); font-size: 12.5px; }
+.aisv__muted { color: var(--text-3); }
+
+.aisv__recon { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 12px; font-size: 12.5px; }
+.aisv__rline { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; color: var(--text-2); }
+.aisv__rline span:last-child { font-family: var(--mono); color: var(--text); text-align: right; }
+.aisv__rline--total { border-top: 1px solid var(--border-strong); margin-top: 2px; padding-top: 6px; font-weight: 600; }
+.aisv__rline--ok span:last-child { color: var(--ok); font-weight: 600; }
+.aisv__rline--bad span:last-child { color: var(--bad); font-weight: 600; }
+
+.aisv__pat, .aisv__ev { margin: 0; padding-left: 16px; font-size: 12.5px; color: var(--text-2); }
+.aisv__pat li { margin: 3px 0; color: var(--text); }
+.aisv__pat li::marker { color: var(--bad); }
+.aisv__ev li { margin: 3px 0; }
+
+.aisv__rec { margin-top: 14px; padding: 10px 12px; border-radius: var(--radius); font-size: 12.5px; color: var(--text-2); }
+.aisv__rec b { display: block; color: var(--text); margin-bottom: 2px; }
+.aisv__rec--low { background: var(--ok-bg); }
+.aisv__rec--medium { background: var(--warn-bg); }
+.aisv__rec--high { background: var(--bad-bg); }
+
+.aisv__dact { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.aisv__ok { color: var(--ok); font-weight: 600; }

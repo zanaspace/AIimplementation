@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Dispatch</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="smart-dispatch.css">
+<style>
+  /* Page-only lDorcasut for the mock "Resources" screen */
+  .rs__bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .rs__bar .shell__title { margin: 0; }
+  .rs__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .rs__stat { padding: 12px 14px; }
+  .rs__stat b { display: block; font-size: 20px; }
+  .rs__stat span { font-size: 12px; color: var(--text-2); }
+  .rs__who { display: flex; gap: 8px; align-items: center; }
+  .rs__av { width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--gov-green-100); color: var(--gov-green-600); display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  .rs__who small { display: block; font-size: 11px; color: var(--text-3); }
+  .rs__open { font-weight: 600; color: var(--text-2); }
+  .rs__tools { display: flex; justify-content: flex-end; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .rs__card { margin-top: 14px; }
+  .rs__card h3 { margin: 0; padding: 12px 14px 0; font-size: 14px; }
+  .rs__card p { margin: 2px 0 8px; padding: 0 14px; font-size: 12px; color: var(--text-2); }
+  .rs__flash { animation: rs-flash 1.4s ease; }
+  @keyframes rs-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+  @media (max-width: 600px) { .rs__stats { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Resources</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-U3 · E-U4 · Phase 2</span>
+      <h1>Smart Dispatch &amp; Workload Balancing</h1>
+      <p>Shows how much open work each resource carries against the capacity of their shift, and proposes a <b>Rebalance</b>: move N tasks from one resource to another, with the reason (shared skill, shift, schedule or suspension). Each move is accepted on its own. A <b>Shift validation</b> card flags broken shifts in the tenant, such as <i>"dame 9:30 AM – 4:45 AM"</i>, and suggests a fix.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Resources → All Resources</span><span class="g-chip">Component: &lt;ai-smart-dispatch&gt;</span><span class="g-chip">Endpoint: /ecms/resources/rebalance · /validate-shifts</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of ECMS <b>Resources → All Resources</b> with the tenant's 8 resources (emails and phones masked) and its real shifts below. Click <b>✦ Rebalance</b>, then <b>Accept</b> a move: the open-task counts in the table and the workload bars update. In <b>Shift validation</b>, click <b>Apply fix</b> on "dame" to correct the shift in the table below.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="All Resources">
+      <div class="shell__content">
+        <div class="rs__bar">
+          <h2 class="shell__title">Resources</h2>
+          <button class="g-btn g-btn--primary" type="button">Create</button>
+        </div>
+        <div class="rs__stats">
+          <div class="g-card rs__stat"><b>8</b><span>Total Resources</span></div>
+          <div class="g-card rs__stat"><b>7</b><span>Active Resources</span></div>
+          <div class="g-card rs__stat"><b>1</b><span>Suspended Resources</span></div>
+        </div>
+        <div data-ai-spot="CICOD-AI · Workload + Rebalance + Shift validation">
+          <ai-smart-dispatch source="#resource-table" shifts="#shift-table" target-util="0.85"></ai-smart-dispatch>
+        </div>
+        <div class="g-card rs__card">
+          <div class="rs__tools"><button class="g-btn" type="button">Custom View</button></div>
+          <div class="g-table-wrap">
+            <table class="g-table" id="resource-table">
+              <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Department</th><th>Status</th><th>Last Logged On</th></tr></thead>
+              <tbody id="rs-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="g-card rs__card">
+          <h3>Resource Shifts</h3><p>From Resources → Resource Shift</p>
+          <div class="g-table-wrap">
+            <table class="g-table" id="shift-table">
+              <thead><tr><th>Name</th><th>Start Time</th><th>End Time</th><th>Created By</th><th>Status</th></tr></thead>
+              <tbody id="sh-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Above the resources table on <code>/ecms/resources</code></div>
+      <div class="doc__where-item"><b>Also appears in</b>Resource Shift and Resource Schedule (validation only), Settings → Task Routing (assignment rules), and Dashboard → Resource Utilization</div>
+      <div class="doc__where-item"><b>Trigger</b>Workload loads with the page. Rebalance runs on click, or nightly as a suggestion. Shifts are checked on load and on save</div>
+      <div class="doc__where-item"><b>Who sees it</b>Resource managers and workgroup leads. A move only offers resources in workgroups the manager controls</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">An optimiser does the assignment, rules check the shifts, and the LLM only explains each move in plain English.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>Resources (status, department, resource type and level as skills, shift, schedule) and their open task counts go to <code>/ecms/resources/rebalance</code>. Shifts go to <code>/validate-shifts</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Only names, counts and schedule data are sent; emails and phones are removed by the gateway. Processing stays on the sovereign deployment.</p></div>
+      <div class="doc__step"><h4>Optimise</h4><p>Capacity is shift hours × open tasks per hour. A greedy assignment moves work off suspended and over-capacity resources to the least-loaded resource with a shared skill who is on shift, aiming at 85% utilisation.</p></div>
+      <div class="doc__step"><h4>Validate</h4><p>Rules catch shifts that end before they start, very short early-morning shifts, midnight starts used on day schedules, and shifts over 10 hours. The LLM proposes the most likely intended times.</p></div>
+      <div class="doc__step"><h4>Output</h4><p>Workload bars against capacity, a list of moves with reasons and confidence, tasks that could not be placed, and shift issues with a suggested fix.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The manager accepts or skips each move and fix. Decisions go to <code>/feedback</code>; skipped moves teach the optimiser which skill matches are wrong.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant, 27 Sep 2026. Improvement figures are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0% → measured</div><h4>Real utilisation</h4><p>Resource Utilization shows 0% with 644 tasks assigned. Capacity from shifts gives a number managers can act on.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">1 suspended</div><h4>No orphaned tasks</h4><p>Work still assigned to the suspended resource (Jane) is moved to an active resource with the same skills.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">4 of 6</div><h4>Broken shifts caught</h4><p>"dame" ends before it starts, "SIWES" is 1 h 15 min at 5 AM, "IT" starts at midnight, and "Engineers shift" is 10 h 45 min.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−30%</div><h4>Time to close</h4><p>Target: less waiting in overloaded queues once work is spread by skill and shift.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (All Resources page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/smart-dispatch.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/smart-dispatch.js"&gt;&lt;/script&gt;
+
+&lt;ai-smart-dispatch source="#resource-table"
+    shifts="#shift-table" target-util="0.85"&gt;&lt;/ai-smart-dispatch&gt;
+&lt;tr data-resource="ea" data-name="Dorcas"
+    data-status="active" data-open="96"
+    data-shift="Daily Shift"
+    data-skills="IT Support|Application issue"&gt;…&lt;/tr&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-dispatch-move', e =&gt;
+  tasks.reassign(e.detail.from, e.detail.to,
+                 e.detail.count, e.detail.skill));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Expose open task counts per resource and each resource's skills (resource type, level, workgroups).</li>
+            <li>Add a bulk reassign API that moves the oldest N open tasks matching a skill from one resource to another.</li>
+            <li>Build <code>/ecms/resources/rebalance</code> (optimiser + explanation) and <code>/validate-shifts</code> (rules + suggestion).</li>
+            <li>Validate on save in Resource Shift so new broken shifts cannot be created.</li>
+            <li>Pilot with the IT Support and Complaints workgroups; tune the tasks-per-hour setting from real closure rates.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/resources/rebalance
+{ "resources": [{ "name": "Dorcas",
+     "status": "active", "open": 96, "shift": "Daily Shift",
+     "skills": ["IT Support", "Application issue"] }, …],
+  "shifts": [{ "name": "Daily Shift",
+     "start": "9:30 AM", "end": "4:30 PM" }],
+  "targetUtil": 0.85 }
+→ 200
+{ "model": "cicod-dispatch-optimiser-v1",
+  "moves": [{ "id": "m1", "from": "Jane",
+     "to": "Henry Rufus", "count": 22,
+     "skill": "Complaints", "confidence": 0.93,
+     "reason": "Jane is suspended…" }],
+  "unplaced": [{ "from": "…", "count": 14 }] }
+
+POST /ai/ecms/resources/validate-shifts
+{ "shifts": [{ "name": "dame", "start": "9:30 AM",
+               "end": "4:45 AM" }] }
+→ { "issues": [{ "name": "dame", "severity": "bad",
+      "problem": "Ends before it starts…",
+      "fix": { "start": "9:30 AM", "end": "4:45 PM" } }] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.smartDispatch</code> in ECMS Settings, on/off per tenant.</li>
+            <li>Target utilisation (default 85%) and open tasks per shift hour (default 6) are set per tenant.</li>
+            <li>Every accepted move and shift fix is written to the ECMS Audit Log (feature: <i>CICOD-AI Dispatch</i>) with the tasks moved.</li>
+            <li>Moves only suggest resources in workgroups the manager can assign to; suspended resources are never targets.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script>
+  // Mock resources: real cicod names, departments and status. Emails and phones are masked;
+  // open-task counts and skills are prototype data.
+  const RES = [
+    ['dt', 'DAMOLA TUNDE', '07/09/2026', 'd***@gmail.com', '+234•••2210', 'CICOD Scanner', 'active', 'Never logged on', 3, 'Daily Shift', 'Scanning|Records'],
+    ['nw', 'Zana', '03/09/2026', 'n***@gmail.com', '+234•••5502', 'Administration and Supplies Department', 'active', 'Never logged on', 41, 'Dispatch riders shift', 'Delivery|Supplies'],
+    ['ea', 'Dorcas', '17/07/2026', 'e***@gmail.com', '+234•••6456', 'N/A', 'active', '2026-09-11 13:04:42', 96, 'Daily Shift', 'IT Support|Hardware & Network|Application issue'],
+    ['bb', 'Francis', '03/07/2026', 'b***@gmail.com', '+234•••8841', 'Administration', 'active', 'Never logged on', 18, 'Daily Shift', 'Delivery|Complaints|Application issue'],
+   
+    ['oa', 'Jane', '27/07/2024', 'o***@gmail.com', '+234•••7765', 'Business Analysis', 'suspended', '2024-07-29 11:15:05', 22, 'Daily Shift', 'Complaints|Application issue'],
+   
+    ['uf', 'Grace', '04/06/2024', 'u***@gmail.com', '+234•••9120', 'IT Infrastructure', 'active', 'Never logged on', 64, 'Engineers shift', 'IT Support|Hardware & Network'],
+  ];
+  const ini = n => n.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  document.getElementById('rs-body').innerHTML = RES.map(([id, name, created, email, phone, dept, status, last, open, shift, skills]) => `<tr data-resource="${id}" data-name="${name}" data-dept="${dept}" data-status="${status}" data-open="${open}" data-shift="${shift}" data-skills="${skills.replace(/&/g, '&amp;')}">
+    <td><div class="rs__who"><span class="rs__av">${ini(name)}</span><span>${name}<small>Created: ${created} · <span class="rs__open" data-open-label>${open} open tasks</span></small></span></div></td>
+    <td>${email}</td><td>${phone}</td><td>${dept}</td><td><span class="g-chip ${status === 'active' ? 'g-chip--ok' : 'g-chip--bad'}">${status}</span></td><td>${last}</td></tr>`).join('');
+  const SH = [['testing', '12:00 AM', '1:00 AM', 'api support', 'SUSPENDED'], ['Daily Shift', '9:30 AM', '4:30 PM', 'Ann Nya', 'ACTIVE'], ['dame', '9:30 AM', '4:45 AM', 'Comfort Oladeji', 'ACTIVE'], ['IT', '12:00 AM', '4:00 AM', 'Ann Nya', 'ACTIVE'], ['SIWES', '5:00 AM', '6:15 AM', 'Ann Nya', 'ACTIVE'], ['Engineers shift', '9:00 AM', '7:45 PM', 'Ann Nya', 'ACTIVE'], ['Dispatch riders shift', '9:00 AM', '12:30 PM', 'Ann Nya', 'ACTIVE']];
+  const secs = t => t.replace(/(\d+:\d+)\s/, '$1:00 ');
+  document.getElementById('sh-body').innerHTML = SH.map(([n, s, e, by, st]) => `<tr data-shift-name="${n}" data-start="${s}" data-end="${e}" data-status="${st}"><td>${n}</td><td data-c="start">${secs(s)}</td><td data-c="end">${secs(e)}</td><td>${by}</td><td><span class="g-chip ${st === 'ACTIVE' ? 'g-chip--ok' : 'g-chip--bad'}">${st}</span></td></tr>`).join('');
+</script>
+<script src="smart-dispatch.js"></script>
+<script>
+  // Host-page wiring: the page applies each accepted move and shift fix to its own tables.
+  const flash = el => { el.classList.remove('rs__flash'); void el.offsetWidth; el.classList.add('rs__flash'); };
+  const byName = n => document.querySelector(`#resource-table tr[data-name="${CSS.escape(n)}"]`);
+  document.addEventListener('ai-dispatch-move', e => {
+    const { from, to, count } = e.detail;
+    [[byName(from), -count], [byName(to), count]].forEach(([tr, d]) => {
+      if (!tr) return;
+      tr.dataset.open = +tr.dataset.open + d;
+      tr.querySelector('[data-open-label]').textContent = `${tr.dataset.open} open tasks`;
+      flash(tr);
+    });
+  });
+  document.addEventListener('ai-shift-fix', e => {
+    const tr = document.querySelector(`#shift-table tr[data-shift-name="${CSS.escape(e.detail.name)}"]`);
+    if (!tr) return;
+    tr.dataset.start = e.detail.start; tr.dataset.end = e.detail.end;
+    tr.querySelector('[data-c="start"]').textContent = secs(e.detail.start);
+    tr.querySelector('[data-c="end"]').textContent = secs(e.detail.end);
+    flash(tr);
+  });
+</script>
+</body>
+</html>

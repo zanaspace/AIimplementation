@@ -1,0 +1,53 @@
+/* <ai-invoice-capture>: invoice/waybill OCR, three-way match and payables checks.
+   All classes are prefixed `aiic-` so the component can be dropped into any IMS page. */
+ai-invoice-capture { display: block; min-width: 0; }
+
+.aiic { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.aiic__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aiic__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aiic__body { padding: 12px 14px; }
+.aiic__hint { color: var(--text-3); font-size: 12px; margin: 8px 0; }
+
+.aiic__drop { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 18px 12px; border: 2px dashed var(--border-strong); border-radius: var(--radius); background: var(--surface-2); text-align: center; font-size: 13px; }
+.aiic__drop span { font-size: 12px; color: var(--text-3); }
+.aiic__samples { display: flex; flex-direction: column; gap: 6px; }
+.aiic__samples .g-btn { justify-content: flex-start; white-space: normal; height: auto; min-height: 28px; padding: 4px 10px; text-align: left; }
+
+.aiic__file { display: flex; gap: 10px; align-items: center; font-size: 12px; margin-bottom: 10px; min-width: 0; }
+.aiic__file > div { min-width: 0; }
+.aiic__file b { display: block; font-size: 12.5px; overflow-wrap: anywhere; }
+.aiic__file span { color: var(--text-3); }
+.aiic__thumb { flex: none; width: 34px; height: 42px; border-radius: 4px; border: 1px solid var(--border-strong); background: repeating-linear-gradient(180deg, var(--surface) 0 5px, var(--border) 5px 6px); }
+
+.aiic__kvs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; padding: 10px 12px; background: var(--surface-2); border-radius: var(--radius); }
+.aiic__kv { min-width: 0; font-size: 12.5px; }
+.aiic__kv span { display: block; font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aiic__kv b { overflow-wrap: anywhere; }
+
+.aiic__h { margin: 12px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aiic__line { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; margin-bottom: 8px; display: grid; gap: 8px; }
+.aiic__line--bad { border-color: color-mix(in srgb, var(--bad) 45%, var(--border)); }
+.aiic__line > .g-chip { justify-self: start; }
+.aiic__line-name b { display: block; font-size: 13px; }
+.aiic__line-name span { font-size: 11.5px; color: var(--text-3); }
+.aiic__match { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.aiic__cell { background: var(--surface-2); border-radius: var(--radius-sm); padding: 6px 8px; font-size: 12.5px; min-width: 0; }
+.aiic__cell span { display: block; font-size: 10.5px; color: var(--text-3); }
+.aiic__cell i { display: block; font-style: normal; font-size: 10.5px; color: var(--text-3); }
+.aiic__cell--bad { background: var(--bad-bg); color: var(--bad); }
+.aiic__cell--warn { background: var(--warn-bg); color: var(--warn); }
+.aiic__dock { min-height: 26px; height: 26px; padding: 2px 6px; font-size: 12.5px; }
+
+.aiic__flag { padding: 8px 10px; border-radius: var(--radius); font-size: 12px; margin-bottom: 6px; color: var(--text); }
+.aiic__flag b { margin-right: 4px; }
+.aiic__flag--bad { background: var(--bad-bg); }
+.aiic__flag--warn { background: var(--warn-bg); }
+.aiic__flag--ok { background: var(--ok-bg); }
+
+.aiic__actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.aiic__mode { font-size: 11px; color: var(--text-3); margin-left: auto; align-self: center; }
+
+@media (max-width: 480px) {
+  .aiic__match { grid-template-columns: 1fr 1fr; }
+  .aiic__kvs { grid-template-columns: 1fr; }
+}

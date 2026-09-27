@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Appraisal Copilot</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="pms-appraisal-copilot.css">
+<style>
+  /* Page-only layout for the assumed PMS "Appraisals" screen */
+  .apr { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+  .apr__note { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; margin-bottom: 14px; border-radius: var(--radius); background: var(--warn-bg); color: var(--text); font-size: 12.5px; border: 1px dashed var(--warn); }
+  .apr__card { padding: 16px; min-width: 0; }
+  .apr__card h3 { margin: 0 0 2px; font-size: 14px; }
+  .apr__card > p { margin: 0 0 12px; font-size: 12px; color: var(--text-2); }
+  .apr__info { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .apr__info div { font-size: 12px; color: var(--text-2); }
+  .apr__info b { display: block; font-size: 13px; color: var(--text); }
+  .apr__row { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-top: 10px; background: var(--surface); }
+  .apr__row-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+  .apr__grid { display: grid; grid-template-columns: minmax(0, 1fr) 96px 116px; gap: 10px; }
+  .apr__grid > :first-child { grid-column: 1 / -1; }
+  .apr__note .g-chip { flex-shrink: 0; white-space: nowrap; }
+  .apr__full { grid-column: 1 / -1; }
+  .apr__cites { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .apr__total { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: 13px; }
+  .apr__flash { animation: apr-flash 1.2s ease; }
+  @keyframes apr-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); border-color: var(--ai-500); } 100% { box-shadow: none; } }
+  @media (max-width: 1100px) { .apr { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .apr__grid { grid-template-columns: 1fr 1fr; } .apr__grid > :nth-child(2) { grid-column: 1 / -1; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD / PMS</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · P1 · P2 · Phase 3</span>
+      <h1>Appraisal Copilot</h1>
+      <p>Helps staff write <b>SMART KPIs</b> from a vague objective and drafts the <b>self-appraisal comment</b> from real evidence: completed ECMS tasks, approved memos and closed tickets, each cited. Supervisors get a <b>consistency hint</b> when a rating is higher or lower than the evidence supports. Nothing is saved until the person confirms it.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: PMS → Appraisals (assumed)</span><span class="g-chip">Component: &lt;ai-appraisal-copilot&gt;</span><span class="g-chip">Endpoint: /pms/smart-kpi · /pms/appraisal-draft · /pms/consistency</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede"><b>This screen is assumed.</b> The live CICOD PMS app returned "Unauthorized" for the cicod account on 27 Sep 2026, so the appraisal form below is a plausible layout, not a copy. Try it: in <b>Write SMART KPI</b> type a vague objective such as <i>"improve customer service"</i> or <i>"clear the order backlog by March"</i> and click the button, then <b>Add to my KPIs</b>. Open <b>Draft from evidence</b> to write a cited comment, and <b>Supervisor check</b> to compare ratings with evidence.</p>
+    <div id="screen" class="shell" data-app="pms" data-active="Appraisals">
+      <div class="shell__content">
+        <h2 class="shell__title">Appraisals</h2>
+        <div class="apr__note"><span class="g-chip g-chip--warn">Assumed screen</span><span>The real PMS was not accessible ("Unauthorized"). Field names below are a best guess and will be matched to the live PMS form during build.</span></div>
+        <div class="apr">
+          <form id="appraisal-form" class="g-card apr__card" onsubmit="return false">
+            <h3>2026 Mid-Year Review · Self-appraisal</h3>
+            <p>Set your KPIs, rate yourself from 1 (poor) to 5 (outstanding) and explain each rating</p>
+            <div class="apr__info">
+              <div>Appraisee<b>Prince Ekpenyong</b></div>
+              <div>Department<b>Administration</b></div>
+              <div>Supervisor<b>Ann Nya</b></div>
+              <div>Status<b><span class="g-chip g-chip--info">Draft</span></b></div>
+            </div>
+            <div id="kpi-list"></div>
+            <div class="apr__total"><span>Total weight: <b id="weight-total">0%</b> <span id="weight-note" class="g-chip">must equal 100%</span></span>
+              <span><button class="g-btn g-btn--sm" id="add-row" type="button">+ Add KPI</button> <button class="g-btn g-btn--primary g-btn--sm" type="button">Submit to supervisor</button></span></div>
+          </form>
+          <div data-ai-spot="CICOD-AI · Appraisal copilot (right rail)">
+            <ai-appraisal-copilot source="#appraisal-form" period="2026 Mid-Year Review" staff="Prince Ekpenyong"></ai-appraisal-copilot>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Right rail of <code>/pms/appraisals/:id</code> (assumed route), next to the KPI form</div>
+      <div class="doc__where-item"><b>Also appears in</b>PMS My Goals (SMART KPI writer when setting goals) and Team Reviews (supervisor consistency check across the team)</div>
+      <div class="doc__where-item"><b>Trigger</b>On click only: "Write SMART KPI", "Draft from evidence" or "Check rating consistency". Nothing runs in the background</div>
+      <div class="doc__where-item"><b>Who sees it</b>The appraisee (KPI writer and drafts) and their line supervisor (consistency hints). Evidence is limited to items the appraisee can already see</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">An LLM with a KPI library writes the goal, retrieval over the CICOD unified index finds the evidence, and a simple scoring rule compares ratings with that evidence.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The typed objective, the appraisee's role and department, and for drafts the KPI text, target and period are sent to the <code>/pms/*</code> endpoints.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway removes personal data (NIN, phone, email). Appraisal content is Confidential by default, so it stays on the sovereign model. Evidence retrieval is trimmed to what the appraisee is allowed to see.</p></div>
+      <div class="doc__step"><h4>Write the KPI</h4><p>An LLM rewrites the objective against a KPI library for the MDA. It names a real data source (ECMS queue, Drive folder, Asset store) so the KPI can be measured automatically.</p></div>
+      <div class="doc__step"><h4>Find evidence</h4><p>Hybrid search across closed ECMS tasks, approved memos, Drive activity, Conference attendance and help-desk tickets in the period, ranked by match to each KPI.</p></div>
+      <div class="doc__step"><h4>Draft &amp; check</h4><p>The draft comment cites each evidence item as [1], [2]. The consistency check compares the self-rating with evidence strength and flags gaps of one point or more.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The appraisee edits and inserts, or discards. The supervisor notes or dismisses hints. Every decision goes to <code>/feedback</code> and improves the KPI library and ranking.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">PMS data was not accessible, so these are targets. Evidence figures come from the cicod tenant, 27 Sep 2026.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&gt; 90%</div><h4>Measurable KPIs</h4><p>Target share of KPIs with a named data source and date, up from objectives like "improve customer service".</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−60%</div><h4>Time to complete a self-appraisal</h4><p>Target: evidence is gathered for the officer instead of being searched for across ECMS, Drive and InMail.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">16k tasks</div><h4>Evidence already exists</h4><p>The tenant holds about 16k ECMS tasks plus memos and Drive activity that can back up each rating.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fewer disputes</div><h4>Fairer ratings</h4><p>Supervisors see where a rating and the evidence disagree before the review meeting, not after.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Linked goals</div><h4>Work and performance connect</h4><p>KPIs point to real queues, such as Order Fulfilment with 11,003 open tasks, so progress updates itself.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in PMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Appraisal page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/pms-appraisal-copilot.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/pms-appraisal-copilot.js"&gt;&lt;/script&gt;
+
+&lt;ai-appraisal-copilot source="#appraisal-form"
+    period="2026 Mid-Year Review"
+    staff="Prince Ekpenyong"&gt;&lt;/ai-appraisal-copilot&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-kpi-apply', e =&gt; appraisal.addKpi(e.detail));
+document.addEventListener('ai-appraisal-draft', e =&gt;
+  appraisal.setComment(e.detail.kpiId, e.detail.comment, e.detail.citations));
+document.addEventListener('ai-consistency-result', e =&gt;
+  appraisal.showHints(e.detail.hints));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Get read access to the PMS appraisal and goal APIs and confirm the real field names (this page assumes KPI, target, weight, rating, comment).</li>
+            <li>Build a KPI library per MDA from existing approved goals and the ECMS queue, Drive folder and Asset store catalogues.</li>
+            <li>Expose <code>/pms/smart-kpi</code>, <code>/pms/appraisal-draft</code> and <code>/pms/consistency</code> on the CICOD-AI Gateway, using the unified index for evidence.</li>
+            <li>Mount the component on the appraisal form and wire the three events to the form store.</li>
+            <li>Pilot with one department for one review cycle. Track edit rate on drafts and supervisor agreement with hints.</li>
+            <li>Roll out to Team Reviews for supervisors once hint accuracy is agreed with HR.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/pms/smart-kpi
+{ "objective": "improve customer service",
+  "role": "Officer", "department": "Administration" }
+→ 200
+{ "model": "cicod-kpi-writer-v1",
+  "kpi": "Resolve 90% of tasks in the Complaints queue
+          within 5 working days by 31 Dec 2026",
+  "target": "90% within 5 days", "weight": 25,
+  "source": "ECMS Status Dashboard: Complaints …",
+  "smart": { "Specific": "…", "Measurable": "…", … },
+  "confidence": 0.86 }
+
+POST /ai/pms/appraisal-draft
+{ "kpiId": "k1", "kpi": "…", "target": "…",
+  "staff": "user:1001", "period": "2026-H1" }
+→ 200
+{ "evidence": [{ "ref": "ECMS #17569", "app": "ECMS task",
+                 "title": "…", "date": "12/09/2026",
+                 "outcome": "Closed in 2 days" }],
+  "comment": "… [1] … [2]", "achieved": "Met" }
+
+POST /ai/pms/consistency
+{ "rows": [{ "kpiId": "k3", "rating": 5 }] }
+→ 200
+{ "hints": [{ "kpiId": "k3", "level": "bad",
+              "message": "Rated 5/5 but only 1 evidence item…" }] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.cicod.pmsAppraisalCopilot</code>, on/off per tenant, with separate switches for drafts and supervisor hints.</li>
+            <li>Consistency hints appear only for a rating gap of 1 point or more. Hints are advisory and never change a rating.</li>
+            <li>Every suggestion, insert and dismissal is written to the PMS audit trail (feature: <i>CICOD-AI Appraisal</i>).</li>
+            <li>Evidence is permission-trimmed: only items the appraisee could open themselves. Secret files are never quoted, only counted.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="pms-appraisal-copilot.js"></script>
+<script>
+  // Host-page wiring: the page owns the appraisal form. The component only emits events.
+  const esc = window.AIGateway.esc;
+  const list = document.getElementById('kpi-list');
+  let n = 0;
+  function addRow({ kpi = '', target = '', weight = '', rating = '', comment = '' } = {}, flash) {
+    const id = 'k' + (++n);
+    const row = document.createElement('div');
+    row.className = 'apr__row'; row.dataset.kpiRow = ''; row.dataset.kpiId = id;
+    row.innerHTML = `<div class="apr__row-head"><span>KPI ${n}</span><span data-hint></span></div>
+      <div class="apr__grid">
+        <div><label class="g-label" for="${id}-kpi">KPI</label><input class="g-input" id="${id}-kpi" name="kpi" value="${esc(kpi)}" placeholder="What will you achieve?"></div>
+        <div><label class="g-label" for="${id}-t">Target</label><input class="g-input" id="${id}-t" name="target" value="${esc(target)}"></div>
+        <div><label class="g-label" for="${id}-w">Weight %</label><input class="g-input" id="${id}-w" name="weight" type="number" min="0" max="100" value="${esc(weight)}"></div>
+        <div><label class="g-label" for="${id}-r">Self-rating</label><select class="g-select" id="${id}-r" name="rating">${['', 1, 2, 3, 4, 5].map(v => `<option value="${v}" ${String(v) === String(rating) ? 'selected' : ''}>${v ? v + ' / 5' : 'Select'}</option>`).join('')}</select></div>
+        <div class="apr__full"><label class="g-label" for="${id}-c">Comment</label><textarea class="g-textarea" id="${id}-c" name="comment" placeholder="Explain your rating">${esc(comment)}</textarea><div class="apr__cites" data-cites></div></div>
+      </div>`;
+    list.appendChild(row);
+    if (flash) { row.classList.add('apr__flash'); row.scrollIntoView({ block: 'nearest' }); }
+    total();
+    return row;
+  }
+  function total() {
+    const t = [...list.querySelectorAll('[name=weight]')].reduce((s, i) => s + (Number(i.value) || 0), 0);
+    document.getElementById('weight-total').textContent = t + '%';
+    const note = document.getElementById('weight-note');
+    note.className = 'g-chip ' + (t === 100 ? 'g-chip--ok' : 'g-chip--warn');
+    note.textContent = t === 100 ? 'balanced' : 'must equal 100%';
+  }
+  list.addEventListener('input', total);
+  document.getElementById('add-row').addEventListener('click', () => addRow({}, true));
+
+  addRow({ kpi: 'Resolve complaints on time', target: 'Most complaints', weight: 30, rating: 4 });
+  addRow({ kpi: 'Clear the order backlog', target: 'Reduce backlog', weight: 40, rating: 5 });
+  addRow({ kpi: 'Train staff on ECMS', target: 'All staff', weight: 20, rating: 5 });
+
+  document.addEventListener('ai-kpi-apply', e => {
+    const d = e.detail;
+    addRow({ kpi: d.kpi, target: d.target, weight: d.weight }, true);
+  });
+  document.addEventListener('ai-appraisal-draft', e => {
+    const row = list.querySelector(`[data-kpi-id="${e.detail.kpiId}"]`);
+    if (!row) return;
+    const c = row.querySelector('[name=comment]');
+    c.value = e.detail.comment;
+    row.querySelector('[data-cites]').innerHTML = e.detail.citations.map((r, i) => `<span class="g-chip g-chip--ai">[${i + 1}] ${esc(r)}</span>`).join('');
+    c.classList.remove('apr__flash'); void c.offsetWidth; c.classList.add('apr__flash');
+  });
+  document.addEventListener('ai-consistency-result', e => {
+    const cls = { ok: 'g-chip--ok', warn: 'g-chip--warn', bad: 'g-chip--bad' };
+    const label = { ok: 'Consistent', warn: 'Review', bad: 'Rating above evidence' };
+    e.detail.hints.forEach(h => {
+      const slot = list.querySelector(`[data-kpi-id="${h.kpiId}"] [data-hint]`);
+      if (slot) slot.innerHTML = `<span class="g-chip ${cls[h.level] || ''}">✦ ${esc(label[h.level] || h.level)}</span>`;
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SLA Risk Escalation</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="sla-predictor.css">
+<style>
+  /* Page-only layout for the mock "All Tasks" screen */
+  .at-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .at-head h2 { margin: 0; font-size: 18px; }
+  .at-tabs { display: flex; gap: 4px 16px; flex-wrap: wrap; border-bottom: 1px solid var(--border); margin-bottom: 14px; font-size: 13px; }
+  .at-tabs span { padding: 6px 2px; color: var(--text-2); }
+  .at-tabs .is-on { color: var(--gov-green-600); border-bottom: 2px solid var(--gov-green-600); font-weight: 600; }
+  .at-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .at-stat { border-radius: var(--radius-lg); padding: 18px; color: #fff; }
+  .at-stat b { display: block; font-size: 24px; line-height: 1.1; }
+  .at-stat span { font-size: 12.5px; opacity: .9; }
+  .at-stat--a { background: var(--gov-green-500); } .at-stat--b { background: var(--info); } .at-stat--c { background: var(--warn); }
+  .at-card { padding: 14px; }
+  .at-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+  .at-tools .g-input { max-width: 320px; flex: 1 1 200px; }
+  .at-tools__spacer { flex: 1; }
+  .at-table td { white-space: nowrap; }
+  .at-table td.at-title { white-space: normal; min-width: 200px; }
+  .at-table th.at-risk-h { color: var(--ai-600); }
+  .at-flash { animation: at-flash 1.4s ease; }
+  @keyframes at-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+  .at-log { margin-top: 10px; font-size: 12.5px; color: var(--text-2); display: grid; gap: 6px; }
+  .at-log div { padding: 8px 10px; border-radius: var(--radius); background: var(--ok-bg); overflow-wrap: anywhere; }
+  /* The drawer slot sits over the right of the screen. Higher specificity than the placement outline rule. */
+  .shell .at-drawer[data-ai-spot] { position: absolute; top: 12px; right: 12px; width: min(400px, calc(100% - 24px)); max-height: calc(100% - 24px); overflow-y: auto; z-index: 6; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
+  .shell .at-drawer[hidden] { display: none; }
+  @media (max-width: 700px) { .at-stats { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Tasks</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-T3 · Priority 1</span>
+      <h1>SLA Risk &amp; Smart Escalation</h1>
+      <p>Predicts which open tasks will <b>breach their SLA</b> before it happens. Every row in All Tasks gets a <b>Breach risk</b> badge, and the list can be sorted by risk. Clicking a badge opens a drawer that explains <b>why</b> (time in stage against the median, assignee load, approvals pending). It also proposes an <b>early escalation</b> to the line manager or alternate approver, with a drafted note. The officer edits and sends it.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Tasks → All Tasks</span><span class="g-chip">Component: &lt;ai-sla-risk&gt;</span><span class="g-chip">Endpoint: /ecms/sla-risk</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the ECMS <b>All Tasks</b> screen, with the tenant's real counters and columns. The live list returned no rows, so the nine rows below are realistic examples. Click <b>Sort by risk</b>, then click the red badge on <b>#17578</b> (a refund stuck with an approver). Switch between line manager and alternate approver to see the note change. Edit it if you want, then click <b>Escalate now</b> and watch the row update.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="All Tasks">
+      <div class="shell__content">
+        <div class="at-head"><h2>Tasks</h2><button class="g-btn g-btn--primary g-btn--sm" type="button">+ Create</button></div>
+        <div class="at-tabs"><span>Assigned to me</span><span>Assigned by me</span><span>Created by me</span><span class="is-on">All Tasks</span><span>CC'd to me</span><span>Inactive Tasks</span></div>
+        <div class="at-stats">
+          <div class="at-stat at-stat--a"><b>15883</b><span>Total Tasks</span></div>
+          <div class="at-stat at-stat--b"><b>15395</b><span>Tasks Open</span></div>
+          <div class="at-stat at-stat--c"><b>488</b><span>Tasks In Progress</span></div>
+        </div>
+        <div class="g-card at-card">
+          <div class="at-tools">
+            <select class="g-select" style="width:auto"><option>All Tasks</option></select>
+            <input class="g-input" placeholder="Search ID, title, contact or company name">
+            <span class="at-tools__spacer"></span>
+            <button class="g-btn g-btn--sm" type="button">Sync</button><button class="g-btn g-btn--sm" type="button">Custom View</button><button class="g-btn g-btn--sm" type="button">Filters</button>
+          </div>
+          <div data-ai-spot="CICOD-AI · Risk summary + Sort by risk" style="margin-bottom:10px">
+            <ai-sla-risk table="#tasks-table" drawer="#sla-drawer" horizon-hours="48"></ai-sla-risk>
+          </div>
+          <div class="g-table-wrap">
+            <table class="g-table at-table" id="tasks-table">
+              <thead><tr><th>Task ID</th><th>Title</th><th>Priority</th><th class="at-risk-h" data-ai-spot="CICOD-AI · Breach risk column">✦ Breach risk</th><th>Date Created</th><th>Queue</th><th>Queue Type</th><th>Status</th><th>Assigned To</th><th>Date Assigned</th><th>Awaiting Approval</th><th>Approval Status</th></tr></thead>
+              <tbody>
+                <tr data-task="17580" data-title="Delivery of 40 reams of A4 paper to Kano store" data-queue="Order Fulfilment" data-priority="Normal" data-assignee="Nathan Wilson" data-line-manager="Jane" data-stage-hours="118" data-median-hours="20" data-sla-hours="72" data-load="214" data-approval-days="0">
+                  <td>#17580</td><td class="at-title">Delivery of 40 reams of A4 paper to Kano store</td><td>Normal</td><td data-sla-slot></td><td>22/09/2026</td><td>Order Fulfilment</td><td>Delivery</td><td data-status><span class="g-chip g-chip--info">Open</span></td><td data-assigned>Nathan Wilson</td><td>22/09/2026</td><td>No</td><td>-</td></tr>
+                <tr data-task="17579" data-title="Stock transfer: toner cartridges, Central Store to Secondary Store" data-queue="Order Fulfilment" data-priority="Medium" data-assignee="Nathan Wilson" data-line-manager="Jane" data-stage-hours="10" data-median-hours="20" data-sla-hours="72" data-load="214" data-approval-days="0">
+                  <td>#17579</td><td class="at-title">Stock transfer: toner cartridges, Central Store to Secondary Store</td><td>Medium</td><td data-sla-slot></td><td>26/09/2026</td><td>Order Fulfilment</td><td>Delivery</td><td data-status><span class="g-chip g-chip--info">Open</span></td><td data-assigned>Nathan Wilson</td><td>26/09/2026</td><td>No</td><td>-</td></tr>
+                <tr data-task="17578" data-title="Refund for undelivered order OF-2231" data-queue="Complaints" data-priority="High" data-assignee="Dorcas" data-line-manager="Prince Zana" data-alt-approver="Favour Ifeanacho" data-stage-hours="50" data-median-hours="30" data-sla-hours="72" data-load="38" data-approval-days="2">
+                  <td>#17578</td><td class="at-title">Refund for undelivered order OF-2231</td><td>High</td><td data-sla-slot></td><td>25/09/2026</td><td>Complaints</td><td>Application issue</td><td data-status><span class="g-chip g-chip--warn">In Progress</span></td><td data-assigned>Dorcas</td><td>25/09/2026</td><td>Yes</td><td>Pending</td></tr>
+                <tr data-task="17577" data-title="Vehicle FG-231-KJA brake repair" data-queue="AUTO MOBILE REPAIR" data-priority="Medium" data-assignee="TESTING ACCOUNT" data-line-manager="Prince Ekpenyong" data-stage-hours="30" data-median-hours="48" data-sla-hours="96" data-load="5" data-approval-days="0">
+                  <td>#17577</td><td class="at-title">Vehicle FG-231-KJA brake repair</td><td>Medium</td><td data-sla-slot></td><td>25/09/2026</td><td>AUTO MOBILE REPAIR</td><td>REPAIR DETAILS</td><td data-status><span class="g-chip g-chip--warn">In Progress</span></td><td data-assigned>TESTING ACCOUNT</td><td>25/09/2026</td><td>No</td><td>-</td></tr>
+                <tr data-task="17575" data-title="Email not syncing in Outlook for Admin department" data-queue="IT Support" data-priority="Normal" data-assignee="Dorcas" data-line-manager="Prince Ekpenyong" data-stage-hours="20" data-median-hours="8" data-sla-hours="48" data-load="17" data-approval-days="0">
+                  <td>#17575</td><td class="at-title">Email not syncing in Outlook for Admin department</td><td>Normal</td><td data-sla-slot></td><td>26/09/2026</td><td>IT Support</td><td>Application issue</td><td data-status><span class="g-chip g-chip--info">Open</span></td><td data-assigned>Dorcas</td><td>26/09/2026</td><td>No</td><td>-</td></tr>
+                <tr data-task="17573" data-title="Process gathering: registry digitisation" data-queue="CICOD-AI IMPLEMENTATION" data-priority="Low" data-assignee="Solomon" data-line-manager="Prince Ekpenyong" data-stage-hours="40" data-median-hours="72" data-sla-hours="240" data-load="9" data-approval-days="0">
+                  <td>#17573</td><td class="at-title">Process gathering: registry digitisation</td><td>Low</td><td data-sla-slot></td><td>25/09/2026</td><td>CICOD-AI IMPLEMENTATION</td><td>PROCESS GATHERING</td><td data-status><span class="g-chip g-chip--warn">In Progress</span></td><td data-assigned>Solomon</td><td>25/09/2026</td><td>No</td><td>-</td></tr>
+                <tr data-task="17572" data-title="Printer on 2nd floor not working" data-queue="IT Support" data-priority="High" data-assignee="Dorcas" data-line-manager="Prince Ekpenyong" data-alt-approver="Favour Ifeanacho" data-stage-hours="30" data-median-hours="12" data-sla-hours="48" data-load="17" data-approval-days="1">
+                  <td>#17572</td><td class="at-title">Printer on 2nd floor not working</td><td>High</td><td data-sla-slot></td><td>26/09/2026</td><td>IT Support</td><td>Hardware &amp; Network</td><td data-status><span class="g-chip g-chip--warn">In Progress</span></td><td data-assigned>Dorcas</td><td>26/09/2026</td><td>Yes</td><td>Pending</td></tr>
+                <tr data-task="17569" data-title="Complaint: dispatch rider was rude at delivery" data-queue="Complaints" data-priority="Medium" data-assignee="Application Complaints Handlers" data-line-manager="Prince Zana" data-stage-hours="70" data-median-hours="40" data-sla-hours="120" data-load="60" data-approval-days="0">
+                  <td>#17569</td><td class="at-title">Complaint: dispatch rider was rude at delivery</td><td>Medium</td><td data-sla-slot></td><td>24/09/2026</td><td>Complaints</td><td>Application issue</td><td data-status><span class="g-chip g-chip--info">Open</span></td><td data-assigned>Application Complaints Handlers</td><td>24/09/2026</td><td>No</td><td>-</td></tr>
+                <tr data-task="17566" data-title="Regression run for the Memos module" data-queue="TEST AUTOMATION" data-priority="Normal" data-assignee="Damola Tunde" data-line-manager="Prince Ekpenyong" data-stage-hours="6" data-median-hours="24" data-sla-hours="24" data-load="12" data-approval-days="0">
+                  <td>#17566</td><td class="at-title">Regression run for the Memos module</td><td>Normal</td><td data-sla-slot></td><td>27/09/2026</td><td>TEST AUTOMATION</td><td>Regression</td><td data-status><span class="g-chip g-chip--warn">In Progress</span></td><td data-assigned>Damola Tunde</td><td>27/09/2026</td><td>No</td><td>-</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="at-log" id="esc-log"></div>
+        </div>
+        <div id="sla-drawer" class="at-drawer" data-ai-spot="CICOD-AI · Reason &amp; escalation drawer" hidden></div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>A "Breach risk" column and a Sort by risk control in <code>/ecms/tasks</code> (every tab), plus the reason drawer</div>
+      <div class="doc__where-item"><b>Also appears in</b><b style="display:inline;text-transform:none;letter-spacing:0;font-size:inherit;color:inherit">Workflows → Create Workflow → Escalation</b> step: "Escalate early when CICOD-AI risk is above 70%", as an option next to the fixed time rules. Also the Workspace "Needs you today" list</div>
+      <div class="doc__where-item"><b>Trigger</b>Scores are refreshed every 15 minutes and whenever a task changes stage. The drawer re-explains a task on click</div>
+      <div class="doc__where-item"><b>Who sees it</b>Assignees see their own rows. Supervisors and line managers see their team. Escalation targets are limited to the workflow's approver chain</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">A survival-style gradient-boosted model scores every open task. Its top features are shown as plain reasons, and an LLM drafts the escalation note from them.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>For each open task: queue, priority, SLA from the workflow, hours in the current stage, the assignee's open load from Resources, and approvals pending.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Only task metadata goes to the model. Titles are redacted of personal data (NIN, phone, email) before the note is drafted. Everything runs on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Predict</h4><p>A GBM survival model, trained on roughly 16k historical tasks and their stage timings, estimates the chance of breaching the SLA and the expected hours left.</p></div>
+      <div class="doc__step"><h4>Explain</h4><p>Feature contributions become reasons: time in stage against the queue median, assignee load against the team median, days with the approver, and SLA used.</p></div>
+      <div class="doc__step"><h4>Propose</h4><p>The target comes from the workflow's escalation chain. If an approval is stuck, it goes to the alternate approver. Otherwise it goes to the line manager. An LLM drafts the note.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer sends, edits, snoozes or dismisses the escalation. Each choice and the final outcome (breached or not) are logged via <code>/feedback</code> and used to retrain the model.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant on 27 Sep 2026. Percentages are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">15,395 open</div><h4>Work on the right tasks first</h4><p>All Tasks shows 15,395 open and only 488 in progress. Sorting by risk brings the few tasks about to breach to the top.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">+25 pts</div><h4>SLA compliance</h4><p>Target. Escalating 24 to 48 hours before the deadline instead of after it.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&gt; 70%</div><h4>Escalations that land</h4><p>Target share of escalations that move the task within a day, because each one names the reason and the right person.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">11,003 → visible</div><h4>Overloaded queues exposed</h4><p>Order Fulfilment holds 11,003 open tasks. Assignee load shows up as a reason, so managers can rebalance.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Stuck approvals</div><h4>Approvals keep moving</h4><p>Approvals pending for more than a day are sent to the alternate approver automatically as a proposal.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (All Tasks page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/sla-predictor.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/sla-predictor.js"&gt;&lt;/script&gt;
+
+&lt;ai-sla-risk table="#tasks-table" drawer="#sla-drawer"
+             horizon-hours="48"&gt;&lt;/ai-sla-risk&gt;
+&lt;!-- each row: &lt;tr data-task data-stage-hours …&gt;
+     with an empty &lt;td data-sla-slot&gt; --&gt;
+&lt;div id="sla-drawer" hidden&gt;&lt;/div&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-sla-sort', e =&gt;
+  taskList.reorder(e.detail.order));
+document.addEventListener('ai-sla-escalate', e =&gt;
+  taskApi.escalate(e.detail));   // host owns the task
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Export stage history for all tasks: time entered and left each status, SLA per workflow, assignee, approvals.</li>
+            <li>Train a survival GBM per tenant. Check calibration so "70%" really means 7 in 10 breach.</li>
+            <li>Expose <code>/ecms/sla-risk</code> on the CICOD-AI Gateway (batch scoring and single-task explanation).</li>
+            <li>Add the risk column and drawer to All Tasks. Wire <code>ai-sla-escalate</code> to the existing escalation API.</li>
+            <li>Add the "CICOD-AI early escalation" option to the Workflow → Escalation step.</li>
+            <li>Run in proposal mode for 4 weeks and compare breach rates against queues without it.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/sla-risk
+{ "tasks": [{ "id": "17578", "queue": "Complaints",
+    "priority": "High", "stageHours": 50,
+    "medianHours": 30, "slaHours": 72,
+    "load": 38, "approvalDays": 2 }],
+  "explain": true }
+→ 200
+{ "model": "cicod-sla-gbm-v1",
+  "scores": [{ "id": "17578", "risk": 0.9,
+    "level": "high", "hoursLeft": 22,
+    "features": [{ "label": "Approval pending",
+       "value": "2 days", "baseline": "median 0.5 day",
+       "weight": 0.67 }],
+    "escalation": { "recommended": "alternate approver",
+      "options": [{ "to": "line manager",
+        "name": "Prince Zana", "note": "Dear Ann, …" }] } }] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.slaPredictor</code> in ECMS Settings, on/off per tenant.</li>
+            <li>Risk thresholds (high ≥ 70%, medium ≥ 40%) and the horizon are set per queue. Auto-escalation stays off unless enabled in the Workflow Escalation step.</li>
+            <li>Every score shown, escalation sent, snooze and dismissal is written to the ECMS Audit Log (feature: <i>CICOD-AI SLA Risk</i>).</li>
+            <li>Escalation targets are limited to the workflow's approver chain and the assignee's line manager. Users only see risk for rows they can already see.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="sla-predictor.js"></script>
+<script>
+  // Host-page wiring: the component proposes; the page reorders its own rows and records escalations.
+  const tbody = document.querySelector('#tasks-table tbody');
+  const rowOf = id => tbody.querySelector(`tr[data-task="${id}"]`);
+  const flash = el => { el.classList.remove('at-flash'); void el.offsetWidth; el.classList.add('at-flash'); };
+
+  document.addEventListener('ai-sla-sort', e => {
+    e.detail.order.forEach(id => tbody.appendChild(rowOf(id)));
+  });
+
+  document.addEventListener('ai-sla-escalate', e => {
+    const { taskId, to, name, note } = e.detail;
+    const row = rowOf(taskId);
+    row.querySelector('[data-status]').innerHTML = '<span class="g-chip g-chip--bad">Escalated</span>';
+    const a = row.querySelector('[data-assigned]');
+    a.textContent = `${a.textContent.split(' ↑')[0]} ↑ ${name}`;
+    flash(row);
+    const line = document.createElement('div');
+    line.textContent = `✓ #${taskId} escalated to ${name} (${to}). Note sent: "${note.split('\n').filter(Boolean)[1] || note}"`;
+    document.getElementById('esc-log').prepend(line);
+  });
+</script>
+</body>
+</html>

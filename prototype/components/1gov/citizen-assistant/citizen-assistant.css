@@ -1,0 +1,398 @@
+/* <ai-citizen-assistant>: floating citizen chat intake & tracking assistant.
+   Classes are prefixed `aica__`, `aica--` or `aica`. */
+ai-citizen-assistant { display: block; }
+
+.aica__launch {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 45;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  background: var(--gov-green-600);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  box-shadow: var(--shadow-lg);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .2s, background .2s;
+}
+.aica__launch:hover {
+  background: var(--gov-green-700);
+  transform: translateY(-1px);
+}
+.aica__launch-dot {
+  color: #ffeb3b;
+  font-size: 15px;
+}
+.aica--open .aica__launch {
+  display: none;
+}
+
+.aica {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 50;
+  width: min(400px, calc(100vw - 24px));
+  height: min(600px, calc(100vh - 40px));
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--ai-500) 40%, var(--border));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+}
+.aica[hidden] {
+  display: none;
+}
+
+.aica__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--gov-green-600);
+  color: #fff;
+}
+.aica__head b {
+  display: block;
+  font-size: 13.5px;
+  color: #fff;
+}
+.aica__head small {
+  display: block;
+  font-size: 11px;
+  opacity: .88;
+  color: #fff;
+}
+.aica__lang {
+  background: rgba(255, 255, 255, .18);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: var(--radius);
+  font-size: 11.5px;
+  padding: 3px 6px;
+  outline: none;
+  cursor: pointer;
+}
+.aica__lang option {
+  background: var(--surface);
+  color: var(--text);
+}
+.aica__x {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+.aica__x:hover {
+  background: rgba(255, 255, 255, .22);
+}
+
+.aica__modes {
+  display: flex;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  padding: 4px 6px;
+  gap: 4px;
+}
+.aica__modes button {
+  flex: 1;
+  padding: 6px 4px;
+  font-size: 11.5px;
+  font-family: inherit;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  transition: all .15s;
+}
+.aica__modes button[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--gov-green-700);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.aica__log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg);
+}
+
+.aica__msg {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.aica__msg--bot {
+  max-width: 94%;
+}
+.aica__msg--bot p {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px 12px 12px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+.aica__msg--me {
+  align-self: flex-end;
+  max-width: 86%;
+}
+.aica__msg--me p {
+  margin: 0;
+  padding: 8px 12px;
+  background: var(--gov-green-600);
+  color: #fff;
+  border-radius: 12px 12px 4px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: var(--shadow-sm);
+}
+
+.aica__who {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gov-green-100);
+  color: var(--gov-green-600);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.aica__typing {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px 12px 12px 12px;
+  box-shadow: var(--shadow-sm);
+}
+.aica__note {
+  font-size: 11.5px;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  margin: 4px 0 0;
+  line-height: 1.35;
+}
+
+.aica__card {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--ai-500) 30%, var(--border));
+  border-radius: var(--radius);
+  font-size: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.aica__qrow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 8px;
+}
+.aica__change {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-2);
+  margin-top: 6px;
+}
+.aica__change select {
+  font-size: 11.5px;
+  padding: 2px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  max-width: 180px;
+}
+.aica__kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 12px;
+}
+.aica__kv:last-of-type {
+  border-bottom: none;
+}
+.aica__kv span {
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.aica__kv b {
+  text-align: right;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-weight: 600;
+}
+.aica__consent {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 11px;
+  color: var(--text-2);
+  margin: 10px 0 8px;
+  cursor: pointer;
+  line-height: 1.35;
+}
+.aica__consent input {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.aica__row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.aica__steps {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 11.5px;
+}
+.aica__steps li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 3px 0;
+}
+.aica__steps small {
+  color: var(--text-3);
+}
+.aica__muted {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+.aica__src {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  color: var(--ai-600);
+  font-weight: 500;
+}
+
+.aica__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  max-height: 85px;
+  overflow-y: auto;
+}
+.aica__chip {
+  font-family: inherit;
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--ai-50);
+  border: 1px solid color-mix(in srgb, var(--ai-500) 30%, var(--border));
+  color: var(--ai-700);
+  cursor: pointer;
+  text-align: left;
+  transition: all .15s;
+}
+.aica__chip:hover {
+  background: var(--ai-100);
+  border-color: var(--ai-500);
+}
+
+.aica__composer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.aica__attach {
+  cursor: pointer;
+  padding: 6px 8px;
+  font-size: 16px;
+  border-radius: var(--radius);
+  color: var(--text-2);
+  display: grid;
+  place-items: center;
+  user-select: none;
+}
+.aica__attach:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.aica__input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 13px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+}
+.aica__input:focus {
+  border-color: var(--gov-green-500);
+}
+.aica__send {
+  padding: 6px 14px;
+  font-size: 12.5px;
+}
+
+@media (max-width: 600px) {
+  .aica {
+    width: calc(100vw - 20px);
+    right: 10px;
+    bottom: 10px;
+    height: calc(100vh - 20px);
+    max-height: 560px;
+  }
+  .aica__launch {
+    right: 12px;
+    bottom: 12px;
+  }
+}

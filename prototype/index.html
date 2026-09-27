@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CICOD CICOD-AI Components</title>
+  <link rel="stylesheet" href="shared/tokens.css">
+  <link rel="stylesheet" href="shared/doc.css">
+  <style>
+    .hub__intro {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .hub__stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .hub__stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+    }
+
+    .hub__stat b {
+      display: block;
+      font-size: 22px;
+      letter-spacing: -.01em;
+    }
+
+    .hub__stat span {
+      font-size: 12px;
+      color: var(--text-2);
+    }
+
+    .hub__filters {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 6px 0 12px;
+    }
+
+    .hub__filters button[aria-pressed="true"] {
+      background: var(--gov-green-600);
+      border-color: var(--gov-green-600);
+      color: #fff;
+    }
+
+    .hub__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .hub__card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: inherit;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    .hub__card:hover {
+      border-color: var(--ai-500);
+      box-shadow: var(--shadow);
+    }
+
+    .hub__card h3 {
+      margin: 0;
+      font-size: 14.5px;
+    }
+
+    .hub__card p {
+      margin: 0;
+      font-size: 12.5px;
+      color: var(--text-2);
+      flex: 1;
+    }
+
+    .hub__row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .hub__screen {
+      font-size: 11.5px;
+      color: var(--text-3);
+    }
+
+    .hub__tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ai-600);
+    }
+
+    @media (max-width: 900px) {
+      .hub__intro {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="doc">
+    <header class="doc__hero">
+      <div>
+        <span class="ai-badge">CICOD Cloud · CICOD-AI Implementation</span>
+        <h1>CICOD-AI components: where they go, how they work, what they deliver</h1>
+        <p>Each CICOD-AI feature is a self-contained component in its own folder, with its own CSS and JS. Each demo
+          page shows the component <b>inside a copy of the real CICOD screen</b>, followed by how it works, its
+          benefits, and the integration contract. ECMS comes first, then the rest of CICOD.</p>
+      </div>
+      <div class="doc__toolbar"><button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button></div>
+    </header>
+
+    <div class="hub__intro">
+
+
+    </div>
+    <div class="hub__stats" id="stats"></div>
+    </div>
+
+    <div class="hub__filters" role="group" aria-label="Filter by phase">
+      <button class="g-btn g-btn--sm" data-phase="all" aria-pressed="true" type="button">All phases</button>
+      <button class="g-btn g-btn--sm" data-phase="1" aria-pressed="false" type="button">Phase 1 · 0–90 days</button>
+      <button class="g-btn g-btn--sm" data-phase="2" aria-pressed="false" type="button">Phase 2 · 3–6 months</button>
+      <button class="g-btn g-btn--sm" data-phase="3" aria-pressed="false" type="button">Phase 3 · 6–12 months</button>
+    </div>
+
+    <section class="doc__section" style="margin-top:8px">
+      <h2>Part 1: ECMS</h2>
+      <p class="doc__lede">Tasks, memos, workflows, forms, dashboards, contacts, audit and resources.</p>
+      <div class="hub__grid" id="grid-ecms"></div>
+    </section>
+
+    <section class="doc__section">
+      <h2>Part 2: CICOD Drive</h2>
+      <p class="doc__lede">Document Assistant, Smart Upload, and Historic Files OCR.</p>
+      <div class="hub__grid" id="grid-drive"></div>
+    </section>
+
+    <section class="doc__section">
+      <h2>Part 3: CICOD Assets</h2>
+      <p class="doc__lede">Invoice Capture, Stock-Take Variance Explainer, and Registry Guardian.</p>
+      <div class="hub__grid" id="grid-assets"></div>
+    </section>
+
+    <section class="doc__section">
+      <h2>Part 4: CICOD Inmail</h2>
+      <p class="doc__lede">InMail Smart Compose & Summaries.</p>
+      <div class="hub__grid" id="grid-inmail"></div>
+    </section>
+
+    <section class="doc__section">
+      <h2>Part 5: CICOD suite</h2>
+      <p class="doc__lede">Workspace, Conference, the Paperless Service Portal and PMS.</p>
+      <div class="hub__grid" id="grid-cicod"></div>
+    </section>
+
+  </main>
+  <script src="shared/registry.js"></script>
+  <script src="shared/doc.js"></script>
+  <script>
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const phaseChip = p => `<span class="g-chip ${p === 1 ? 'g-chip--ok' : p === 2 ? 'g-chip--info' : ''}">Phase ${p}</span>`;
+    function render(phase) {
+      ['ecms', 'drive', 'assets', 'inmail', 'cicod'].forEach(g => {
+        document.getElementById('grid-' + g).innerHTML = AI_REGISTRY
+          .filter(c => c.group === g && (phase === 'all' || String(c.phase) === phase))
+          .map(c => `<a class="hub__card" href="components/${c.group}/${c.slug}/index.html">
+            <div class="hub__row"><span class="ai-badge">${esc(c.code)}</span>${phaseChip(c.phase)}${c.app ? `<span class="g-chip">${esc(c.app)}</span>` : ''}</div>
+            <h3>${esc(c.title)}</h3>
+            <p>${esc(c.summary)}</p>
+            <div class="hub__screen">📍 ${esc(c.screen)}</div>
+            <div class="hub__tag">${esc(c.tag)}</div>
+          </a>`).join('') || '<p class="doc__lede">No components in this phase.</p>';
+      });
+    }
+    const count = p => AI_REGISTRY.filter(c => c.phase === p).length;
+    document.getElementById('stats').innerHTML =
+      `<div class="hub__stat"><b>${AI_REGISTRY.length}</b><span>CICOD-AI components</span></div>
+     <div class="hub__stat"><b>${AI_REGISTRY.filter(c => c.group === 'ecms').length}</b><span>in ECMS</span></div>
+     <div class="hub__stat"><b>${count(1)}</b><span>Phase 1 (0–90 days)</span></div>`;
+    document.querySelectorAll('[data-phase]').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('[data-phase]').forEach(x => x.setAttribute('aria-pressed', x === b));
+      render(b.dataset.phase);
+    }));
+    render('all');
+  </script>
+</body>
+
+</html>

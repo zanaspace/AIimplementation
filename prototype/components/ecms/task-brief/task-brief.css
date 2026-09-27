@@ -1,0 +1,46 @@
+/* <ai-task-brief>: Brief card (mode="brief") and Suggest reply bar (mode="reply") for the ECMS task page.
+   All classes are prefixed `aitb-` so the component can be dropped into any ECMS page. */
+ai-task-brief { display: block; }
+
+.aitb { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.aitb__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aitb__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aitb__body { padding: 12px 14px; }
+
+.aitb__lines { margin: 0; padding-left: 18px; font-size: 13px; color: var(--text); }
+.aitb__lines li { margin: 3px 0; overflow-wrap: anywhere; }
+.aitb__lines li::marker { color: var(--ai-500); font-weight: 700; }
+
+.aitb__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.aitb__box { padding: 10px 12px; border-radius: var(--radius); font-size: 12.5px; color: var(--text-2); min-width: 0; overflow-wrap: anywhere; }
+.aitb__box b { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; color: var(--text); }
+.aitb__box--block { background: var(--warn-bg); }
+.aitb__box--you { background: var(--info-bg); }
+
+.aitb__next { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.aitb__next-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aitb__chip { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--ai-500); background: var(--ai-100); color: var(--ai-600); font-weight: 600; font-size: 12.5px; cursor: pointer; text-align: left; }
+.aitb__chip:hover { background: var(--ai-500); color: #fff; }
+.aitb__chip--done, .aitb__chip--done:hover { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); cursor: default; }
+.aitb__next-hint { font-size: 11.5px; color: var(--text-3); }
+
+.aitb__actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.aitb__mode { font-size: 11px; color: var(--text-3); margin-left: auto; align-self: center; }
+
+/* Reply mode */
+.aitb--reply { box-shadow: none; }
+.aitb__bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; background: var(--ai-50); }
+.aitb__tone { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); margin-left: auto; }
+.aitb__tone .g-select { width: auto; min-height: 28px; padding: 3px 8px; font-size: 12px; }
+.aitb__draft { padding: 10px 12px; border-top: 1px solid var(--border); }
+.aitb__draft-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aitb__draft-text { margin: 6px 0; padding: 10px 12px; background: var(--surface-2); border: 1px dashed var(--border-strong); border-radius: var(--radius); font-family: var(--font); font-size: 13px; white-space: pre-wrap; overflow-wrap: anywhere; min-height: 60px; }
+.aitb__based { font-size: 11.5px; color: var(--text-3); }
+.aitb__draft-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.aitb__inserted { font-size: 12.5px; color: var(--ok); font-weight: 600; }
+
+@media (max-width: 600px) {
+  .aitb__grid { grid-template-columns: 1fr; }
+  .aitb__tone { margin-left: 0; }
+  .aitb__mode { margin-left: 0; }
+}

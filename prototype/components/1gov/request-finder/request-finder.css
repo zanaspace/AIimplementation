@@ -1,0 +1,65 @@
+/* <ai-request-finder>: "Describe what you need" form finder, plus document autofill and photo check.
+   All classes are prefixed `airf-`. */
+ai-request-finder { display: block; }
+
+.airf { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+.airf__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.airf__title { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.airf__body { padding: 12px 14px; }
+.airf__hint { margin: 0 0 8px; font-size: 12px; color: var(--text-2); }
+.airf__head .airf__hint { margin: 0; }
+.airf__h { margin: 0 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ai-600); }
+.airf__empty { font-size: 12.5px; color: var(--text-3); }
+
+.airf__ask { display: flex; gap: 8px; align-items: flex-start; }
+.airf__q { min-height: 44px; flex: 1; min-width: 0; }
+.airf__examples { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 4px; }
+.airf__ex { cursor: pointer; font-weight: 500; text-align: left; max-width: 100%; white-space: normal; }
+.airf__ex:hover { border-color: var(--ai-500); color: var(--ai-600); }
+
+.airf__list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.airf__match { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); }
+.airf__match--top { border-color: color-mix(in srgb, var(--ai-500) 45%, var(--border)); background: var(--ai-50); }
+.airf__m-main { min-width: 0; }
+.airf__m-main small { display: block; font-size: 11.5px; color: var(--text-3); }
+.airf__m-line { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13.5px; }
+.airf__pre { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 2px; }
+.airf__kv { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); overflow-wrap: anywhere; }
+.airf__kv i { font-style: normal; color: var(--text-3); margin-right: 4px; }
+.airf__m-side { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+.airf__bar { width: 46px; height: 5px; border-radius: 99px; background: var(--border); overflow: hidden; display: inline-block; }
+.airf__bar > i { display: block; height: 100%; background: var(--ok); }
+.airf__bar--mid > i { background: var(--warn); }
+.airf__bar--low > i { background: var(--bad); }
+
+.airf__row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.airf__file { cursor: pointer; }
+.airf__doc { font-size: 12px; color: var(--text-2); margin: 4px 0 6px; }
+.airf__field { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 7px 0; border-bottom: 1px dashed var(--border); }
+.airf__f-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.airf__f-value { font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
+.airf__f-value small { display: block; font-weight: 400; font-size: 11.5px; color: var(--warn); }
+.airf__f-conf { display: flex; align-items: center; gap: 6px; }
+.airf__f-conf .g-btn { margin-left: auto; }
+.airf__field--low .airf__f-label::after { content: " · check"; color: var(--warn); }
+.airf__field--applied .airf__f-value::after { content: " ✓"; color: var(--ok); }
+
+.airf__qc { padding: 10px 12px; border-radius: var(--radius); font-size: 12.5px; }
+.airf__qc--ok { background: var(--ok-bg); }
+.airf__qc--bad { background: var(--warn-bg); }
+.airf__checks { list-style: none; margin: 6px 0; padding: 0; }
+.airf__checks li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 6px; padding: 3px 0; color: var(--text-2); }
+.airf__checks li.is-ok > span { color: var(--ok); font-weight: 700; }
+.airf__checks li.is-bad > span { color: var(--bad); font-weight: 700; }
+.airf__checks b { color: var(--text); }
+
+.airf__actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+.airf__mode { font-size: 11px; color: var(--text-3); margin-left: auto; }
+
+@media (max-width: 600px) {
+  .airf__ask { flex-direction: column; align-items: stretch; }
+  .airf__match { grid-template-columns: minmax(0, 1fr); }
+  .airf__m-side { justify-content: flex-start; }
+  .airf__mode { margin-left: 0; }
+}

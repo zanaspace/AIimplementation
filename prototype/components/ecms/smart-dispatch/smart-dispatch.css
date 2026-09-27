@@ -1,0 +1,42 @@
+/* <ai-smart-dispatch>: workload bars, rebalance proposal and shift validation card.
+   Classes are prefixed `aisd-`. */
+ai-smart-dispatch { display: block; }
+
+.aisd { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+.aisd__panel { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; min-width: 0; }
+.aisd__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 10px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aisd__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aisd__body { padding: 12px 14px; }
+.aisd__muted { font-size: 11.5px; color: var(--text-3); margin: 0; }
+.aisd__sum { margin: 0 0 8px; font-size: 12px; color: var(--text-2); }
+
+.aisd__bar { display: grid; grid-template-columns: minmax(90px, 170px) minmax(0, 1fr) 76px; gap: 8px; align-items: center; padding: 4px 0; font-size: 12px; transition: background .4s; border-radius: 6px; }
+.aisd__bar-name { min-width: 0; overflow-wrap: anywhere; }
+.aisd__track { position: relative; height: 12px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.aisd__track i { display: block; height: 100%; background: var(--ok); border-radius: 4px; transition: width .5s; }
+.aisd__track i.aisd--high { background: var(--warn); }
+.aisd__track i.aisd--over { background: var(--bad); }
+.aisd__track b { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--text-3); }
+.aisd__bar-v { font-family: var(--mono); font-size: 11px; text-align: right; }
+
+.aisd__prop { margin-top: 12px; border-top: 1px dashed var(--border); padding-top: 10px; }
+.aisd__prop-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-bottom: 6px; }
+.aisd__move { display: flex; gap: 10px; justify-content: space-between; align-items: flex-start; padding: 8px 10px; border-radius: var(--radius); background: var(--surface-2); margin-top: 6px; flex-wrap: wrap; }
+.aisd__move-main { flex: 1 1 260px; min-width: 0; font-size: 13px; }
+.aisd__move-main p { margin: 2px 0 0; font-size: 12px; color: var(--text-2); }
+.aisd__move-act { display: flex; gap: 6px; }
+.aisd__move--done { opacity: .65; }
+.aisd__unplaced { margin-top: 8px; padding: 8px 10px; border-radius: var(--radius); background: var(--warn-bg); font-size: 12px; }
+.aisd__prop-foot { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+
+.aisd__issue { padding: 10px 0 10px 10px; border-left: 3px solid var(--info); border-bottom: 1px dashed var(--border); }
+.aisd__issue--bad { border-left-color: var(--bad); }
+.aisd__issue--warn { border-left-color: var(--warn); }
+.aisd__issue--done { opacity: .65; }
+.aisd__issue-top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.aisd__issue p { margin: 4px 0 6px; font-size: 12px; color: var(--text-2); }
+.aisd__fix { font-size: 12px; margin-bottom: 6px; }
+.aisd__issue-act { display: flex; gap: 6px; flex-wrap: wrap; }
+
+@media (max-width: 1000px) { .aisd { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .aisd__bar { grid-template-columns: 92px minmax(0, 1fr) 66px; } }

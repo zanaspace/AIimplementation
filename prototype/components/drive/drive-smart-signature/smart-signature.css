@@ -1,0 +1,150 @@
+/* smart-signature.css */
+.sig-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--ai-200);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-family: var(--sans);
+}
+
+.sig-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.sig-panel__header h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-1);
+}
+
+.sig-panel__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sig-panel__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sig-signer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+
+.sig-signer__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sig-signer__name {
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.sig-signer__role {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.sig-brief {
+  background: color-mix(in srgb, var(--ai-100) 40%, transparent);
+  border-left: 3px solid var(--ai-500);
+  padding: 10px 12px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+
+.sig-brief ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.sig-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.doc-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1.2;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.doc-preview__content {
+  padding: 24px;
+  color: #333;
+  font-family: serif;
+  font-size: 12px;
+}
+
+.doc-preview__content h2 {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.doc-preview__sig-line {
+  position: absolute;
+  bottom: 60px;
+  width: 140px;
+  height: 40px;
+  border: 1px dashed var(--ai-500);
+  background: color-mix(in srgb, var(--ai-100) 30%, transparent);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--ai-700);
+  font-family: var(--sans);
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  transform: translateY(10px);
+}
+
+.doc-preview__sig-line.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.doc-preview__sig-line--left { left: 40px; }
+.doc-preview__sig-line--right { right: 40px; }
+
+.layout-split {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  padding: 24px;
+  background: var(--bg);
+  min-height: 500px;
+}
+
+@media (max-width: 800px) {
+  .layout-split { grid-template-columns: 1fr; }
+}

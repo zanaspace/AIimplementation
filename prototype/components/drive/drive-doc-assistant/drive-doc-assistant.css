@@ -1,0 +1,61 @@
+/* <ai-doc-assistant>: file-viewer side panel with Summary, Ask and Discussion tabs.
+   All classes are prefixed `aida-` so the panel can sit in any Drive view. */
+ai-doc-assistant { display: block; min-width: 0; }
+
+.aida { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.aida__head { padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); display: grid; gap: 8px; }
+.aida__file { display: grid; gap: 2px; min-width: 0; }
+.aida__name { font-weight: 700; font-size: 13px; overflow-wrap: anywhere; }
+.aida__meta { font-size: 11.5px; color: var(--text-2); display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.aida__sov { font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: var(--radius); background: var(--bad-bg); color: var(--text); border: 1px solid color-mix(in srgb, var(--bad) 30%, transparent); }
+
+.aida__tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.aida__tab { flex: 1 0 auto; background: none; border: 0; border-bottom: 2px solid transparent; padding: 9px 10px; font-size: 12.5px; font-weight: 600; color: var(--text-2); cursor: pointer; }
+.aida__tab--on { color: var(--ai-600); border-bottom-color: var(--ai-500); }
+
+.aida__body { padding: 12px 14px; min-width: 0; }
+.aida__empty { color: var(--text-3); font-size: 12.5px; margin: 4px 0 10px; }
+.aida__row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.aida__summary { font-size: 13px; margin: 8px 0; }
+.aida__h { margin: 12px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aida__list { margin: 0; padding-left: 16px; font-size: 12.5px; color: var(--text-2); }
+.aida__list li { margin: 3px 0; }
+.aida__cite { display: inline-block; font-family: var(--mono); font-size: 10.5px; padding: 0 5px; border-radius: 4px; background: var(--ai-100); color: var(--ai-600); white-space: nowrap; }
+
+.aida__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
+.aida__fig { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; display: grid; gap: 2px; }
+.aida__fig b { font-size: 15px; color: var(--gov-green-600); }
+.aida__fig span { font-size: 11.5px; color: var(--text-2); }
+.aida__dates { display: grid; gap: 4px; }
+.aida__date { display: grid; grid-template-columns: 96px 1fr; gap: 8px; font-size: 12px; padding: 4px 0; border-bottom: 1px dashed var(--border); }
+.aida__date span { color: var(--text-2); }
+
+.aida__actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.aida__mode { font-size: 11px; color: var(--text-3); margin-left: auto; }
+
+.aida__qa { display: grid; gap: 8px; max-height: 360px; overflow-y: auto; }
+.aida__q { justify-self: end; max-width: 88%; background: var(--gov-green-100); color: var(--text); padding: 7px 10px; border-radius: 10px 10px 2px 10px; font-size: 12.5px; }
+.aida__a { background: var(--surface-2); border: 1px solid var(--border); padding: 8px 10px; border-radius: 10px 10px 10px 2px; font-size: 12.5px; }
+.aida__a p { margin: 0 0 6px; }
+.aida__sources { display: grid; gap: 4px; margin-bottom: 6px; }
+.aida__src { font-size: 11.5px; color: var(--text-2); }
+.aida__fb { display: flex; gap: 2px; font-size: 11.5px; color: var(--text-2); }
+
+.aida__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
+.aida__chip { cursor: pointer; white-space: normal; text-align: left; }
+.aida__ask { display: flex; gap: 6px; margin-top: 10px; }
+.aida__ask .g-input { min-width: 0; }
+
+.aida__thread { display: grid; gap: 8px; max-height: 420px; overflow-y: auto; }
+.aida__cmt { border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; font-size: 12.5px; }
+.aida__cmt p { margin: 4px 0; }
+.aida__cmt--ai { background: var(--ai-50); border-color: color-mix(in srgb, var(--ai-500) 30%, var(--border)); }
+.aida__cmt-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.aida__av { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 700; background: var(--gov-green-600); color: #fff; }
+.aida__cmt--ai .aida__av { background: var(--ai-500); }
+.aida__when { font-size: 11px; color: var(--text-3); }
+.aida__totask { margin-top: 2px; color: var(--ai-600); }
+.aida__task { margin-top: 6px; padding: 8px 10px; border-radius: var(--radius); background: var(--ai-50); border: 1px dashed var(--ai-500); display: grid; gap: 3px; font-size: 12px; }
+.aida__task span { color: var(--text-2); }
+.aida__task-actions { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.aida__done { color: var(--ok); font-weight: 600; }

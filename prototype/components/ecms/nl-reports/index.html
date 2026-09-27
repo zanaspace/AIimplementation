@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask for a Report</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="nl-reports.css">
+<style>
+  /* Page-only layout for the mock "Reports" screen */
+  .rp__bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .rp__bar .shell__title { margin: 0; }
+  .rp__active { display: none; font-size: 12px; color: var(--text-2); }
+  .rp__active--on { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .rp__empty { padding: 40px 16px; text-align: center; margin-top: 14px; }
+  .rp__empty h3 { margin: 0 0 4px; font-size: 15px; }
+  .rp__empty p { margin: 0 0 14px; font-size: 12.5px; color: var(--text-2); }
+  .rp__saved { margin-top: 14px; padding: 14px 16px; display: none; }
+  .rp__saved--on { display: block; }
+  .rp__saved h3 { margin: 0 0 8px; font-size: 14px; }
+  .rp__item { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 0; border-top: 1px solid var(--border); font-size: 13px; }
+  .rp__flash { animation: rp-flash 1.2s ease; }
+  @keyframes rp-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Reports</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-D5 · Priority 1</span>
+      <h1>Ask for a Report</h1>
+      <p>The Reports page today starts empty: <i>"No filters set. Click the button to set filters and view your reports."</i> With this component the officer types the report they need in plain English. The CICOD-AI shows <b>what it understood as editable filter chips</b>, then draws a chart and a table and writes a one-paragraph summary. The report can be exported, saved or scheduled weekly.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Reports → Reports</span><span class="g-chip">Component: &lt;ai-report-builder&gt;</span><span class="g-chip">Endpoint: /ecms/reports/nl-query</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the ECMS <b>Reports</b> screen. Click an example chip, or type your own request such as <i>"Top 3 queues by open tasks all time"</i> and press <b>Build report</b>. Then change a chip (for example Period or Group by) to re-run it, and click <b>Save report</b> or <b>Schedule weekly</b> to see it appear in the page's saved reports.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Reports">
+      <div class="shell__content">
+        <div class="rp__bar">
+          <h2 class="shell__title">Reports</h2>
+          <button class="g-btn" type="button">Set Filters</button>
+        </div>
+        <div class="rp__active" id="rp-active"><b>Filters:</b></div>
+        <div data-ai-spot="CICOD-AI · Ask for a report" style="margin-top:8px">
+          <ai-report-builder examples="Turnaround time by department for Q3|Open complaints by queue type this month|Top 5 assignees by closed tasks"></ai-report-builder>
+        </div>
+        <div class="g-card rp__empty" id="rp-empty">
+          <h3>No filters set</h3>
+          <p>Click the button to set filters and view your reports</p>
+          <button class="g-btn g-btn--primary" type="button">Set Filters</button>
+        </div>
+        <div class="g-card rp__saved" id="rp-saved"><h3>Saved reports</h3><div id="rp-saved-list"></div></div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Top of <code>/ecms/reports</code>, above the "Set Filters" empty state</div>
+      <div class="doc__where-item"><b>Also appears in</b>Dashboard → Resource Utilization ("Ask about this data"), Asset Mgmt reports, and the Workspace search bar ("report: …")</div>
+      <div class="doc__where-item"><b>Trigger</b>The user presses Build report or clicks an example. Editing a chip re-runs the query</div>
+      <div class="doc__where-item"><b>Who sees it</b>Anyone with Reports access. Results only include tasks, queues and departments the user can already see</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">The model writes a structured query against an allow-listed reporting schema, never raw SQL. The chips are that query, so the user can see and correct exactly what will run.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The prompt and any chip edits are sent to <code>/ecms/reports/nl-query</code> with the user's role, so the query can be permission-trimmed.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway redacts personal data in the prompt and applies classification routing. Only the schema and prompt go to the sovereign model; task rows never leave ECMS.</p></div>
+      <div class="doc__step"><h4>Text to query</h4><p>An LLM maps the prompt onto a fixed query shape: measure, group-by, period, filters and limit. A validator rejects unknown fields and caps row counts.</p></div>
+      <div class="doc__step"><h4>Run &amp; chart</h4><p>ECMS runs the query on its own reporting store with the user's permissions. The component picks a bar chart and table, and the LLM writes a short summary from the result rows only.</p></div>
+      <div class="doc__step"><h4>Output</h4><p>Editable chips, chart, table, narrative, and Export CSV, Save report and Schedule weekly actions.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Chip edits, saves, exports and "Not what I meant" all go to <code>/feedback</code>. Chip corrections become training pairs for the text-to-query model.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baseline: the Reports page on cicod shows no reports until filters are set by hand. Figures are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0 → 1 click</div><h4>From empty page to a report</h4><p>An example chip produces a chart and table straight away, instead of an empty "No filters set" state.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−90%</div><h4>Report creation time</h4><p>Target: from a request to an analyst (often days) to under a minute for standard questions.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&gt; 85%</div><h4>Queries run without chip edits</h4><p>Target accuracy of the interpreted query, measured from chip edits and "Not what I meant".</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Weekly</div><h4>Reports that keep coming</h4><p>Schedule weekly turns a one-off question into a standing report for the management meeting.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Reports page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/nl-reports.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/nl-reports.js"&gt;&lt;/script&gt;
+
+&lt;ai-report-builder examples="Turnaround time by
+  department for Q3|Top 5 assignees by closed
+  tasks"&gt;&lt;/ai-report-builder&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-report-save', e =&gt;
+  reports.save(e.detail.title, e.detail.query));
+document.addEventListener('ai-report-schedule', e =&gt;
+  reports.schedule(e.detail.query, 'weekly'));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Define the reporting schema: measures (count, open, closed, turnaround), dimensions (department, queue, queue type, assignee, priority) and periods.</li>
+            <li>Expose a query endpoint in ECMS that accepts that shape and applies the user's permissions.</li>
+            <li>Add <code>/ecms/reports/nl-query</code> to the CICOD-AI Gateway: prompt to query, validate, run, then summarise.</li>
+            <li>Mount the component above the Set Filters state and wire save and schedule to the existing report store.</li>
+            <li>Collect 200 real prompts from pilot users and tune until 85% run without chip edits.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/reports/nl-query
+{
+  "prompt": "Open complaints by queue type this month",
+  "overrides": { "period": "Q3 2026" }   // chip edits
+}
+→ 200
+{
+  "model": "cicod-text2query-v1",
+  "confidence": 0.89,
+  "title": "Open tasks by queue type, September 2026",
+  "query": {
+    "metric": "open", "dimension": "queueType",
+    "period": "September 2026",
+    "filters": [{ "key": "queue", "value": "Complaints" }],
+    "limit": null
+  },
+  "chips": [{ "key": "period", "value": "…", "options": […] }],
+  "rows": [{ "label": "Delivery", "value": 214, "share": 31 }],
+  "narrative": "Delivery leads with 214 tasks…"
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.nlReports</code> in ECMS Settings, on/off per tenant.</li>
+            <li>Only allow-listed measures and dimensions can be queried; results are capped at 5,000 rows.</li>
+            <li>Every prompt, interpreted query and export is written to the ECMS Audit Log (feature: <i>CICOD-AI Reports</i>).</li>
+            <li>Queries run with the requesting user's permissions, so users only see departments and queues they already have access to.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="nl-reports.js"></script>
+<script>
+  // Host-page wiring: the page shows the applied filters and owns the saved-report list.
+  const active = document.getElementById('rp-active');
+  document.addEventListener('ai-report-result', e => {
+    document.getElementById('rp-empty').style.display = 'none';
+    active.classList.add('rp__active--on');
+    active.innerHTML = '<b>Filters:</b>';
+    e.detail.chips.forEach(c => { const s = document.createElement('span'); s.className = 'g-chip'; s.textContent = `${c.label}: ${c.options.find(o => o.v === c.value)?.t || c.value}`; active.appendChild(s); });
+  });
+  function addSaved(title, tag) {
+    const box = document.getElementById('rp-saved'); box.classList.add('rp__saved--on');
+    const list = document.getElementById('rp-saved-list');
+    let row = [...list.children].find(r => r.dataset.title === title);
+    if (!row) { row = document.createElement('div'); row.className = 'rp__item'; row.dataset.title = title; row.innerHTML = '<span></span><span class="tags"></span>'; row.firstChild.textContent = title; list.prepend(row); }
+    const chip = document.createElement('span'); chip.className = 'g-chip ' + (tag === 'Weekly · Mon 08:00' ? 'g-chip--info' : 'g-chip--ok'); chip.textContent = tag;
+    row.querySelector('.tags').appendChild(chip);
+    row.classList.remove('rp__flash'); void row.offsetWidth; row.classList.add('rp__flash');
+  }
+  document.addEventListener('ai-report-save', e => addSaved(e.detail.title, 'Saved'));
+  document.addEventListener('ai-report-schedule', e => addSaved(e.detail.title, 'Weekly · Mon 08:00'));
+  document.addEventListener('ai-report-export', e => addSaved(e.detail.title, 'Exported CSV'));
+</script>
+</body>
+</html>

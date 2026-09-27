@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Approval Copilot</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="approval-copilot.css">
+<style>
+  /* Page-only layout for the mock "Task Approvals" screen */
+  .ta-head h2 { margin: 0 0 12px; font-size: 18px; }
+  .ta-tabs { display: flex; gap: 16px; border-bottom: 1px solid var(--border); margin-bottom: 14px; font-size: 13px; }
+  .ta-tabs span { padding: 6px 2px; color: var(--text-2); }
+  .ta-tabs .is-on { color: var(--gov-green-600); border-bottom: 2px solid var(--gov-green-600); font-weight: 600; }
+  .ta-stat { border-radius: var(--radius-lg); padding: 18px; color: #fff; background: var(--warn); margin-bottom: 14px; }
+  .ta-stat b { display: block; font-size: 24px; line-height: 1.1; }
+  .ta-stat span { font-size: 12.5px; opacity: .92; }
+  .ta-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+  .ta-tools .g-input { max-width: 320px; flex: 1 1 200px; }
+  .ta-tools__spacer { flex: 1; }
+  .ta { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+  .ta-card { padding: 14px; min-width: 0; }
+  .ta-table td { white-space: nowrap; cursor: pointer; }
+  .ta-table td.ta-title { white-space: normal; min-width: 220px; }
+  .ta-table tr.is-open td { background: var(--ai-50); }
+  .ta-table tr.is-done td { opacity: .55; cursor: default; }
+  .ta-flash { animation: ta-flash 1.4s ease; }
+  @keyframes ta-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+  .ta-hist { margin-top: 8px; font-size: 12px; color: var(--text-2); }
+  @media (max-width: 1200px) { .ta { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Tasks</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-T7 · Phase 2</span>
+      <h1>Approval Copilot</h1>
+      <p>Gives the approver a <b>ready-made digest</b> for each pending approval: what is requested, the amount, a <b>policy check</b> against the Financial Regulations thresholds, prior approvals, anomalies, and a <b>recommended decision</b> with its rationale and the policy document it relies on. <b>Safe bulk approve</b> ticks only the low-risk items and says why each other item was left out. The approver always makes the final click.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Tasks → Task Approvals</span><span class="g-chip">Component: &lt;ai-approval-copilot&gt;</span><span class="g-chip">Endpoints: /ecms/approval-digest · /ecms/approval-bulk-screen</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the ECMS <b>Task Approvals</b> screen with its real columns. The live tenant had 0 pending approvals, so the nine rows are realistic examples. You are signed in as Prince Ekpenyong, Head of Department, with a ₦500,000 limit. First click <b>Safe bulk approve</b> and read why five items were left out. Then click a row, for example <b>#17603</b> (a cash advance while an older one is unretired) or <b>#17605</b> (a possible split purchase), to open its digest. Accept or override the recommendation.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Task Approvals">
+      <div class="shell__content">
+        <div class="ta-head"><h2>Task Approvals</h2></div>
+        <div class="ta-tabs"><span class="is-on">Approval Request</span><span>Approval History</span></div>
+        <div class="ta-stat"><b id="pending-count">9</b><span>Tasks Pending Approval</span></div>
+        <div class="ta">
+          <div class="g-card ta-card">
+            <div class="ta-tools">
+              <input class="g-input" placeholder="Search ID, title...">
+              <span class="ta-tools__spacer"></span>
+              <select class="g-select g-btn--sm" style="width:auto" aria-label="Bulk Action"><option>Bulk Action</option><option>Approve selected</option><option>Reject selected</option></select>
+              <button class="g-btn g-btn--sm" type="button">Custom View</button><button class="g-btn g-btn--sm" type="button">Filters</button><button class="g-btn g-btn--sm" type="button">Sync</button>
+            </div>
+            <div data-ai-spot="CICOD-AI · Safe bulk approve (next to Bulk Action)" style="margin-bottom:12px">
+              <ai-approval-copilot mode="bulk" table="#appr-table" approver-limit="500000"></ai-approval-copilot>
+            </div>
+            <div class="g-table-wrap">
+              <table class="g-table ta-table" id="appr-table">
+                <thead><tr><th><input type="checkbox" aria-label="Select all" id="sel-all"></th><th>ID</th><th>Title</th><th>Queue</th><th>Queue Type</th><th>Task Status</th><th>Request Type</th><th>Approval Level</th><th>Approval Type</th><th>Approver Role</th><th>Assigned To</th><th>Alternate Approver</th><th>Task State</th><th>Date Created</th></tr></thead>
+                <tbody>
+                  <tr data-id="17601" data-title="Stationery replenishment: A4 paper, 40 reams" data-kind="stationery" data-amount="96000" data-requester="Ann Nya" data-dept="Admin &amp; Supplies" data-budget="1200000" data-prior="4 similar stationery requests approved in 2026, average ₦90,000" data-attachments="1" data-attach-names="Central Store stock report" data-unit-price="2400" data-avg-price="2350">
+                    <td><input type="checkbox" aria-label="Select 17601"></td><td>17601</td><td class="ta-title">Stationery replenishment: A4 paper, 40 reams</td><td>Admin &amp; Supplies</td><td>Stationery Request</td><td>Pending Approval</td><td>Stationery</td><td>Level 1</td><td>Sequential</td><td>Head of Department</td><td>Prince Ekpenyong</td><td>Favour Ifeanacho</td><td data-state>Pending</td><td>25/09/2026</td></tr>
+                  <tr data-id="17602" data-title="Asset request: 3 HP ProBook laptops for ICT unit" data-kind="asset" data-amount="1350000" data-requester="Eyitayo Abidogun" data-dept="ICT" data-budget="4800000" data-prior="1 laptop request approved in 2026 (2 units, ₦820,000)" data-attachments="2" data-attach-names="Quotation, Specification sheet" data-unit-price="450000" data-avg-price="410000">
+                    <td><input type="checkbox" aria-label="Select 17602"></td><td>17602</td><td class="ta-title">Asset request: 3 HP ProBook laptops for ICT unit</td><td>Asset Requests</td><td>ICT Equipment</td><td>Pending Approval</td><td>Asset Request</td><td>Level 1</td><td>Sequential</td><td>Head of Department</td><td>Prince Ekpenyong</td><td>Favour Ifeanacho</td><td data-state>Pending</td><td>25/09/2026</td></tr>
+                  <tr data-id="17603" data-title="Expense request: travel to Kano store for stock-take" data-kind="cash" data-amount="180000" data-requester="Damola Tunde" data-dept="Stores" data-budget="650000" data-prior="2 expense requests approved in 2026" data-unretired="65000" data-unretired-date="14/08/2026" data-attachments="1" data-attach-names="Travel schedule">
+                    <td><input type="checkbox" aria-label="Select 17603"></td><td>17603</td><td class="ta-title">Expense request: travel to Kano store for stock-take</td><td>EXPENSE REQUEST</td><td>Expense Request</td><td>Pending Approval</td><td>Cash Advance</td><td>Level 1</td><td>Sequential</td><td>Head of Department</td><td>Prince Ekpenyong</td><td>Favour Ifeanacho</td><td data-state>Pending</td><td>26/09/2026</td></tr>
+                  <tr data-id="17604" data-title="Toner cartridges HP 4250 × 6 for Central Store" data-kind="stationery" data-amount="210000" data-requester="Damola Tunde" data-dept="Stores" data-budget="650000" data-prior="3 toner requests approved in 2026, average ₦195,000" data-attachments="1" data-attach-names="Quotation" data-unit-price="35000" data-avg-price="34000">
+                    <td><input type="checkbox" aria-label="Select 17604"></td><td>17604</td><td class="ta-title">Toner cartridges HP 4250 × 6 for Central Store</td><td>Admin &amp; Supplies</td><td>Consumables</td><td>Pending Approval</td><td>Stationery</td><td>Level 1</td><td>Sequential</td><td>Head of Department</td><td>Prince Ekpenyong</td><td>Favour Ifeanacho</td><td data-state>Pending</td><td>26/09/2026</td></tr>
+                  <tr data-id="17605" data-title="Office chairs × 6 for Registry" data-kind="asset" data-amount="480000" data-requester="Rebecca Saku" data-dept="Registry" data-budget="2000000" data-prior="No chair purchases in 2026" data-split="17606" data-split-gap="2 days later" data-vendor="Sadiq Furniture Ltd" data-attachments="1" data-attach-names="Quotation">
+                    <td><input type="checkbox" aria-label="Select 17605"></td><td>17605</td><td class="ta-title">Office chairs × 6 for Registry</td><td>Asset Requests</td><td>Furniture</td><td>Pending Approval</td><td>Asset Request</td><td>Level 1</td><td>Sequential</td><td>Head of Department</td><td>Prince Ekpenyong</td><td>Favour Ifeanacho</td><td data-state>Pending</td><td>24/09/2026</td></tr>
+                  <tr data-id="17606" data-title="Office chairs × 6 for Registry (batch 2)" data-kind="asset" data-amount="480000" data-requester="Rebecca Saku" data-dept="Registry" data-budget="2000000" data-prior="No chair purchases in 2026" data-split="17605" data-split-gap="2 days earlier" data-vendor="Sadiq Furniture Ltd" data-attachments="1" data-attach-names="Quotation">
+                    <td><input type="checkbox" aria-label="Select 17606"></td><td>17606</td><td class="ta-title">Office chairs × 6 for Registry (batch 2)</td><td>Asset Requests</td><td>Furniture</td><td>Pending Approval</td><td>Asset Request</td><td>Level 1</td><td>Sequential</td><td>Head of Department</td><td>Prince Ekpenyong</td><td>Favour Ifeanacho</td><td data-state>Pending</td><td>26/09/2026</td></tr>
+                  <tr data-id="17607" data-title="Cash advance: registration for ICT workshop, Abuja" data-kind="cash" data-amount="75000" data-requester="Faith Egbe" data-dept="ICT" data-budget="4800000" data-prior="1 advance approved in 2026, retired on time" data-attachments="1" data-attach-names="Workshop invitation">
+                    <td><input type="checkbox" aria-label="Select 17607"></td><td>17607</td><td class="ta-title">Cash advance: registration for ICT workshop, Abuja</td><td>EXPENSE REQUEST</td><td>Cash Purchase</td><td>Pending Approval</td><td>Cash Advance</td><td>Level 1</td><td>Sequential</td><td>Head of Department</td><td>Prince Ekpenyong</td><td>Favour Ifeanacho</td><td data-state>Pending</td><td>26/09/2026</td></tr>
+                  <tr data-id="17608" data-title="Vehicle FG-231-KJA: brake pads and discs" data-kind="repair" data-amount="640000" data-requester="Ayomide Olusanya" data-dept="Transport" data-budget="1500000" data-prior="2 repairs on this vehicle in 2026 (₦310,000)" data-attachments="0">
+                    <td><input type="checkbox" aria-label="Select 17608"></td><td>17608</td><td class="ta-title">Vehicle FG-231-KJA: brake pads and discs</td><td>AUTO MOBILE REPAIR</td><td>REPAIR DETAILS</td><td>Pending Approval</td><td>Repair</td><td>Level 1</td><td>Sequential</td><td>Head of Department</td><td>Prince Ekpenyong</td><td>Favour Ifeanacho</td><td data-state>Pending</td><td>27/09/2026</td></tr>
+                  <tr data-id="17609" data-title="Stationery: pens, box files and staples for Kano store" data-kind="stationery" data-amount="42500" data-requester="Ayo Toriola" data-dept="Stores" data-budget="650000" data-prior="2 similar requests approved in 2026, average ₦40,000" data-attachments="1" data-attach-names="Requisition form">
+                    <td><input type="checkbox" aria-label="Select 17609"></td><td>17609</td><td class="ta-title">Stationery: pens, box files and staples for Kano store</td><td>Admin &amp; Supplies</td><td>Stationery Request</td><td>Pending Approval</td><td>Stationery</td><td>Level 1</td><td>Sequential</td><td>Head of Department</td><td>Prince Ekpenyong</td><td>Favour Ifeanacho</td><td data-state>Pending</td><td>27/09/2026</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="ta-hist" id="hist">Approval History: 0 decisions today</div>
+          </div>
+          <div data-ai-spot="CICOD-AI · Approval digest (right panel)">
+            <ai-approval-copilot mode="digest" table="#appr-table" approver-limit="500000"></ai-approval-copilot>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Right panel of <code>/ecms/tasks/approvals</code> for the selected row, and a Safe bulk approve button next to Bulk Action</div>
+      <div class="doc__where-item"><b>Also appears in</b>The approval step inside a task, the IMS Approval page for asset requests, and the approval email or InMail notification (digest only)</div>
+      <div class="doc__where-item"><b>Trigger</b>The digest builds when a row is clicked. Bulk screening runs only when the approver clicks Safe bulk approve</div>
+      <div class="doc__where-item"><b>Who sees it</b>The approver and alternate approver for that level. Policy citations only link to documents they can open in Drive</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Hard rules do the checks, retrieval finds the policy text, and an LLM writes the rationale. The recommendation always shows the rule and document behind it.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The approval request, its form fields and amount, attachments, the requester's history (prior approvals, outstanding advances), the budget line, and the approver's limit from Settings → Asset Thresholds.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway removes personal data (NIN, account numbers, phone) and applies the classification of any attached file. Secret files are summarised only on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Check rules</h4><p>Deterministic checks: approval limit, budget left, unretired cash advance, split purchases (same vendor, short gap, combined above the limit), unit price against the Asset Registry, and missing documents.</p></div>
+      <div class="doc__step"><h4>Retrieve policy</h4><p>The matching clauses are retrieved from Drive → General Documents → POLICY_DOCUMENTS (Financial Regulations, Stores procedure) and cited in the digest.</p></div>
+      <div class="doc__step"><h4>Recommend</h4><p>An LLM writes the recommended decision and a short rationale from the check results. Bulk screening includes only items with no failed or flagged checks.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The approver accepts, overrides, or unticks bulk items. Overrides are logged via <code>/feedback</code> and reviewed each month to tune rules and prompts.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Percentages are targets. Thresholds in the demo are illustrative. Production reads them from each tenant's Asset Thresholds settings.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−50%</div><h4>Approval cycle time</h4><p>Target. The approver reads one digest instead of opening every attachment and checking limits by hand.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">4 of 9 in 1 click</div><h4>Safe bulk approval</h4><p>Routine, low-value items are approved together. Anything with a flag is left out, with the reason given.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">100%</div><h4>Policy checks on every item</h4><p>Target. Every approval is checked against the limit, the budget, unretired advances and split purchases before it is signed.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fewer audit queries</div><h4>Better approval quality</h4><p>Split purchases and unretired advances are caught before approval instead of at audit.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Cited</div><h4>Decisions you can defend</h4><p>Every recommendation names the Financial Regulations clause it relies on. The comment is saved with the approval.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Task Approvals page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/approval-copilot.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/approval-copilot.js"&gt;&lt;/script&gt;
+
+&lt;ai-approval-copilot mode="bulk" table="#approvals"
+     approver-limit="{{user.approvalLimit}}"&gt;&lt;/ai-approval-copilot&gt;
+&lt;ai-approval-copilot mode="digest" table="#approvals"
+     approver-limit="{{user.approvalLimit}}"&gt;&lt;/ai-approval-copilot&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-approval-preselect', e =&gt;
+  approvals.select(e.detail.ids));
+document.addEventListener('ai-approval-decision', e =&gt;
+  approvals.decide(e.detail));   // host owns approvals
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Expose the request data the checks need: amount, budget line balance, requester's advances, vendor, unit price.</li>
+            <li>Encode the rules (limits, advances, split purchases, price outliers) as a rules service that uses the tenant's Asset Thresholds.</li>
+            <li>Index POLICY_DOCUMENTS in Drive for retrieval, keeping each file's classification.</li>
+            <li>Expose <code>/ecms/approval-digest</code> and <code>/ecms/approval-bulk-screen</code> on the CICOD-AI Gateway.</li>
+            <li>Mount the digest panel and the bulk button. Wire the decision event to the existing approval API.</li>
+            <li>Pilot with Admin &amp; Supplies approvers. Track the override rate and cycle time for 6 weeks.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/approval-digest
+{ "request": { "id": "17603", "kind": "cash",
+    "amount": 180000, "requester": "Damola Tunde",
+    "unretired": 65000, "budget": 650000 },
+  "approverLimit": 500000 }
+→ 200
+{ "model": "cicod-approvals-v1 + rules",
+  "confidence": 0.93, "risk": "high",
+  "checks": [{ "rule": "Previous advance retired",
+     "status": "fail", "detail": "…" }],
+  "anomalies": ["Unretired advance of ₦65,000"],
+  "recommendation": { "decision": "Returned",
+     "label": "Return to requester", "rationale": "…" },
+  "citations": [{ "doc": "POLICY_DOCUMENTS / Financial
+     Regulations", "section": "Cash advances" }] }
+
+POST /ai/ecms/approval-bulk-screen
+{ "requests": [ … ], "approverLimit": 500000 }
+→ 200
+{ "include": [{ "id": "17601", "reason": "…" }],
+  "exclude": [{ "id": "17605", "reason": "Possible split" }] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.approvalCopilot</code> in ECMS Settings, on/off per tenant. Safe bulk approve can be switched off separately.</li>
+            <li>Bulk screening only includes items with no failed or flagged checks, and a per-item cap (default ₦250,000) set by an admin.</li>
+            <li>Every digest, recommendation, override and bulk selection is written to the ECMS Audit Log (feature: <i>CICOD-AI Approvals</i>).</li>
+            <li>The digest only reads attachments and policy files the approver may open. CICOD-AI never approves: every decision needs the approver's click.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="approval-copilot.js"></script>
+<script>
+  // Host-page wiring: the component advises; the page ticks boxes and records the decisions.
+  const tbody = document.querySelector('#appr-table tbody');
+  const rowOf = id => tbody.querySelector(`tr[data-id="${id}"]`);
+  let decided = 0;
+
+  document.getElementById('sel-all').addEventListener('change', e => tbody.querySelectorAll('tr:not(.is-done) input[type=checkbox]').forEach(c => { c.checked = e.target.checked; }));
+
+  document.addEventListener('ai-approval-open', e => {
+    tbody.querySelectorAll('tr').forEach(tr => tr.classList.toggle('is-open', tr.dataset.id === e.detail.id));
+  });
+
+  document.addEventListener('ai-approval-preselect', e => {
+    tbody.querySelectorAll('tr[data-id]').forEach(tr => {
+      const cb = tr.querySelector('input[type=checkbox]');
+      if (tr.dataset.decided) return;
+      cb.checked = e.detail.ids.includes(tr.dataset.id);
+      if (cb.checked) { tr.classList.remove('ta-flash'); void tr.offsetWidth; tr.classList.add('ta-flash'); }
+    });
+  });
+
+  document.addEventListener('ai-approval-decision', e => {
+    const tone = { Approved: 'ok', Forwarded: 'info', Returned: 'warn', Rejected: 'bad' };
+    e.detail.ids.forEach(id => {
+      const tr = rowOf(id);
+      if (!tr || tr.dataset.decided) return;
+      tr.dataset.decided = e.detail.decision;
+      tr.classList.add('is-done'); tr.classList.remove('is-open');
+      const cb = tr.querySelector('input[type=checkbox]'); cb.checked = false; cb.disabled = true;
+      tr.querySelector('[data-state]').innerHTML = `<span class="g-chip g-chip--${tone[e.detail.decision]}">${e.detail.decision}</span>`;
+      decided++;
+    });
+    document.getElementById('pending-count').textContent = tbody.querySelectorAll('tr[data-id]:not([data-decided])').length;
+    document.getElementById('hist').textContent = `Approval History: ${decided} decision${decided === 1 ? '' : 's'} today (latest comment: "${e.detail.comment.slice(0, 90)}${e.detail.comment.length > 90 ? '…' : ''}")`;
+  });
+</script>
+</body>
+</html>

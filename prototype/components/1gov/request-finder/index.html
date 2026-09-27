@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Request Finder</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="request-finder.css">
+<style>
+  /* Page-only layout for the mock Workspace → Request screen */
+  .rq h2 { margin: 0; font-size: 22px; }
+  .rq__sub { margin: 4px 0 12px; color: var(--text-2); }
+  .rq__stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 12px 0 16px; }
+  .rq__stat { border-radius: var(--radius-lg); padding: 14px 16px; color: #fff; }
+  .rq__stat b { display: block; font-size: 22px; line-height: 1.1; }
+  .rq__stat span { font-size: 12.5px; }
+  .rq__s1 { background: var(--gov-green-500); } .rq__s2 { background: var(--info); } .rq__s3 { background: var(--warn); } .rq__s4 { background: var(--bad); }
+  .rq__box { padding: 16px; margin-top: 14px; }
+  .rq__box-h { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: flex-start; }
+  .rq__box-h h3 { margin: 0; font-size: 15px; }
+  .rq__box-h p { margin: 0; font-size: 12.5px; color: var(--text-2); }
+  .rq__tools { display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; margin: 12px 0; }
+  .rq__tools .g-input { max-width: 420px; }
+  .rq__group { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); }
+  .rq__group b { font-size: 14px; }
+  .rq__cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .rq__card { padding: 14px; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
+  .rq__card h4 { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+  .rq__card .rq__desc { color: var(--text-2); margin: 0; }
+  .rq__card dl { margin: 0; display: grid; gap: 2px; }
+  .rq__card dt { font-size: 10.5px; letter-spacing: .06em; color: var(--text-3); font-weight: 600; }
+  .rq__card dd { margin: 0 0 4px; }
+  .rq__card small { color: var(--text-3); }
+  .rq__card-acts { display: flex; gap: 6px; margin-top: auto; padding-top: 6px; }
+  .rq__card--hit { border-color: var(--ai-500); box-shadow: 0 0 0 3px var(--ai-100); }
+  .rq__form { margin-top: 14px; padding: 16px; }
+  .rq__form[hidden] { display: none; }
+  .rq__form-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+  .rq__form-top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+  .rq__form-top h3 { margin: 0; font-size: 16px; }
+  .rq__org { font-size: 12px; color: var(--text-2); margin: 0 0 4px; }
+  .rq__rule { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: var(--warn-bg); color: var(--text); margin-bottom: 10px; }
+  .rq__fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .rq__ai-tag { font-size: 10.5px; color: var(--ai-600); font-weight: 700; margin-left: 4px; }
+  .rq__flash { animation: rq-flash 1.2s ease; }
+  @keyframes rq-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); border-color: var(--ai-500); } 100% { box-shadow: none; } }
+  .rq__attest { font-size: 12px; color: var(--text-2); margin: 12px 0; display: flex; gap: 8px; align-items: flex-start; }
+  .rq__photo { font-size: 12px; margin-top: 4px; }
+  @media (max-width: 1100px) { .rq__form-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) { .rq__stats { grid-template-columns: 1fr 1fr; } .rq__fields { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD / Workspace</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · R1 · R2 · R3 · Phase 1</span>
+      <h1>Request Finder</h1>
+      <p>Staff shouldn't need to know that a trip to Kaduna is an <i>EXPENSE REQUEST</i>. They describe what they need in one sentence. The finder <b>ranks the forms their role can raise</b> and opens the best one <b>with the fields already filled in</b>.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Workspace → Request / webforms</span><span class="g-chip">Component: &lt;ai-request-finder&gt;</span><span class="g-chip">Endpoint: /forms/find</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of <b>Workspace → Request</b>. Type into <b>Describe what you need</b>, for example <i>"I need an expense request for a trip to Kaduna next week for 4 days, ₦185,000, for a monitoring workshop"</i>, then click <b>Open pre-filled</b>.</p>
+    <div id="screen" class="shell" data-app="workspace" data-active="Request">
+      <div class="shell__content">
+        <div class="rq">
+          <h2>Request Forms</h2>
+          <p class="rq__sub">Start a workflow. You'll see the forms your role can raise.</p>
+          <button class="g-btn g-btn--sm" type="button">⟳ Sync</button>
+          <div class="rq__stats">
+            <div class="rq__stat rq__s1"><b>20</b><span>All Request Forms</span></div>
+            <div class="rq__stat rq__s2"><b>20</b><span>Active Forms</span></div>
+            <div class="rq__stat rq__s3"><b>1</b><span>Form Groups</span></div>
+            <div class="rq__stat rq__s4"><b>20</b><span>Workflow Linked</span></div>
+          </div>
+
+          <div data-ai-spot="CICOD-AI · Describe what you need (above the cards)">
+            <ai-request-finder catalog="#rq-cards" user="Prince Ekpenyong" department="Administration"></ai-request-finder>
+          </div>
+
+          <div class="g-card rq__form" id="rq-form" hidden></div>
+
+          <div class="g-card rq__box">
+            <div class="rq__box-h"><div><h3>Internal Requests</h3><p>Forms raised by staff for internal processes.</p></div><span class="g-chip g-chip--ok">20 Forms</span></div>
+            <div class="rq__tools"><input class="g-input" placeholder="Search request forms..." aria-label="Search request forms"><span><button class="g-btn g-btn--sm g-btn--primary" type="button">Cards</button> <button class="g-btn g-btn--sm" type="button">Table</button></span></div>
+            <div class="rq__group"><b>General Forms</b><span class="g-chip">20 forms ▾</span></div>
+            <div class="rq__cards" id="rq-cards">
+              <div class="g-card rq__card" data-form="FORM CREATION" data-desc="FORM" data-queue="CICOD-AI IMPLEMENTATION" data-fields="Form name|Queue|Purpose"><h4>FORM CREATION</h4><span><span class="g-chip">internal</span> <span class="g-chip g-chip--ok">Active</span></span><p class="rq__desc">FORM</p><dl><dt>QUEUE</dt><dd>CICOD-AI IMPLEMENTATION</dd><dt>QUEUE TYPE</dt><dd>PROCESS GATHERING</dd></dl><small>Created by api support on 22 Sep, 2026</small><div class="rq__card-acts"><button class="g-btn g-btn--sm" type="button">Share</button><button class="g-btn g-btn--sm g-btn--primary" type="button" data-view>View Form</button></div></div>
+              <div class="g-card rq__card" data-form="CICOD-AI IMPLEMENTATION (Copy)" data-desc="CICOD-AI Implementation across all departments in Crown Interactive" data-queue="CICOD-AI IMPLEMENTATION" data-fields="First Name|Last Name|WHAT PROCESS DO YOU WANT TO AUTOMATE|Most Frequently Used Process In Your Department"><h4>CICOD-AI IMPLEMENTATION (Copy)</h4><span><span class="g-chip">internal</span> <span class="g-chip g-chip--ok">Active</span></span><p class="rq__desc">CICOD-AI Implementation across all departments in Crown Interactive</p><dl><dt>QUEUE</dt><dd>CICOD-AI IMPLEMENTATION</dd><dt>QUEUE TYPE</dt><dd>PROCESS GATHERING</dd></dl><small>Created by Chinwuba Okafor on 11 Sep, 2026</small><div class="rq__card-acts"><button class="g-btn g-btn--sm" type="button">Share</button><button class="g-btn g-btn--sm g-btn--primary" type="button" data-view>View Form</button></div></div>
+              <div class="g-card rq__card" data-form="CICOD-AI IMPLEMENTATION" data-desc="CICOD-AI Implementation across all departments in Crown Interactive" data-queue="CICOD-AI IMPLEMENTATION" data-fields="First Name|Last Name|WHAT PROCESS DO YOU WANT TO AUTOMATE|Most Frequently Used Process In Your Department"><h4>CICOD-AI IMPLEMENTATION</h4><span><span class="g-chip">internal</span> <span class="g-chip g-chip--ok">Active</span></span><p class="rq__desc">CICOD-AI Implementation across all departments in Crown Interactive</p><dl><dt>QUEUE</dt><dd>CICOD-AI IMPLEMENTATION</dd><dt>QUEUE TYPE</dt><dd>PROCESS GATHERING</dd></dl><small>Created by Chinwuba Okafor on 11 Sep, 2026</small><div class="rq__card-acts"><button class="g-btn g-btn--sm" type="button">Share</button><button class="g-btn g-btn--sm g-btn--primary" type="button" data-view>View Form</button></div></div>
+              <div class="g-card rq__card" data-form="EXPENSE REQUEST" data-desc="Request a cash purchase or expense request for official travel" data-queue="Finance" data-fields="Full name|Department|Advance type|Purpose|Destination|Departure date|Return date|Amount requested (₦)"><h4>EXPENSE REQUEST</h4><span><span class="g-chip">internal</span> <span class="g-chip g-chip--ok">Active</span></span><p class="rq__desc">Request a cash purchase or expense request for official travel</p><dl><dt>QUEUE</dt><dd>Finance</dd><dt>QUEUE TYPE</dt><dd>Advances</dd></dl><small>Created by Ann Nya on 9 Sep, 2026</small><div class="rq__card-acts"><button class="g-btn g-btn--sm" type="button">Share</button><button class="g-btn g-btn--sm g-btn--primary" type="button" data-view>View Form</button></div></div>
+              <div class="g-card rq__card" data-form="DATA CAPTURE" data-desc="NIGERIAN TELEVISION AUTHORITY DATA CAPTURE" data-queue="Human Resources" data-fields="NAME(SURNAME FIRST)|LOCATION|DEPARTMENT|STAFF NUMBER|BLOOD GROUP|SIGNATURE"><h4>DATA CAPTURE</h4><span><span class="g-chip">internal</span> <span class="g-chip g-chip--ok">Active</span></span><p class="rq__desc">NIGERIAN TELEVISION AUTHORITY DATA CAPTURE</p><dl><dt>QUEUE</dt><dd>Human Resources</dd><dt>QUEUE TYPE</dt><dd>Staff records</dd></dl><small>Created by Ann Nya on 9 Sep, 2026</small><div class="rq__card-acts"><button class="g-btn g-btn--sm" type="button">Share</button><button class="g-btn g-btn--sm g-btn--primary" type="button" data-view>View Form</button></div></div>
+              <div class="g-card rq__card" data-form="PAY IN FORM" data-desc="Record a payment made into a corporate account" data-queue="Finance" data-fields="Full name|Department|Amount (₦)|Bank|Teller / RRR number|Purpose of payment"><h4>PAY IN FORM</h4><span><span class="g-chip">internal</span> <span class="g-chip g-chip--ok">Active</span></span><p class="rq__desc">Record a payment made into a corporate account</p><dl><dt>QUEUE</dt><dd>Finance</dd><dt>QUEUE TYPE</dt><dd>Revenue</dd></dl><small>Created by Ann Nya on 9 Sep, 2026</small><div class="rq__card-acts"><button class="g-btn g-btn--sm" type="button">Share</button><button class="g-btn g-btn--sm g-btn--primary" type="button" data-view>View Form</button></div></div>
+              <div class="g-card rq__card" data-form="PARTICIPANT EVALUATION" data-desc="Evaluate a training or workshop you attended" data-queue="Human Resources" data-fields="Participant name|Training / programme|Date attended|Overall rating|Comments"><h4>PARTICIPANT EVALUATION</h4><span><span class="g-chip">internal</span> <span class="g-chip g-chip--ok">Active</span></span><p class="rq__desc">Evaluate a training or workshop you attended</p><dl><dt>QUEUE</dt><dd>Human Resources</dd><dt>QUEUE TYPE</dt><dd>Training</dd></dl><small>Created by Chinwuba Okafor on 10 Sep, 2026</small><div class="rq__card-acts"><button class="g-btn g-btn--sm" type="button">Share</button><button class="g-btn g-btn--sm g-btn--primary" type="button" data-view>View Form</button></div></div>
+              <div class="g-card rq__card" data-form="TEST AUTOMATION 186589319760" data-desc="Test script automation" data-queue="TEST AUTOMATION" data-fields="Title|Description"><h4>TEST AUTOMATION 186589319760</h4><span><span class="g-chip">internal</span> <span class="g-chip g-chip--ok">Active</span></span><p class="rq__desc">Test script automation</p><dl><dt>QUEUE</dt><dd>TEST AUTOMATION</dd><dt>QUEUE TYPE</dt><dd>Automated Testing</dd></dl><small>Created by Babatunde Adenrele on 10 Sep, 2026</small><div class="rq__card-acts"><button class="g-btn g-btn--sm" type="button">Share</button><button class="g-btn g-btn--sm g-btn--primary" type="button" data-view>View Form</button></div></div>
+              <div class="g-card rq__card" data-form="Testing Internal Form - Request" data-desc="Test" data-queue="TEST AUTOMATION" data-fields="Title|Description"><h4>Testing Internal Form - Request</h4><span><span class="g-chip">internal</span> <span class="g-chip g-chip--ok">Active</span></span><p class="rq__desc">Test</p><dl><dt>QUEUE</dt><dd>TEST AUTOMATION</dd><dt>QUEUE TYPE</dt><dd>Automated Testing</dd></dl><small>Created by Ann Nya on 9 Sep, 2026</small><div class="rq__card-acts"><button class="g-btn g-btn--sm" type="button">Share</button><button class="g-btn g-btn--sm g-btn--primary" type="button" data-view>View Form</button></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Above the cards on <code>/admin/tenant/request</code>, and a side panel on every <code>/webform/*</code> page</div>
+      <div class="doc__where-item"><b>Also appears in</b>ECMS → Requests (<code>/ecms/request</code>), Ask CICOD ("I need an expense request…")</div>
+      <div class="doc__where-item"><b>Trigger</b>700 ms after typing stops in Describe what you need</div>
+      <div class="doc__where-item"><b>Who sees it</b>All staff. Only forms the user's role can raise are ranked</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Semantic matching picks the form, and an extractor fills fields from the sentence.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The sentence, the user's profile (name, department) and the catalogue of forms their role can raise (name, description, queue, fields) go to <code>/forms/find</code>.</p></div>
+      <div class="doc__step"><h4>Match</h4><p>Embeddings of each form's name, description and field labels are compared with the sentence. The top 3 forms get a score and the words that matched.</p></div>
+      <div class="doc__step"><h4>Extract</h4><p>An LLM extractor with the form's field schema pulls out destination, dates, amounts, banks and names.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The user picks the form. Every choice goes to <code>/feedback</code> to improve matching.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant on 27 Sep 2026 (20 request forms, 1 form group). Numbers marked "target" are pilot goals.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">20 cards → 1 sentence</div><h4>Right form first time</h4><p>All 20 forms sit in one "General Forms" group today, with names like "test auto9164" beside real ones.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−50%</div><h4>Wrong-form submissions (target)</h4><p>Measured as requests re-routed or cancelled within 48 h of submission.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in Workspace and webforms</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Request page + webform)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/request-finder.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/request-finder.js"&gt;&lt;/script&gt;
+
+&lt;!-- Request Forms page, above the cards --&gt;
+&lt;ai-request-finder catalog="#form-cards"
+   user="Prince Ekpenyong" department="Administration"&gt;
+&lt;/ai-request-finder&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-request-open', e =&gt;
+  webform.open(e.detail.form, { prefill: e.detail.fields }));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Expose the role-trimmed form catalogue with each form's description and field schema (labels, types, required).</li>
+            <li>Embed the catalogue nightly and whenever a form is created or edited in ECMS → Forms.</li>
+            <li>Expose <code>/forms/find</code>: embedding match, then LLM field extraction against the chosen form's schema.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/forms/find
+{ "query": "expense request to Kaduna next week…",
+  "user": "Prince Ekpenyong", "department": "Administration",
+  "forms": [{ "name": "EXPENSE REQUEST",
+              "fields": ["Destination", "Departure date", "…"] }] }
+→ { "model": "cicod-formfinder-v1",
+    "matches": [{ "form": "EXPENSE REQUEST", "score": 0.95,
+      "fields": { "Destination": "Kaduna",
+                  "Amount requested (₦)": "₦185,000" } }] }
+</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.cicod.requestFinder</code> in Administration.</li>
+            <li>Every match and field used is written to the audit log (feature: <i>Request Finder</i>).</li>
+            <li>Permission trimming: the catalogue sent to the model only holds forms the user's role can raise.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="request-finder.js"></script>
+<script>
+  // Host-page wiring: the component suggests a form and values; the page owns the form.
+  const esc = AIGateway.esc;
+  const formBox = document.getElementById('rq-form');
+  const flash = el => { el.classList.remove('rq__flash'); void el.offsetWidth; el.classList.add('rq__flash'); };
+
+  function openForm(name, prefill = {}) {
+    const card = document.querySelector(`#rq-cards [data-form="${CSS.escape(name)}"]`);
+    if (!card) return;
+    document.querySelectorAll('.rq__card--hit').forEach(c => c.classList.remove('rq__card--hit'));
+    card.classList.add('rq__card--hit');
+    const fields = card.dataset.fields.split('|');
+    const input = f => `<input class="g-input" data-field="${esc(f)}" value="${esc(prefill[f] || '')}">`;
+    formBox.innerHTML = `<div class="rq__form-top"><h3>${esc(name)}</h3><button class="g-btn g-btn--sm" type="button" data-back>← Back to forms</button></div>
+      <div class="rq__form-grid">
+        <form id="rf-form" onsubmit="return false">
+          <div class="rq__fields">${fields.map(f => `<div><label class="g-label">${esc(f)}${prefill[f] ? '<span class="rq__ai-tag">✦ pre-filled</span>' : ''}</label>${input(f)}</div>`).join('')}</div>
+          <label class="rq__attest"><input type="checkbox"> I hereby consent to the collection, use, processing, and storage of my personal data for the purpose of delivering the requested CICOD service(s).</label>
+          <button class="g-btn g-btn--primary" type="button">Submit</button>
+        </form>
+      </div>`;
+    formBox.hidden = false;
+    formBox.querySelectorAll('[data-field]').forEach(i => { if (i.value) flash(i); });
+    formBox.querySelector('[data-back]').addEventListener('click', () => { formBox.hidden = true; card.classList.remove('rq__card--hit'); });
+    formBox.scrollIntoView({ block: 'nearest' });
+  }
+
+  document.addEventListener('ai-request-open', e => openForm(e.detail.form, e.detail.fields));
+  document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => openForm(b.closest('[data-form]').dataset.form)));
+</script>
+</body>
+</html>

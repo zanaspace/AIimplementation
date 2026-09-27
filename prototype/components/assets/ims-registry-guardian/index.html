@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registry Guardian Forecast</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="ims-registry-guardian.css">
+<style>
+  /* Page-only layout for the mock "Asset Registry" screen */
+  .reg-filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 10px 12px; margin-bottom: 10px; }
+  .reg-filters .g-chip { font-size: 12px; padding: 4px 10px; }
+  .reg-filters .g-btn { margin-left: auto; }
+  .reg-hint { font-size: 12px; color: var(--text-2); margin: 0 0 10px; }
+  .reg-kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+  .reg-kpi { position: relative; border-radius: var(--radius); padding: 12px 14px; min-height: 84px; border: 1px solid transparent; }
+  .reg-kpi b { display: block; font-size: 19px; letter-spacing: -.01em; }
+  .reg-kpi span { font-size: 12px; color: var(--text-2); }
+  .reg-kpi--g { background: color-mix(in srgb, var(--ok) 16%, var(--surface)); }
+  .reg-kpi--b { background: color-mix(in srgb, var(--info) 16%, var(--surface)); }
+  .reg-kpi--o { background: color-mix(in srgb, var(--warn) 18%, var(--surface)); }
+  .reg-kpi--p { background: color-mix(in srgb, var(--ai-500) 16%, var(--surface)); }
+  .reg-kpi--flag { border-color: var(--bad); }
+  .reg-kpi--review { border-color: var(--warn); border-style: dashed; }
+  .reg-flag { display: inline-block; margin-top: 6px; border: 0; cursor: pointer; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--bad-bg); color: var(--bad); }
+  .reg-flag--medium { background: var(--warn-bg); color: var(--warn); }
+  .reg-kpi small { display: block; margin-top: 4px; font-size: 11px; color: var(--warn); font-weight: 600; }
+  .reg-mid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 12px; margin-top: 16px; align-items: start; }
+  .reg-queue { padding: 14px; }
+  .reg-queue h3 { margin: 0 0 2px; font-size: 13px; }
+  .reg-queue p { margin: 0 0 8px; font-size: 12px; color: var(--text-3); }
+  .reg-queue ul { margin: 0; padding: 0; list-style: none; font-size: 12px; }
+  .reg-queue li { padding: 7px 0; border-top: 1px dashed var(--border); color: var(--text-2); overflow-wrap: anywhere; }
+  .reg-queue li b { color: var(--text); }
+  .reg-h { font-size: 15px; margin: 20px 0 2px; }
+  .reg-sub { font-size: 12px; color: var(--text-2); margin: 0 0 10px; }
+  .reg-charts { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; }
+  .reg-chart { padding: 14px; }
+  .reg-chart h4 { margin: 0 0 10px; font-size: 12px; letter-spacing: .06em; color: var(--gov-green-600); }
+  .reg-bar { display: grid; grid-template-columns: 120px 1fr; gap: 8px; align-items: center; font-size: 11px; color: var(--text-2); margin: 4px 0; }
+  .reg-bar span:first-child { text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .reg-bar i { display: block; height: 14px; background: var(--gov-green-600); border-radius: 2px; }
+  .reg-cats { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--text-2); }
+  .reg-cats span::before { content: "●"; margin-right: 4px; color: var(--gov-green-500); }
+  .reg-flash { animation: reg-flash 1.2s ease; }
+  @keyframes reg-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); } 100% { box-shadow: none; } }
+  @media (max-width: 1100px) { .reg-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } .reg-mid, .reg-charts { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .reg-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .reg-bar { grid-template-columns: 90px 1fr; } .reg-filters .g-btn { margin-left: 0; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD Assets</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · A1 · A4 · A6 · Phase 1</span>
+      <h1>Registry Guardian &amp; Forecast</h1>
+      <p>Checks the Asset Registry cards for <b>values that cannot be true</b>, such as an average cost larger than the total value, and explains the likely root cause. It also finds <b>duplicate units of measure and junk asset types</b> and proposes a merge, and <b>forecasts reorder points</b> for the top consumables. A store officer or admin confirms every change.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Assets → Asset Registry</span><span class="g-chip">Component: &lt;ai-registry-guardian&gt;</span><span class="g-chip">Endpoint: /ims/registry-check · /ims/reorder-forecast</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the <b>Asset Registry</b> screen with the real cicod figures. Click <i>✦ Scan registry</i>. Red badges appear on the impossible cards; click one to jump to its explanation, then <i>Raise data fix</i>. Open <i>Master data</i> to merge "Reams", "Reams 1", "Reams 2" and "ream@unit". Open <i>Reorder forecast</i> and change the store or lead time to see the reorder dates move.</p>
+    <div id="screen" class="shell" data-app="ims" data-active="Asset Registry">
+      <div class="shell__content">
+        <h2 class="shell__title">Asset Registry</h2>
+        <div class="g-card reg-filters">
+          <span class="g-chip">Last 30 days ✕</span><span class="g-chip">All repositories ✕</span><span class="g-chip">All asset types ✕</span><span class="g-chip">All statuses ✕</span>
+          <button class="g-btn g-btn--sm" type="button">↻ Sync</button>
+        </div>
+        <p class="reg-hint">Every card is clickable. It opens the Repository summary table pre-filtered to that condition. <span class="g-chip g-chip--warn">COMING SOON</span></p>
+        <div class="reg-kpis" id="reg-kpis" data-ai-spot="CICOD-AI · Impossible-value badges">
+          <div class="reg-kpi reg-kpi--g" data-kpi="totalAssets" data-value="38"><b>38</b><span>Total assets</span></div>
+          <div class="reg-kpi reg-kpi--b" data-kpi="totalValue" data-value="1110000000"><b>₦1.11bn</b><span>Total asset value</span></div>
+          <div class="reg-kpi reg-kpi--o" data-kpi="avgCost" data-value="5400000000"><b>₦5.40bn</b><span>Average asset cost</span></div>
+          <div class="reg-kpi reg-kpi--p" data-kpi="repositories" data-value="2"><b>2</b><span>Total repositories</span></div>
+          <div class="reg-kpi reg-kpi--g" data-kpi="categories" data-value="8"><b>8</b><span>Total categories</span></div>
+          <div class="reg-kpi reg-kpi--b" data-kpi="assetTypes" data-value="3"><b>3</b><span>Total asset types</span></div>
+          <div class="reg-kpi reg-kpi--o" data-kpi="available" data-value="25160250"><b>25,160,250</b><span>Available assets</span></div>
+          <div class="reg-kpi reg-kpi--p" data-kpi="reserved" data-value="89"><b>89</b><span>Reserved assets</span></div>
+          <div class="reg-kpi reg-kpi--g" data-kpi="issued" data-value="18"><b>18</b><span>Issued assets</span></div>
+          <div class="reg-kpi reg-kpi--b" data-kpi="returned" data-value="8"><b>8</b><span>Returned assets</span></div>
+          <div class="reg-kpi reg-kpi--o" data-kpi="damaged" data-value="1"><b>1</b><span>Damaged assets</span></div>
+          <div class="reg-kpi reg-kpi--p" data-kpi="obsolete" data-value="0"><b>0</b><span>Obsolete assets</span></div>
+          <div class="reg-kpi reg-kpi--g" data-kpi="awaitingPutaway" data-value="1294"><b>1,294</b><span>Awaiting put away</span></div>
+          <div class="reg-kpi reg-kpi--b" data-kpi="pendingInspection" data-value="54"><b>54</b><span>Pending inspection</span></div>
+        </div>
+
+        <div class="reg-mid">
+          <div data-ai-spot="CICOD-AI · Registry guardian panel">
+            <ai-registry-guardian id="guardian" source="#reg-kpis" repos-source="#reg-repos [data-repo]" cats-source="#reg-cats [data-cat]" store="Central Store"></ai-registry-guardian>
+          </div>
+          <div class="g-card reg-queue" id="reg-queue">
+            <h3>Changes queued for approval</h3>
+            <p>Data fixes, master-data merges and reorder alerts you accept appear here. An admin approves them in Settings.</p>
+            <ul id="reg-queue-list"><li>Nothing queued yet.</li></ul>
+          </div>
+        </div>
+
+        <h3 class="reg-h">Asset value and count by repository</h3>
+        <p class="reg-sub">Ranked by total value. Select a bar to drill into that repository.</p>
+        <div class="reg-charts">
+          <div class="g-card reg-chart" id="reg-repos">
+            <h4>ASSET VALUE BY REPOSITORY</h4>
+            <div class="reg-bar" data-repo><span>NATIVE TEST STORE</span><i style="width:100%"></i></div>
+            <div class="reg-bar" data-repo><span>Central Store</span><i style="width:60%"></i></div>
+            <div class="reg-bar" data-repo><span>Market Square</span><i style="width:47%"></i></div>
+            <div class="reg-bar" data-repo><span>STATIONARY</span><i style="width:32%"></i></div>
+            <div class="reg-bar" data-repo><span>Kano store</span><i style="width:25%"></i></div>
+            <div class="reg-bar" data-repo><span>Stationary Store</span><i style="width:21%"></i></div>
+            <div class="reg-bar" data-repo><span>Shoprite</span><i style="width:13%"></i></div>
+            <div class="reg-bar" data-repo><span>Western Store</span><i style="width:9%"></i></div>
+            <div class="reg-bar" data-repo><span>Main Warehouse</span><i style="width:7%"></i></div>
+            <div class="reg-bar" data-repo><span>ICT</span><i style="width:5%"></i></div>
+            <div class="reg-bar" data-repo><span>Secondary Store</span><i style="width:3%"></i></div>
+            <div class="reg-bar" data-repo><span>JUMIA STORE</span><i style="width:2%"></i></div>
+            <div class="reg-bar" data-repo><span>Gadget Store</span><i style="width:1%"></i></div>
+          </div>
+          <div class="g-card reg-chart">
+            <h4>ASSETS BY CATEGORY</h4>
+            <div class="reg-cats" id="reg-cats">
+              <span data-cat>Beverages 33.12%</span><span data-cat>Refrigeration Equipment 24.68%</span><span data-cat>Stationaries 19.48%</span><span data-cat>Personal Information Technology Device 10.06%</span><span data-cat>GBB Access point 5.19%</span><span data-cat>GBB Stationary Materials 4.22%</span><span data-cat>Medical &amp; Safety 2.92%</span><span data-cat>Power Equipment 0.32%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Warning badges on the KPI cards and a guardian panel under them on <code>/ims/asset-registry</code></div>
+      <div class="doc__where-item"><b>Also appears in</b>Settings → Manage UOM and Asset Type (duplicate banner on create), Settings → Email Alert (reorder point instead of fixed Minimum Stock), and the Dashboard</div>
+      <div class="doc__where-item"><b>Trigger</b>A nightly scan plus a scan on Sync, and whenever a filter changes. Master-data checks also run when a UOM or asset type is created</div>
+      <div class="doc__where-item"><b>Who sees it</b>KPI warnings are shown to everyone who can view the registry. Merges and data fixes can only be raised by IMS admins and store managers</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Deterministic rules find the impossible values, an LLM writes the explanation and root cause, fuzzy matching clusters master data, and a time-series model sets reorder points.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The KPI values behind each card, the repository and category lists, the UOM and Asset Type tables, and 90 days of receipts and issues per store are sent to <code>/ims/registry-check</code> and <code>/ims/reorder-forecast</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Only aggregates and master-data names leave IMS. User names in the audit trail are replaced with IDs, and the job runs on the sovereign model because asset values are Official data.</p></div>
+      <div class="doc__step"><h4>Check</h4><p>Invariant rules: average ≤ total, available ≤ total when both count assets, status cards ≤ total, card counts = chart counts. Each failure gets an LLM explanation and the most likely root cause, drawn from a catalogue of known IMS defects.</p></div>
+      <div class="doc__step"><h4>Cluster</h4><p>UOM and asset-type names are normalised (case, digits, plural, "@unit") and clustered. A spelling model catches "Intagible", and a test-data detector catches "Testt" and "testing".</p></div>
+      <div class="doc__step"><h4>Forecast</h4><p>Exponential smoothing on daily issues per store and asset. Reorder point = daily use × lead time + safety stock at the chosen service level, with a 30-day order quantity.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer raises a fix, merges, edits the reorder point or dismisses. Each decision goes to <code>/feedback</code>. Dismissed rules are down-weighted for that tenant.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant, 27 Sep 2026. Other figures are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">4 → 0</div><h4>Impossible KPI cards</h4><p>Average cost ₦5.40bn &gt; total ₦1.11bn, 25,160,250 available vs 38 assets, 1,464 in status cards, and 2 repositories vs 13 in the chart.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">4 → 1</div><h4>Ream units of measure</h4><p>"Reams", "Reams 1", "Reams 2" and "ream@unit" become one unit, plus one blank UOM archived.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">5 → 3</div><h4>Asset types match the card</h4><p>Settings lists 5 types; the registry shows 3. Archiving "Testt" and "testing" and fixing "Intagible" makes them agree.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−50%</div><h4>Stock-outs (target)</h4><p>Reorder points from actual use replace the single fixed Minimum Stock alert for stationery and beverages.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Audit-ready</div><h4>Trustworthy figures</h4><p>Asset values that finance and the Auditor-General can rely on, with every fix traceable to an ECMS task.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in IMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Asset Registry page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/ims-registry-guardian.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/ims-registry-guardian.js"&gt;&lt;/script&gt;
+
+&lt;ai-registry-guardian source="#kpi-grid"
+    repos-source="#repo-chart [data-repo]"
+    cats-source="#cat-chart [data-cat]"
+    store="Central Store"&gt;&lt;/ai-registry-guardian&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-registry-result', e =&gt;
+  e.detail.checks.forEach(c =&gt; kpiGrid.flag(c.id, c.severity)));
+document.addEventListener('ai-master-merge', e =&gt;
+  settingsApi.queueMerge(e.detail));   // admin approves
+document.addEventListener('ai-reorder-apply', e =&gt;
+  emailAlerts.setReorderPoint(e.detail));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Write the invariant rules against the same queries that feed the registry cards, and run them on every Sync.</li>
+            <li>Build a root-cause catalogue from known defects (unit mismatch, unweighted averages, grouping by location type) for the LLM to cite.</li>
+            <li>Add normalisation and clustering for UOM, Asset Type and Category names; queue merges as admin approvals that re-point existing assets.</li>
+            <li>Train the per-store forecast on receipts and issues from Bin Card View; back-test on the last 90 days.</li>
+            <li>Wire <code>ai-reorder-apply</code> to Settings → Email Alert so the Reorder alert uses the forecast point.</li>
+            <li>Run in suggestion mode for 4 weeks and track how many flags are confirmed as real defects.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ims/registry-check
+{
+  "kpis": { "totalAssets": 38, "totalValue": 1110000000,
+            "avgCost": 5400000000, "available": 25160250, … },
+  "repositoriesListed": 13, "categoriesListed": 8,
+  "uom": [{ "name": "Reams 1", "createdBy": "…" }],
+  "assetTypes": [{ "name": "Intagible", "desc": "…" }]
+}
+→ 200
+{
+  "model": "cicod-dq-rules-v2 + llm-explain",
+  "checks": [{ "id": "avgCost", "severity": "high",
+     "observed": "…", "expected": "…",
+     "cause": "…", "fix": "…", "confidence": 0.94 }],
+  "passed": ["…"],
+  "master": [{ "id": "uom-ream", "kind": "Unit of Measure",
+     "action": "Merge", "members": ["Reams", "Reams 1", …],
+     "canonical": "Ream", "confidence": 0.95 }]
+}
+
+POST /ai/ims/reorder-forecast
+{ "store": "Central Store", "leadDays": 14, "serviceLevel": 95 }
+→ { "items": [{ "asset": "A4 Paper 80gsm", "onHand": 96,
+     "dailyUse": 6, "reorderPoint": 94, "reorderQty": 180,
+     "reorderDate": "2026-09-27" }] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.cicod.imsRegistryGuardian</code> in IMS Settings, on/off per tenant.</li>
+            <li>Thresholds: flag "available ≫ total" above 10×; auto-suggest merges only above 0.85 similarity; forecast service level defaults to 95%.</li>
+            <li>Merges and renames never apply directly. They go to the IMS Approval queue, and every decision is written to Settings → Audit (feature: <i>CICOD-AI Registry Guardian</i>).</li>
+            <li>Users only see checks and forecasts for repositories their role can view.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="ims-registry-guardian.js"></script>
+<script>
+  // Host-page wiring: the component reports findings and decisions, and the page updates its own cards and queue.
+  const guardian = document.getElementById('guardian');
+  const list = document.getElementById('reg-queue-list');
+  const flash = el => { el.classList.remove('reg-flash'); void el.offsetWidth; el.classList.add('reg-flash'); };
+  const card = id => document.querySelector(`#reg-kpis [data-kpi="${id}"]`);
+  const queue = html => { if (list.dataset.used !== '1') { list.innerHTML = ''; list.dataset.used = '1'; } const li = document.createElement('li'); li.innerHTML = html; list.prepend(li); flash(li); };
+  const esc = AIGateway.esc;
+
+  document.addEventListener('ai-registry-result', e => {
+    document.querySelectorAll('.reg-flag').forEach(b => b.remove());
+    e.detail.checks.forEach(c => {
+      const el = card(c.id); if (!el) return;
+      el.classList.add('reg-kpi--flag');
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'reg-flag' + (c.severity === 'medium' ? ' reg-flag--medium' : '');
+      b.textContent = c.severity === 'high' ? '⚠ Impossible' : '⚠ Check';
+      b.addEventListener('click', () => guardian.focusCheck(c.id));
+      el.appendChild(b);
+    });
+  });
+  document.addEventListener('ai-kpi-flag', e => {
+    const el = card(e.detail.kpi); if (!el) return;
+    el.querySelector('.reg-flag')?.remove();
+    el.classList.remove('reg-kpi--flag');
+    if (e.detail.action === 'raise') {
+      el.classList.add('reg-kpi--review');
+      el.insertAdjacentHTML('beforeend', `<small>Under review · ${esc(e.detail.ticket)}</small>`);
+      queue(`<b>Data fix</b> · ${esc(el.querySelector('span').textContent)} card · ECMS task ${esc(e.detail.ticket)}`);
+    }
+    flash(el);
+  });
+  document.addEventListener('ai-master-merge', e => {
+    const d = e.detail;
+    const names = d.members.map(n => n ? `"${n}"` : '(blank)').join(', ');
+    queue(`<b>${esc(d.action)} ${esc(d.kind)}</b> · ${esc(names)}${d.canonical ? ` → "${esc(d.canonical)}"` : ''}`);
+  });
+  document.addEventListener('ai-reorder-apply', e => {
+    const d = e.detail;
+    queue(`<b>Reorder alert</b> · ${esc(d.asset)} at ${esc(d.store)} · reorder at ${esc(d.reorderPoint)}, order ${esc(d.reorderQty)} (by ${esc(d.reorderDate)})`);
+  });
+</script>
+</body>
+</html>

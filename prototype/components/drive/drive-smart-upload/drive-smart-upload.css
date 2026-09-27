@@ -1,0 +1,60 @@
+/* <ai-smart-upload>: classification, personal-data and filing suggestions inside the Drive
+   upload dialog. All classes are prefixed `aisu-`. */
+ai-smart-upload { display: block; }
+
+.aisu { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); overflow: hidden; }
+.aisu__head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 10px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aisu__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aisu__body { padding: 12px 14px; display: grid; gap: 12px; }
+.aisu__step { margin: 0; font-size: 12px; color: var(--text-2); }
+
+.aisu__drop { margin: 14px; padding: 18px 16px; border: 2px dashed var(--border-strong); border-radius: var(--radius); text-align: center; display: grid; gap: 6px; justify-items: center; background: var(--surface-2); }
+.aisu__drop > b { font-size: 13px; }
+.aisu__drop > span { font-size: 12px; color: var(--text-3); }
+.aisu__drop-icon { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--gov-green-100); color: var(--gov-green-600); font-weight: 700; }
+.aisu__samples { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 6px; }
+.aisu__samples .g-btn { white-space: normal; height: auto; min-height: 28px; padding: 4px 10px; }
+.aisu__custom { width: 100%; max-width: 460px; margin-top: 8px; text-align: left; }
+.aisu__custom-row { display: flex; gap: 6px; }
+.aisu__custom-row .g-input { min-width: 0; }
+
+.aisu__file { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); min-width: 0; }
+.aisu__file-icon { flex: none; width: 38px; height: 44px; border-radius: 6px; background: var(--gov-green-100); color: var(--gov-green-600); display: grid; place-items: center; font-size: 10px; font-weight: 700; }
+.aisu__file-meta { display: grid; min-width: 0; }
+.aisu__file-meta b { font-size: 13px; overflow-wrap: anywhere; }
+.aisu__file-meta span { font-size: 11.5px; color: var(--text-3); }
+
+.aisu__sov { padding: 8px 14px; background: var(--warn-bg); color: var(--text); font-size: 12px; font-weight: 600; border-bottom: 1px solid var(--border); }
+
+.aisu__block { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
+.aisu__block-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.aisu__block-head h5 { margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aisu__why { margin: 0 0 10px; padding-left: 16px; font-size: 12px; color: var(--text-2); }
+.aisu__warn { margin: 6px 0 0; font-size: 11.5px; color: var(--bad); }
+
+.aisu__pii { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 6px; }
+.aisu__pii li { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; }
+.aisu__pii b { display: block; }
+.aisu__pii small { color: var(--text-3); font-size: 11.5px; }
+.aisu__pii-count { flex: none; min-width: 40px; text-align: center; padding: 2px 6px; border-radius: 6px; background: var(--warn-bg); color: var(--warn); font-weight: 700; font-family: var(--mono); font-size: 12px; }
+.aisu__check { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; font-size: 12.5px; font-weight: 600; padding-top: 6px; border-top: 1px dashed var(--border); }
+.aisu__check small { flex-basis: 100%; font-weight: 400; color: var(--text-3); font-size: 11.5px; }
+.aisu__check input { accent-color: var(--ai-500); }
+.aisu__none { margin: 0; font-size: 12px; color: var(--text-2); }
+
+.aisu__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.aisu__full { grid-column: 1 / -1; }
+.aisu__dept { margin: 8px 0 0; font-size: 12px; color: var(--text-2); }
+
+.aisu__done { padding: 14px; font-size: 13px; display: grid; gap: 4px; }
+.aisu__done p { margin: 0; }
+.aisu__done p > b:first-child { color: var(--ok); }
+.aisu__done span { font-size: 12px; color: var(--text-3); }
+
+.aisu__actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.aisu__mode { font-size: 11px; color: var(--text-3); margin-left: auto; align-self: center; }
+
+@media (max-width: 520px) {
+  .aisu__grid { grid-template-columns: 1fr; }
+  .aisu__mode { margin-left: 0; }
+}

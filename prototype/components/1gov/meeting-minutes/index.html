@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CICOD-AI Minutes of Meeting</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="meeting-minutes.css">
+<style>
+  /* Page-only layout for the mock Conference → Recordings screen */
+  .cr__top { display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .cr__top .g-input { max-width: 320px; }
+  .cr__row--on td { background: var(--gov-green-50); }
+  .cr__table td small { display: block; color: var(--text-3); font-size: 11.5px; }
+  .cr__acts { display: flex; gap: 6px; flex-wrap: nowrap; }
+  .cr__player { display: flex; gap: 10px; align-items: center; padding: 10px 14px; margin: 12px 0; font-size: 12.5px; }
+  .cr__player[hidden] { display: none; }
+  .cr__bar { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; min-width: 60px; }
+  .cr__bar i { display: block; height: 100%; background: var(--gov-green-600); width: 0; transition: width .4s; }
+  .cr__time { font-family: var(--mono); font-size: 11.5px; white-space: nowrap; }
+  .cr__toast { margin: 0 0 12px; padding: 10px 14px; border-radius: var(--radius); background: var(--ok-bg); font-size: 13px; }
+  .cr__toast:empty { display: none; }
+  .cr__drive { margin-top: 12px; padding: 12px 14px; font-size: 12.5px; }
+  .cr__drive[hidden] { display: none; }
+  .cr__drive h4 { margin: 0 0 6px; font-size: 13px; }
+  .cr__drive ul { margin: 0; padding-left: 18px; color: var(--text-2); }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD / Conference</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · C2 · C3 · C5 · Phase 2</span>
+      <h1>CICOD-AI Minutes of Meeting</h1>
+      <p>After a Conference meeting, the recording becomes <b>minutes, decisions and action items</b> in about a minute, with a <b>transcript you can search</b> ("where did we talk about the budget?"). One click saves the minutes to <b>Drive → General Documents / MINUTES_OF_MEETINGS</b>, a folder that already exists. Another click turns the action items into <b>ECMS tasks</b>, with assignees taken from the attendance list.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Conference → Recordings</span><span class="g-chip">Component: &lt;ai-meeting-minutes&gt;</span><span class="g-chip">Endpoint: /conference/minutes</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">The live Recordings page returned a <b>500 error</b> on 27 Sep 2026, so this is a plausible copy of it. Click <b>✦ CICOD-AI minutes</b> on the first recording. Look through the tabs, then open <b>Transcript</b> and search <i>"budget"</i> or <i>"printer"</i> and click a time. Finally click <b>Create ECMS tasks</b> and <b>Save minutes to Drive</b>.</p>
+    <div id="screen" class="shell" data-app="conference" data-active="Recordings">
+      <div class="shell__content">
+        <h2 class="shell__title">Recordings</h2>
+        <div class="cr__toast" id="cr-toast" role="status"></div>
+        <div class="cr__top"><input class="g-input" placeholder="Search recordings" aria-label="Search recordings"><span class="g-chip">5 recordings · 3 h 42 min</span></div>
+        <div class="g-card g-table-wrap">
+          <table class="g-table cr__table">
+            <thead><tr><th>Room</th><th>Meeting</th><th>Date</th><th>Duration</th><th>Participants</th><th>Minutes</th><th>Actions</th></tr></thead>
+            <tbody id="cr-body">
+              <tr data-rec="rec-0927" data-title="Management meeting" data-room="Prince Room" data-date="27 Sep 2026" data-duration="42 min" data-attendees="Prince Ekpenyong|Rebecca|Adeola|Raisa|Raisa|Dorcas|Eyitayo Abidogun|Ayo Toriola"><td>Prince Room</td><td><b>Management meeting</b><small>Host: Prince Ekpenyong</small></td><td>27 Sep 2026<small>14:30</small></td><td>42 min</td><td>8</td><td data-status><span class="g-chip">Not generated</span></td><td><div class="cr__acts"><button class="g-btn g-btn--sm" data-play type="button">▶ Play</button><span data-ai-spot="CICOD-AI · Minutes"><button class="g-btn g-btn--sm g-btn--ai" data-ai type="button">✦ CICOD-AI minutes</button></span></div></td></tr>
+              <tr data-rec="rec-0924" data-title="Q3 Budget performance review" data-room="Prince Room" data-date="24 Sep 2026" data-duration="58 min" data-attendees="Rebecca|Prince Ekpenyong|Adeola|Dorcas"><td>Prince Room</td><td><b>Q3 Budget performance review</b><small>Host: Rebecca</small></td><td>24 Sep 2026<small>11:00</small></td><td>58 min</td><td>4</td><td data-status><span class="g-chip">Not generated</span></td><td><div class="cr__acts"><button class="g-btn g-btn--sm" data-play type="button">▶ Play</button><button class="g-btn g-btn--sm g-btn--ai" data-ai type="button">✦ CICOD-AI minutes</button></div></td></tr>
+              <tr data-rec="rec-0922" data-title="CICOD-AI Implementation kick-off" data-room="ICT Room" data-date="22 Sep 2026" data-duration="35 min" data-attendees="Adeola|Prince Ekpenyong|Eyitayo Abidogun|Dorcas"><td>ICT Room</td><td><b>CICOD-AI Implementation kick-off</b><small>Host: Adeola</small></td><td>22 Sep 2026<small>10:00</small></td><td>35 min</td><td>4</td><td data-status><span class="g-chip">Not generated</span></td><td><div class="cr__acts"><button class="g-btn g-btn--sm" data-play type="button">▶ Play</button><button class="g-btn g-btn--sm g-btn--ai" data-ai type="button">✦ CICOD-AI minutes</button></div></td></tr>
+              <tr data-rec="rec-0918" data-title="Complaints backlog stand-up" data-room="Prince Room" data-date="18 Sep 2026" data-duration="15 min" data-attendees="Raisa|Raisa|Prince Ekpenyong"><td>Prince Room</td><td><b>Complaints backlog stand-up</b><small>Host: Raisa</small></td><td>18 Sep 2026<small>09:00</small></td><td>15 min</td><td>3</td><td data-status><span class="g-chip">Not generated</span></td><td><div class="cr__acts"><button class="g-btn g-btn--sm" data-play type="button">▶ Play</button><button class="g-btn g-btn--sm g-btn--ai" data-ai type="button">✦ CICOD-AI minutes</button></div></td></tr>
+              <tr data-rec="rec-0911" data-title="Procurement committee" data-room="Board Room" data-date="11 Sep 2026" data-duration="1 h 12 min" data-attendees="Dorcas|Rebecca|Prince Ekpenyong|Adeola|Raisa"><td>Board Room</td><td><b>Procurement committee</b><small>Host: Dorcas</small></td><td>11 Sep 2026<small>12:00</small></td><td>1 h 12 min</td><td>5</td><td data-status><span class="g-chip g-chip--ok">Saved to Drive</span></td><td><div class="cr__acts"><button class="g-btn g-btn--sm" data-play type="button">▶ Play</button><button class="g-btn g-btn--sm g-btn--ai" data-ai type="button">✦ CICOD-AI minutes</button></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="g-card cr__player" id="cr-player" hidden><span>▶</span><b id="cr-ptitle"></b><span class="cr__bar"><i id="cr-pbar"></i></span><span class="cr__time" id="cr-ptime">00:00</span></div>
+        <div data-ai-spot="CICOD-AI · Minutes panel (tabs + Drive + ECMS)" style="margin-top:12px">
+          <ai-meeting-minutes id="cr-ai" drive-path="General Documents/MINUTES_OF_MEETINGS"></ai-meeting-minutes>
+        </div>
+        <div class="g-card cr__drive" id="cr-drive" hidden><h4>Created from this meeting</h4><ul id="cr-created"></ul></div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>A panel under the list on <code>/conferencing/recording</code>, opened from the ✦ CICOD-AI minutes button on each row</div>
+      <div class="doc__where-item"><b>Also appears in</b>The end-of-meeting screen in a Room ("Minutes will be ready in about a minute"), and InMail, where the minutes link is sent to attendees</div>
+      <div class="doc__where-item"><b>Trigger</b>Automatically when a recording finishes processing (if the host enabled it), or on the CICOD-AI minutes click</div>
+      <div class="doc__where-item"><b>Who sees it</b>The meeting host and attendees. Only the host can save to Drive or create tasks for others</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Speech recognition with speaker labels, then an LLM that writes minutes in the formal executive format and pulls out decisions and actions, each linked to the moment it was said.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The recording audio, the room, the date and the attendance list (Conference → Attendance) go to <code>/conference/minutes</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Audio is transcribed on the sovereign ASR service and never leaves the tenant's region. Rooms marked Confidential or Secret use the on-prem model only.</p></div>
+      <div class="doc__step"><h4>Transcribe</h4><p>ASR tuned for Nigerian English produces timestamped segments. Diarisation matches voices to attendee names from their earlier meetings.</p></div>
+      <div class="doc__step"><h4>Summarise</h4><p>The LLM writes a summary, agenda notes, decisions and action items (owner, due date, queue), each with the timestamp it came from, so it can be checked.</p></div>
+      <div class="doc__step"><h4>Index</h4><p>Transcript segments are embedded for recording search, so "budget" also finds "412 million naira" and "capital release".</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The host edits the minutes, unticks or reassigns actions, then saves to Drive and creates ECMS tasks. Edits and "Not accurate" go to <code>/feedback</code>.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Numbers are pilot targets. The cicod Recordings page returned a 500 error on 27 Sep 2026, so there is no live baseline.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Days → minutes</div><h4>Minutes ready (target)</h4><p>Minutes are ready about a minute after the recording ends, instead of days of a secretary typing them up.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">100%</div><h4>Actions tracked (target)</h4><p>Every agreed action becomes an ECMS task with an owner and due date, so it shows up in their Needs you today.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">1 folder</div><h4>Minutes filed consistently</h4><p>Saved to the existing General Documents / MINUTES_OF_MEETINGS folder with the same naming every time.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&lt; 10 s</div><h4>Find the moment (target)</h4><p>Search the transcript and jump straight to where something was said, instead of scrubbing through a 42-minute recording.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&gt; 85%</div><h4>Actions kept without edits (target)</h4><p>Measured as the share of suggested action items created unchanged.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in Conference</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Recordings page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/meeting-minutes.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/meeting-minutes.js"&gt;&lt;/script&gt;
+
+&lt;ai-meeting-minutes id="minutes"
+   drive-path="General Documents/MINUTES_OF_MEETINGS"&gt;&lt;/ai-meeting-minutes&gt;
+
+&lt;script&gt;
+function openMinutes(rec) {
+  const m = document.getElementById('minutes');
+  m.setAttribute('meeting-title', rec.title);  /* room, date, duration… */
+  m.setAttribute('attendees', rec.attendance.join('|'));
+  m.setAttribute('recording', rec.id);  // set last: loads
+}
+document.addEventListener('ai-minutes-save',  e =&gt; drive.save(e.detail));
+document.addEventListener('ai-minutes-tasks', e =&gt; ecms.createTasks(e.detail.tasks));
+document.addEventListener('ai-minutes-seek',  e =&gt; player.seek(e.detail.t));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Fix the Recordings 500 error, and emit a "recording ready" event with the audio URL and attendance.</li>
+            <li>Deploy sovereign ASR with diarisation. Tune it on 20 hours of tenant meetings (Nigerian English, local names).</li>
+            <li>Expose <code>/conference/minutes</code>: ASR, then LLM with the minutes template, then extraction of actions and decisions with timestamps.</li>
+            <li>Use Drive's upload API for MINUTES_OF_MEETINGS, and ECMS create-task with Smart Routing (E-T1) for the queue.</li>
+            <li>Add <code>/conference/search</code> over embedded transcript segments for C5.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/conference/minutes
+{
+  "recordingId": "rec-0927",
+  "title": "Management meeting", "room": "Prince Room",
+  "date": "27 Sep 2026",
+  "attendees": ["Prince Ekpenyong", "Rebecca", "…"]
+}
+→ 200
+{
+  "model": "cicod-asr-v2 + cicod-minutes-v1",
+  "quality": 0.94, "speakers": 8,
+  "summary": "The management meeting reviewed …",
+  "agenda": [{ "item": "Q3 budget performance", "notes": "…" }],
+  "decisions": [{ "text": "…", "t": 402 }],
+  "actions": [{ "title": "Submit Q3 capital spend …",
+    "owner": "Prince Ekpenyong", "due": "2026-10-02",
+    "queue": "Correspondence", "t": 402, "confidence": 0.94 }],
+  "transcript": [{ "t": 128, "speaker": "Rebecca",
+                   "text": "Q3 capital releases came to …" }]
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.cicod.meetingMinutes</code> in Administration. Auto-generation is off by default and can be set per room.</li>
+            <li>Only actions at 70% confidence or more are pre-ticked. Nothing is saved or created without the host's click.</li>
+            <li>Saves, created tasks, edits and "Not accurate" are written to the Conference audit log (feature: <i>CICOD-AI Minutes</i>).</li>
+            <li>Permission trimming: only the host and attendees can open the minutes. The Drive file inherits the room's classification.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="meeting-minutes.js"></script>
+<script>
+  // Host-page wiring: Conference owns the player, Drive and ECMS; the component proposes.
+  const esc = AIGateway.esc;
+  const ai = document.getElementById('cr-ai');
+  const toast = document.getElementById('cr-toast');
+  let current = null;
+  const secs = d => { const h = /(\d+) h/.exec(d), m = /(\d+) min/.exec(d); return ((h ? +h[1] * 60 : 0) + (m ? +m[1] : 0)) * 60; };
+  const fmt = t => `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+
+  function select(row, withAI) {
+    current = row;
+    document.querySelectorAll('#cr-body tr').forEach(r => r.classList.toggle('cr__row--on', r === row));
+    document.getElementById('cr-player').hidden = false;
+    document.getElementById('cr-ptitle').textContent = `${row.dataset.title} · ${row.dataset.duration}`;
+    seek(0);
+    if (withAI) {
+      ['title', 'room', 'date', 'duration', 'attendees'].forEach(k => ai.setAttribute(k === 'title' ? 'meeting-title' : k, row.dataset[k]));
+      ai.setAttribute('recording', row.dataset.rec);
+      row.querySelector('[data-status]').innerHTML = '<span class="g-chip g-chip--ai">Draft ready</span>';
+    }
+  }
+  function seek(t) {
+    if (!current) return;
+    document.getElementById('cr-pbar').style.width = `${Math.min(100, (t / secs(current.dataset.duration)) * 100)}%`;
+    document.getElementById('cr-ptime').textContent = `${fmt(t)} / ${current.dataset.duration}`;
+  }
+  document.querySelectorAll('#cr-body tr').forEach(r => {
+    r.querySelector('[data-play]').addEventListener('click', () => select(r, false));
+    r.querySelector('[data-ai]').addEventListener('click', () => select(r, true));
+  });
+
+  document.addEventListener('ai-minutes-seek', e => { seek(e.detail.t); toast.textContent = `Playing from ${fmt(e.detail.t)}.`; });
+  document.addEventListener('ai-minutes-save', e => {
+    toast.textContent = `Saved "${e.detail.fileName}" to Drive → ${e.detail.path}.`;
+    if (current) current.querySelector('[data-status]').innerHTML = '<span class="g-chip g-chip--ok">Saved to Drive</span>';
+    const box = document.getElementById('cr-drive'); box.hidden = false;
+    document.getElementById('cr-created').insertAdjacentHTML('beforeend', `<li>Drive file: <b>${esc(e.detail.path)}/${esc(e.detail.fileName)}</b></li>`);
+  });
+  document.addEventListener('ai-minutes-tasks', e => {
+    let n = 17602;
+    const box = document.getElementById('cr-drive'); box.hidden = false;
+    document.getElementById('cr-created').insertAdjacentHTML('beforeend', e.detail.tasks.map(t => `<li>ECMS task <b>#${n++}</b> · ${esc(t.queue)} · ${esc(t.title)} → ${esc(t.assignee)}, due ${esc(t.due)}</li>`).join(''));
+    toast.textContent = `${e.detail.tasks.length} ECMS tasks created. Each assignee sees theirs under Tasks Assigned To Me.`;
+  });
+</script>
+</body>
+</html>

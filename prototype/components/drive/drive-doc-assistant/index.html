@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drive Document Assistant</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="drive-doc-assistant.css">
+<style>
+  /* Page-only layout for the mock Drive "General Documents" screen */
+  .gd { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+  .gd > * { min-width: 0; }
+  .gd__bar { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .gd__bar a { font-size: 13px; text-decoration: none; }
+  .gd__new { align-self: flex-start; border-radius: 999px; border-color: var(--gov-green-600); color: var(--gov-green-600); font-weight: 600; }
+  .gd__card { padding: 14px; margin-bottom: 14px; position: relative; }
+  .gd__card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+  .gd__card-head h3 { margin: 0; font-size: 14px; }
+  .gd__seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 2px; font-size: 12px; }
+  .gd__seg span { padding: 2px 8px; border-radius: 6px; color: var(--text-2); }
+  .gd__seg span.on { background: var(--surface); color: var(--text); font-weight: 600; }
+  .gd__folder { display: inline-flex; align-items: center; gap: 8px; }
+  .gd__folder::before { content: ""; width: 16px; height: 12px; border-radius: 2px; background: var(--gov-green-600); }
+  .gd__owner { display: inline-flex; align-items: center; gap: 6px; color: var(--gov-green-600); font-size: 12px; white-space: nowrap; }
+  .gd__av { width: 26px; height: 26px; border-radius: 50%; background: var(--gov-green-600); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; }
+  .gd__fname { cursor: pointer; font-weight: 500; }
+  .gd__fname:hover { color: var(--gov-green-600); }
+  .gd__tags { display: inline-flex; gap: 4px; margin-left: 6px; }
+  .gd__row--on td { background: var(--gov-green-50); }
+  .gd__dots { border: 0; background: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 2px 6px; border-radius: 6px; color: var(--text-2); }
+  .gd__dots:hover { background: var(--surface-2); }
+  .gd__menu { position: absolute; right: 16px; z-index: 20; width: 240px; max-width: calc(100% - 16px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 6px; display: none; }
+  .gd__menu.open { display: block; }
+  .gd__menu button { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 6px 8px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+  .gd__menu button:hover { background: var(--surface-2); }
+  .gd__menu hr { border: 0; border-top: 1px solid var(--border); margin: 4px 0; }
+  .gd__menu-ai button { color: var(--ai-600); font-weight: 600; }
+  .gd__viewer h3 { margin: 0 0 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .gd__tasks { margin-top: 10px; display: grid; gap: 6px; }
+  .gd__toast { padding: 8px 12px; border-radius: var(--radius); background: var(--ok-bg); font-size: 12.5px; border: 1px solid color-mix(in srgb, var(--ok) 30%, transparent); }
+  .gd__flash { animation: gd-flash 1.4s ease; }
+  @keyframes gd-flash { 0% { box-shadow: inset 0 0 0 999px var(--ai-100); } 100% { box-shadow: none; } }
+  @media (max-width: 1100px) { .gd { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD Drive</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · D1 · D2 · D13 · Priority 1</span>
+      <h1>Document Assistant</h1>
+      <p>The Document Assistant adds a <b>✦ Summarise</b> and <b>✦ Ask this document</b> button to every file in your Drive. Instead of reading through long documents, you can get an instant summary of key points and dates, or ask specific questions and get answers with exact page references. You can also chat with your team in the <b>Discussion</b> tab, where the CICOD-AI can help summarize long conversations or turn decisions into tasks automatically. Highly classified files are securely processed using a strict privacy mode.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Drive → General Documents → file viewer</span><span class="g-chip">Component: &lt;ai-doc-assistant&gt;</span><span class="g-chip">Endpoint: /drive/doc-assist</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a demo of the Drive <b>General Documents</b> screen. We've opened a sample budget document on the right. Try clicking <b>✦ Summarise</b> to see how it works, or switch to the <b>Ask this document</b> tab and ask something like <i>"How much goes to veterinary services?"</i>. In the <b>Discussion</b> tab, you can ask <i>"@CICOD-AI summarise this thread"</i> or try clicking <b>Turn into task</b> on any comment to see how easily you can create actionable tasks. You can also test this out on other files by clicking the <b>⋮</b> menu on any row.</p>
+    <div id="screen" class="shell" data-app="drive" data-active="General Documents">
+      <div class="shell__content">
+        <div class="gd__bar">
+          <h2 class="shell__title" style="margin:0">General Documents</h2>
+          <a href="#" onclick="return false">↗ Visit the old CICOD Drive app</a>
+          <button class="g-btn g-btn--sm gd__new" type="button">+ NEW</button>
+        </div>
+        <div class="gd">
+          <div>
+            <div class="g-card gd__card">
+              <div class="gd__card-head"><h3>Folders (3)</h3><span class="gd__seg"><span>Grid</span><span class="on">List</span></span></div>
+              <div class="g-table-wrap"><table class="g-table">
+                <thead><tr><th>S/N</th><th>Folder Name</th><th>Owner</th><th>Date</th></tr></thead>
+                <tbody>
+                  <tr><td>1</td><td><span class="gd__folder">MEMOS</span></td><td><span class="gd__owner"><span class="gd__av">PE</span>Prince E</span></td><td>Jan 11, 2024 10:33:19 AM</td></tr>
+                  <tr><td>2</td><td><span class="gd__folder">MINUTES_OF_MEETINGS</span></td><td><span class="gd__owner"><span class="gd__av">AN</span>Prince E</span></td><td>Jan 11, 2024 10:33:19 AM</td></tr>
+                  <tr><td>3</td><td><span class="gd__folder">POLICY_DOCUMENTS</span></td><td><span class="gd__owner"><span class="gd__av">AN</span>Prince E</span></td><td>Jan 11, 2024 10:33:19 AM</td></tr>
+                </tbody>
+              </table></div>
+            </div>
+            <div class="g-card gd__card" id="files-card">
+              <div class="gd__card-head"><h3>Files (8)</h3><span class="gd__seg"><span>Grid</span><span class="on">List</span></span></div>
+              <div class="g-table-wrap"><table class="g-table">
+                <thead><tr><th>File Name</th><th>Owner</th><th>Classification Type</th><th>File Size</th><th>Date</th><th></th></tr></thead>
+                <tbody id="files"></tbody>
+              </table></div>
+              <div class="gd__menu" id="row-menu" role="menu">
+                <button type="button" data-act="open">Open File</button>
+                <button type="button">Download File</button>
+                <button type="button">Get File Link</button>
+                <button type="button">Copy File</button>
+                <button type="button">Edit Classification</button>
+                <button type="button">Share File</button>
+                <button type="button">View Access</button>
+                <button type="button">Sign File</button>
+                <button type="button">Version History</button>
+                <button type="button">Move File</button>
+                <button type="button">Star File</button>
+                <button type="button" data-act="discussion">Details and activity</button>
+                <hr>
+                <div class="gd__menu-ai" data-ai-spot="CICOD-AI · Row menu">
+                  <button type="button" data-act="summary">✦ Summarise</button>
+                  <button type="button" data-act="ask">✦ Ask this document</button>
+                </div>
+              </div>
+              <div class="gd__tasks" id="tasks"></div>
+            </div>
+          </div>
+          <div class="gd__viewer">
+            <h3>File viewer <button class="g-btn g-btn--ghost g-btn--sm" type="button" title="Close">✕</button></h3>
+            <div data-ai-spot="CICOD-AI · Viewer side panel">
+              <ai-doc-assistant id="assistant" file="Budget FMLD_1224_V 2.pdf" classification="Secret (S)" owner="Prince E" size="359.34 KB" tab="summary"></ai-doc-assistant>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>File viewer side panel on <code>/CICOD Drive/general-documents</code>, plus two ✦ items at the end of the row menu</div>
+      <div class="doc__where-item"><b>Also appears in</b>My Documents, Departments, Collaborations and Application Documents; "Ask this folder" in any folder view; Ask CICOD answers cite the same passages</div>
+      <div class="doc__where-item"><b>Trigger</b>User clicks ✦ Summarise or ✦ Ask this document, or types "@CICOD-AI" in the Discussion tab. Nothing runs in the background</div>
+      <div class="doc__where-item"><b>Who sees it</b>Anyone with View Access to the file. Answers only use files the user can open. Secret and Top Secret files go to the sovereign model only</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Retrieval-augmented generation over the file's own text. The model can only quote what is in the document, and it says so when the answer isn't there.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Extract</h4><p>When a file is uploaded or changed, text is pulled from PDF, DOCX, PPTX and XLSX (OCR for scans and images). Each chunk keeps its page, slide or sheet number.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway reads the Drive classification. Official files may use the cicod-cloud model. Secret (S) and Top Secret (TS) are routed to the on-prem sovereign model only. NIN, BVN and phone numbers are masked in prompts.</p></div>
+      <div class="doc__step"><h4>Retrieve</h4><p>For a question, the top chunks are found by embedding and keyword search, and only from files the user has View Access to.</p></div>
+      <div class="doc__step"><h4>Generate</h4><p>The LLM writes the summary or answer from those chunks only. Every sentence carries its page reference. With no supporting chunk, it says "not in this document".</p></div>
+      <div class="doc__step"><h4>Discuss</h4><p>"@CICOD-AI" in a comment triggers a thread summary or an answer. "Turn into task" extracts the action, due date and owner, and hands it to ECMS routing (E-T1).</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The user saves the summary, marks answers helpful or wrong, and creates or discards each task. All of it is recorded via <code>/feedback</code> and in the Drive Audit Log.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant, 27 Sep 2026. Percentages are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−70%</div><h4>Reading time</h4><p>Target for long files such as the 29.62 MB "48 Laws Of Power.pdf" or the 7.26 MB CICOD Drive manual. Officers read the summary first and open the cited pages.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">100% cited</div><h4>Answers you can check</h4><p>Every answer points to a page, slide or sheet. When the document doesn't cover a question, the assistant says so.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0 leaks</div><h4>Classification respected</h4><p>Budget FMLD_1224_V 2.pdf is Secret (S). Its text never leaves the sovereign model, and the badge makes that visible to the user.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fewer emails</div><h4>Discussion on the file</h4><p>Comments stay with the document instead of email chains. CICOD-AI summarises the thread for late joiners.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Comments → tasks</div><h4>Actions get tracked</h4><p>"Please treat…" comments become ECMS tasks with an owner and due date, so they appear in All Tasks and SLA tracking.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in Drive</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (file viewer)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/drive-doc-assistant.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/drive-doc-assistant.js"&gt;&lt;/script&gt;
+
+&lt;ai-doc-assistant file="Budget FMLD_1224_V 2.pdf"
+  classification="Secret (S)" owner="Prince E"
+  size="359.34 KB" tab="summary"&gt;&lt;/ai-doc-assistant&gt;
+
+&lt;script&gt;
+// Row menu: set the file, then open the tab
+rowMenu.on('summarise', f =&gt; {
+  el.setAttribute('classification', f.classification);
+  el.setAttribute('file', f.name);
+  el.summarise();
+});
+document.addEventListener('ai-doc-task', e =&gt;
+  ecms.createTask(e.detail));
+document.addEventListener('ai-doc-summary-save', e =&gt;
+  drive.saveDetail(e.detail.file, 'aiSummary', e.detail.summary));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Add a text-extraction step to the Drive upload pipeline (PDF, Office and OCR). Store chunks with page, slide or sheet numbers.</li>
+            <li>Index chunks per file, with the file's ACL and classification copied on to every chunk.</li>
+            <li>Expose <code>/drive/doc-assist</code> on the CICOD-AI Gateway, with classification routing to the sovereign model for S and TS.</li>
+            <li>Add "✦ Summarise" and "✦ Ask this document" to the row menu, and mount the panel in the file viewer.</li>
+            <li>Add a comments table to Drive for the Discussion tab. Wire <code>ai-doc-task</code> to ECMS Create Task.</li>
+            <li>Pilot on General Documents and POLICY_DOCUMENTS. Track the helpful rate and citation accuracy before a wider rollout.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/drive/doc-assist
+{
+  "action": "summarise" | "ask" | "thread-summary"
+          | "comment-to-task",
+  "file": "Budget FMLD_1224_V 2.pdf",
+  "classification": "Secret (S)",
+  "question": "How much goes to veterinary services?"
+}
+→ 200 (ask)
+{
+  "model": "cicod-llm-sovereign (on-prem)",
+  "sovereign": true,
+  "answer": "Veterinary services and vaccine …",
+  "citations": [{ "page": 8, "quote": "…₦6.1bn…" }],
+  "confidence": 0.82
+}
+→ 200 (summarise)
+{ "summary": "…", "keyPoints": [{ "text": "…", "page": 2 }],
+  "figures": [{ "label": "Capital", "value": "₦48.2bn", "page": 2 }],
+  "dates":   [{ "label": "Submission", "date": "15 Oct 2025", "page": 13 }] }
+→ 200 (comment-to-task)
+{ "task": { "title": "…", "queue": "Correspondence",
+            "assignee": "Prince E", "due": "Fri 02 Oct 2026" } }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.cicod.driveDocAssistant</code> in Drive Preferences, on/off per tenant and per folder.</li>
+            <li>Minimum answer confidence is 0.5. Below it, the assistant replies "not in this document" instead of answering.</li>
+            <li>Every summary, question and task is written to the Drive Audit Log (feature: <i>CICOD-AI Document Assistant</i>), with the file and classification.</li>
+            <li>Permission trimming: retrieval only uses files the user has View Access to. Top Secret files can be excluded from CICOD-AI entirely by an admin.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="drive-doc-assistant.js"></script>
+<script>
+  // Host-page wiring: the Drive page owns the file list, the row menu and the task list.
+  const FILES = [
+    ['CICOD Drive USER MANUAL.pptx', 'Prince E', 'Official (O)', '7.26 MB', 'May 16, 2024 3:52:06 PM'],
+    ['Test.jpg', 'Prince E', 'Official (O)', '155.68 KB', 'Aug 13, 2025 3:19:17 PM'],
+    ['CICOD_ECMS_WORKFLOW_PLANNING_TEMPLATE(2).xlsx', 'Prince E', 'Official (O)', '23.51 KB', 'Oct 5, 2025 10:03:33 PM'],
+    ['CICOD-ECMS-WORKFLOW-PLANNING-TEMPLATE-ROLE-MAP.xlsx', 'Prince E', 'Official (O)', '10.42 KB', 'Oct 5, 2025 10:05:40 PM'],
+    ['abs.png', 'Zana', 'Official (O)', '1.52 MB', 'Jan 28, 2026 1:51:53 PM'],
+    ['The 48 Laws Of Power.pdf', 'Prince E', 'Official (O)', '29.62 MB', 'Feb 9, 2026 9:20:44 AM'],
+    ['Midas_Media_License_and_Usage_Guide.docx', 'Favour Favour', 'Official (O)', '36.42 KB', 'May 12, 2026 9:57:10 AM'],
+    ['Budget FMLD_1224_V 2.pdf', 'Prince E', 'Secret (S)', '359.34 KB', 'Sep 11, 2026 9:55:15 PM'],
+  ];
+  const { esc } = window.AIGateway;
+  const tbody = document.getElementById('files');
+  const menu = document.getElementById('row-menu');
+  const card = document.getElementById('files-card');
+  const el = document.getElementById('assistant');
+  const tags = {}; // file -> { summary: bool, comments: n }
+  let menuFile = null;
+
+  function renderRows() {
+    tbody.innerHTML = FILES.map(([name, owner, cls, size, date], i) => {
+      const t = tags[name] || {};
+      const initials = owner.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+      return `<tr data-i="${i}" class="${el.getAttribute('file') === name ? 'gd__row--on' : ''}">
+        <td><span class="gd__fname" data-open="${i}">${esc(name)}</span><span class="gd__tags">${t.summary ? '<span class="g-chip g-chip--ai">✦ Summary</span>' : ''}${t.comments ? `<span class="g-chip">💬 ${t.comments}</span>` : ''}</span></td>
+        <td><span class="gd__owner"><span class="gd__av">${esc(initials)}</span>${esc(owner)}</span></td>
+        <td><span class="g-chip ${/secret/i.test(cls) ? 'g-chip--bad' : 'g-chip--ok'}">${esc(cls)}</span></td>
+        <td style="white-space:nowrap">${esc(size)}</td><td style="white-space:nowrap">${esc(date)}</td>
+        <td><button class="gd__dots" type="button" data-menu="${i}" aria-label="File actions">⋮</button></td></tr>`;
+    }).join('');
+  }
+
+  function openFile(i, tab, run) {
+    const [name, owner, cls, size] = FILES[i];
+    el.setAttribute('classification', cls); el.setAttribute('owner', owner); el.setAttribute('size', size);
+    el.setAttribute('tab', tab); el.setAttribute('file', name);
+    renderRows();
+    if (run) el.summarise();
+    if (window.innerWidth < 1100) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  tbody.addEventListener('click', e => {
+    const m = e.target.closest('[data-menu]');
+    if (m) {
+      e.stopPropagation();
+      menuFile = +m.dataset.menu;
+      menu.style.top = (m.getBoundingClientRect().bottom - card.getBoundingClientRect().top + 4) + 'px';
+      menu.classList.add('open');
+      return;
+    }
+    const o = e.target.closest('[data-open]');
+    if (o) openFile(+o.dataset.open, 'summary');
+  });
+  menu.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const act = b.dataset.act;
+    if (act && menuFile !== null) openFile(menuFile, act === 'open' ? 'summary' : act, act === 'summary');
+    menu.classList.remove('open');
+  });
+  document.addEventListener('click', e => { if (!menu.contains(e.target)) menu.classList.remove('open'); });
+
+  function flashRow(file) {
+    const i = FILES.findIndex(f => f[0] === file);
+    const tr = tbody.querySelector(`tr[data-i="${i}"]`);
+    if (tr) { tr.classList.remove('gd__flash'); void tr.offsetWidth; tr.classList.add('gd__flash'); }
+  }
+  document.addEventListener('ai-doc-summary-save', e => { (tags[e.detail.file] ||= {}).summary = true; renderRows(); flashRow(e.detail.file); });
+  document.addEventListener('ai-doc-comment', e => { const t = (tags[e.detail.file] ||= {}); t.comments = (t.comments || 0) + 1; renderRows(); });
+  let taskNo = 17601;
+  document.addEventListener('ai-doc-task', e => {
+    const d = e.detail;
+    const div = document.createElement('div');
+    div.className = 'gd__toast';
+    div.innerHTML = `<b>ECMS task #${taskNo++} created</b> in ${esc(d.queue)}: "${esc(d.title)}". Assigned to ${esc(d.assignee)}, due ${esc(d.due)}.`;
+    document.getElementById('tasks').prepend(div);
+  });
+  renderRows();
+</script>
+</body>
+</html>

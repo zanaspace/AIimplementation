@@ -1,0 +1,52 @@
+/* <ai-org-mapper>: nominal-roll import with column mapping, department/role normalisation,
+   role dedup clusters, line-manager inference and per-row confidence.
+   All classes are prefixed `aiom-` so the component can be dropped into any ECMS page. */
+ai-org-mapper { display: block; min-width: 0; }
+
+.aiom { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; text-align: left; }
+.aiom__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aiom__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aiom__body { padding: 12px 14px; }
+.aiom__row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.aiom__muted { color: var(--text-3); font-size: 12px; }
+.aiom__mode { margin-left: auto; font-size: 11px; }
+.aiom h5 { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 14px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+
+.aiom__drop { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 12px; border: 2px dashed var(--border-strong); border-radius: var(--radius); cursor: pointer; font-size: 13px; color: var(--text-2); text-align: center; }
+.aiom__drop:hover { border-color: var(--ai-500); background: var(--ai-50); }
+.aiom__csv { font-family: var(--mono); font-size: 11.5px; white-space: pre; overflow-x: auto; }
+
+.aiom__res { margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; background: var(--surface-2); }
+.aiom__res-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+
+.aiom__counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-top: 10px; }
+.aiom__counts > div { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
+.aiom__counts b { font-size: 17px; color: var(--gov-green-600); letter-spacing: -.01em; }
+.aiom__counts span { font-size: 11.5px; color: var(--text-2); }
+
+.aiom__table { background: var(--surface); }
+.aiom__table td, .aiom__table th { padding: 7px 8px; font-size: 12px; }
+.aiom__table .g-select, .aiom__table .g-input { min-height: 28px; padding: 3px 6px; font-size: 12px; min-width: 120px; }
+.aiom__raw { font-size: 10.5px; color: var(--text-3); margin-top: 1px; }
+.aiom__low { background: color-mix(in srgb, var(--warn-bg) 55%, transparent); }
+.aiom__editing { background: var(--ai-50); }
+.aiom__issues { font-size: 10.5px; color: var(--warn); margin-top: 2px; }
+
+.aiom__conf { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; white-space: nowrap; }
+.aiom__bar { width: 40px; height: 5px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.aiom__bar > i { display: block; height: 100%; background: var(--ok); }
+.aiom__bar--mid > i { background: var(--warn); }
+.aiom__bar--low > i { background: var(--bad); }
+
+.aiom__two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 12px; }
+.aiom__two > div { min-width: 0; }
+.aiom__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; }
+.aiom__list li { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; }
+.aiom__variants { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.aiom__variants span { font-size: 11px; padding: 1px 7px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); overflow-wrap: anywhere; }
+.aiom__variants .aiom__v--tenant { background: var(--surface-2); color: var(--text-3); }
+.aiom__merge { display: flex; gap: 6px; align-items: flex-start; }
+.aiom__merge input { accent-color: var(--ai-500); margin-top: 3px; }
+.aiom__actions { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+
+@media (max-width: 800px) { .aiom__two { grid-template-columns: 1fr; } }

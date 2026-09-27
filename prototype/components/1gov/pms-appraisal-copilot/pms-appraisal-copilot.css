@@ -1,0 +1,42 @@
+/* <ai-appraisal-copilot>: SMART KPI writer, evidence-based draft and supervisor consistency hints.
+   All classes are prefixed `aiap-` so the component can be dropped into any PMS page. */
+ai-appraisal-copilot { display: block; min-width: 0; }
+
+.aiap { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.aiap__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aiap__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+
+.aiap__tabs { display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 8px 0; border-bottom: 1px solid var(--border); }
+.aiap__tab { border: 0; background: transparent; padding: 8px 10px; font-size: 12px; font-weight: 600; color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent; }
+.aiap__tab--on { color: var(--ai-600); border-bottom-color: var(--ai-500); }
+
+.aiap__pane { padding: 12px 14px; }
+.aiap__pane[hidden] { display: none; }
+.aiap__obj { min-height: 64px; }
+.aiap__go { margin-top: 8px; }
+.aiap__out { margin-top: 10px; }
+.aiap__out:empty { display: none; }
+.aiap__hint { font-size: 12px; color: var(--text-2); margin: 0 0 4px; }
+
+.aiap__card { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; background: var(--surface-2); }
+.aiap__kpi { font-weight: 700; font-size: 13.5px; line-height: 1.4; }
+.aiap__meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
+.aiap__smart { margin: 0 0 10px; display: grid; gap: 6px; }
+.aiap__smart > div { display: grid; grid-template-columns: 86px minmax(0, 1fr); gap: 8px; font-size: 12px; }
+.aiap__smart dt { font-weight: 700; color: var(--ai-600); }
+.aiap__smart dd { margin: 0; color: var(--text-2); overflow-wrap: anywhere; }
+.aiap__edit { min-height: 72px; font-size: 12.5px; }
+
+.aiap__h5 { margin: 4px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aiap__ev { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 6px; }
+.aiap__ev li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 6px; font-size: 12px; color: var(--text-2); }
+.aiap__ev b { color: var(--text); }
+.aiap__cite { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--ai-600); }
+
+.aiap__hintrow { font-size: 12px; padding: 8px 10px; border-radius: var(--radius-sm); margin-bottom: 6px; border-left: 3px solid var(--ok); background: var(--ok-bg); color: var(--text); }
+.aiap__hintrow b { display: block; font-size: 11.5px; margin-bottom: 2px; }
+.aiap__hintrow--warn { border-left-color: var(--warn); background: var(--warn-bg); }
+.aiap__hintrow--bad { border-left-color: var(--bad); background: var(--bad-bg); }
+
+.aiap__actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.aiap__foot { font-size: 11px; color: var(--text-3); padding: 10px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invoice Capture Match</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="ims-invoice-capture.css">
+<style>
+  /* Page-only layout for the mock "Receive Asset" screen */
+  .rcv-crumb { font-size: 13px; color: var(--text-3); margin-bottom: 10px; }
+  .rcv-crumb b { color: var(--text); }
+  .rcv-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .rcv-tabs { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--text-2); }
+  .rcv-tabs span { padding: 6px 0; }
+  .rcv-tabs .rcv-on { color: var(--gov-green-600); font-weight: 600; border-bottom: 2px solid var(--gov-green-600); }
+  .rcv-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .rcv-grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+  .rcv-card { padding: 16px; }
+  .rcv-card h3 { margin: 0 0 2px; font-size: 14px; }
+  .rcv-card > p { margin: 0 0 12px; font-size: 12px; color: var(--text-2); }
+  .rcv-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .rcv-card .g-table td, .rcv-card .g-table th { padding: 8px 10px; }
+  #screen .g-table td { white-space: nowrap; }
+  .rcv-empty td { color: var(--text-3); text-align: center; }
+  .rcv-flash { animation: rcv-flash 1.2s ease; }
+  .rcv-new td { background: var(--ai-50); }
+  .rcv-code { color: var(--gov-green-600); font-weight: 600; }
+  .rcv-note { margin-top: 10px; padding: 8px 10px; border-radius: var(--radius); background: var(--warn-bg); font-size: 12px; }
+  .rcv-note:empty { display: none; }
+  @keyframes rcv-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); border-color: var(--ai-500); } 100% { box-shadow: none; } }
+  .rcv-grid > * { min-width: 0; }
+  @media (max-width: 1150px) { .rcv-grid { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 600px) { .rcv-fields { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD Assets</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · A2 · A7 · Phase 2</span>
+      <h1>Invoice Capture &amp; 3-Way Match</h1>
+      <p>The store officer uploads the supplier's invoice or waybill in <b>Receive Asset</b>. CICOD-AI reads the <b>supplier, invoice number, line items, quantities and unit prices</b>. It then matches them against the approved request and the quantity counted at the dock. It also flags a <b>unit price far above the historical price</b> and any <b>invoice that already exists in Payables</b>. One click pre-fills the receipt, and the officer still checks and saves it.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Assets → Receive Asset / Payables</span><span class="g-chip">Component: &lt;ai-invoice-capture&gt;</span><span class="g-chip">Endpoint: /ims/invoice-capture</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the Assets <b>Receive Asset</b> screen, with the Received Asset History rows from cicod. In the CICOD-AI panel, click a sample document: <i>"NCC invoice · 5 Lg Laptops"</i> (clean match), <i>"NCC waybill scan"</i> (qty mismatch and price outlier) or <i>"NCC invoice (re-sent)"</i> (duplicate). Change a "Counted" figure to re-run the match. Then press <b>Pre-fill receipt</b> and <b>Save receipt</b>, and the new row appears in the history.</p>
+    <div id="screen" class="shell" data-app="ims" data-active="Receive Asset">
+      <div class="shell__content">
+        <div class="rcv-crumb">Asset › <b>Received Asset History</b></div>
+        <div class="rcv-grid">
+          <div>
+            <div class="g-card">
+              <div class="rcv-bar">
+                <div class="rcv-tabs"><span>All Asset</span><span class="rcv-on">Received Asset History</span><span>Putaway History</span></div>
+                <div class="rcv-btns"><button class="g-btn g-btn--sm" type="button">Download</button><button class="g-btn g-btn--sm" type="button">Upload</button><button class="g-btn g-btn--sm g-btn--primary" type="button">Receive Asset</button></div>
+              </div>
+              <form id="receive-form" class="rcv-card" onsubmit="return false">
+                <h3>Receive Asset</h3><p>Record the delivery against an approved request. Items go to I&amp;QA inspection, then costing and put-away.</p>
+                <div class="rcv-fields">
+                  <div><label class="g-label" for="r-supplier">Supplier *</label>
+                    <select class="g-select" id="r-supplier"><option value="">Select supplier</option><option>NCC</option><option>JUMIA</option><option>Shoprite</option></select></div>
+                  <div><label class="g-label" for="r-invoice">Invoice / Waybill No. *</label><input class="g-input" id="r-invoice" placeholder="e.g. INV-2026-0417"></div>
+                  <div><label class="g-label" for="r-request">Request / PO reference</label><input class="g-input" id="r-request" placeholder="Search approved requests"></div>
+                  <div><label class="g-label" for="r-store">Store *</label>
+                    <select class="g-select" id="r-store"><option value="">Select store</option><option>Holding Areas</option><option>Central Store</option><option>Kano store</option><option>Secondary Store</option><option>ICT</option><option>Armoury Store</option></select></div>
+                </div>
+                <div class="g-table-wrap" style="margin-top:12px">
+                  <table class="g-table" id="r-lines"><thead><tr><th>Asset Code</th><th>Asset</th><th>Asset Category</th><th>Quantity Received</th><th>Unit of Price</th><th>Total Price</th></tr></thead>
+                    <tbody><tr class="rcv-empty"><td colspan="6">No items yet. Add items or pre-fill from an invoice.</td></tr></tbody></table>
+                </div>
+                <div class="rcv-note" id="r-note"></div>
+                <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="g-btn g-btn--primary" type="button" id="r-save" disabled>Save receipt</button><button class="g-btn" type="button">+ Add item</button></div>
+              </form>
+            </div>
+
+            <div class="g-card" style="margin-top:12px">
+              <div class="g-table-wrap">
+                <table class="g-table" id="history"><thead><tr><th>Asset Code</th><th>Asset Category</th><th>Asset</th><th>Quantity Received</th><th>Quantity To Putaway</th><th>Store</th><th>Approval / Putaway Status</th><th>I&amp;QA Comment</th><th>Date Received</th></tr></thead>
+                  <tbody>
+                    <tr><td class="rcv-code">SAMSUNG01</td><td>Personal Information Technology Device</td><td>Lg Laptop</td><td>1</td><td>--</td><td>Holding Areas</td><td><span class="g-chip g-chip--warn">Awaiting Approval</span></td><td>--</td><td>2026-09-25 01:38:00.0</td></tr>
+                    <tr><td class="rcv-code">SAMSUNG01</td><td>Personal Information Technology Device</td><td>Lg Laptop</td><td>5</td><td>--</td><td>Holding Areas</td><td><span class="g-chip g-chip--ok">Approved</span> <span class="g-chip">Complete Putaway</span></td><td>test</td><td>2026-09-25 00:14:00.0</td></tr>
+                    <tr><td class="rcv-code">D-100</td><td>Beverages</td><td>Fanta</td><td>1</td><td>--</td><td>Armoury Store</td><td><span class="g-chip g-chip--ok">Approved</span> <span class="g-chip g-chip--bad">Rejected</span></td><td>--</td><td>2026-09-24 14:17:00.0</td></tr>
+                    <tr><td class="rcv-code">567895</td><td>Personal Information Technology Device</td><td>Samsung Ss</td><td>1</td><td>--</td><td>Holding Areas</td><td><span class="g-chip g-chip--ok">Approved</span> <span class="g-chip">Complete Putaway</span></td><td>--</td><td>2026-09-24 12:52:00.0</td></tr>
+                    <tr><td class="rcv-code">SAMSUNG01</td><td>Personal Information Technology Device</td><td>Lg Laptop</td><td>5</td><td>5</td><td>Holding Areas</td><td><span class="g-chip g-chip--ok">Approved</span> <span class="g-chip g-chip--warn">Awaiting Putaway</span></td><td>--</td><td>2026-09-23 11:50:00.0</td></tr>
+                    <tr><td class="rcv-code">8765065</td><td>Power Equipment</td><td>Solar Sheet</td><td>1</td><td>--</td><td>Holding Areas</td><td><span class="g-chip g-chip--ok">Approved</span> <span class="g-chip">Complete Putaway</span></td><td>--</td><td>2026-09-23 11:18:00.0</td></tr>
+                    <tr><td class="rcv-code">GBB01</td><td>Personal Information Technology Device</td><td>Asus Laptop</td><td>8</td><td>--</td><td>Holding Areas</td><td><span class="g-chip g-chip--ok">Approved</span> <span class="g-chip">Complete Putaway</span></td><td>--</td><td>2026-09-23 10:35:00.0</td></tr>
+                  </tbody></table>
+              </div>
+            </div>
+
+            <div class="g-card" style="margin-top:12px">
+              <div class="rcv-bar"><div class="rcv-tabs"><span class="rcv-on">Settings › Payables</span></div></div>
+              <div class="g-table-wrap">
+                <table class="g-table" id="payables"><thead><tr><th>Reference ID</th><th>Asset Code</th><th>Asset Category</th><th>Asset</th><th>Qty. Supplied</th><th>Qty. Approved</th><th>Qty. Rejected</th><th>Store Name</th><th>Supplier</th><th>Received By &amp; Date</th><th>I &amp; QA By &amp; Date</th><th>Store By &amp; Date</th><th>Costing By</th><th>Unit of Price</th><th>Total Price</th></tr></thead>
+                  <tbody>
+                    <tr><td>1790291686099</td><td>SAMSUNG01</td><td>Personal Information Technology Device</td><td>Lg Laptop</td><td>5</td><td>5</td><td>--</td><td>Holding Areas</td><td>NCC</td><td>Adeola Adesina 2026-09-25 00:14</td><td>Mercy osoria 2026-09-24 23:21</td><td>Mercy osoria 2026-09-24 23:21</td><td>Mercy osoria</td><td>150000</td><td>750000</td></tr>
+                    <tr><td>1790250749152</td><td>567895</td><td>Personal Information Technology Device</td><td>Samsung Ss</td><td>1</td><td>1</td><td>--</td><td>Holding Areas</td><td>NCC</td><td>Chubby Chubby 2026-09-24 12:52</td><td>Adeola Adesina 2026-09-24 11:54</td><td>Adeola Adesina 2026-09-24 11:59</td><td>Adeola Adesina</td><td>2000</td><td>2000</td></tr>
+                    <tr><td>1790160613560</td><td>SAMSUNG01</td><td>Personal Information Technology Device</td><td>Lg Laptop</td><td>5</td><td>5</td><td>--</td><td>Holding Areas</td><td>NCC</td><td>Blessing Orewa 2026-09-23 11:50</td><td>Oghenemarho Iyonu 2026-09-23 13:17</td><td>Oghenemarho Iyonu 2026-09-23 13:18</td><td>Oghenemarho Iyonu</td><td>150000</td><td>750000</td></tr>
+                    <tr><td>1790160259277</td><td>SAMSUNG01</td><td>Personal Information Technology Device</td><td>Lg Laptop</td><td>1</td><td>1</td><td>--</td><td>Holding Areas</td><td>NCC</td><td>Blessing Orewa 2026-09-23 11:44</td><td>Oghenemarho Iyonu 2026-09-23 13:18</td><td>Oghenemarho Iyonu 2026-09-23 13:19</td><td>Oghenemarho Iyonu</td><td>150000</td><td>150000</td></tr>
+                  </tbody></table>
+              </div>
+            </div>
+          </div>
+          <div data-ai-spot="CICOD-AI · Upload invoice / waybill">
+            <ai-invoice-capture history-days="90" outlier-pct="15"></ai-invoice-capture>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Right rail of <code>/ims/asset/receive</code>, next to the Receive Asset form</div>
+      <div class="doc__where-item"><b>Also appears in</b>Settings → <code>/ims/settings/payables</code> as a per-row check (price outlier, duplicate, split purchase), and the Costing step before a unit price is approved</div>
+      <div class="doc__where-item"><b>Trigger</b>When a PDF or photo is dropped on "Upload invoice / waybill", and again whenever the dock count is changed</div>
+      <div class="doc__where-item"><b>Who sees it</b>Store officers who can receive assets. Price and duplicate flags are also shown to I&amp;QA and Costing approvers</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Document intelligence reads the paper. Deterministic rules do the matching, so every flag can be traced to a number.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The uploaded invoice or waybill (PDF, scan or phone photo) is sent to <code>/ims/invoice-capture</code> with the store and the officer's dock count.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway removes bank account numbers and signatory phone numbers before the text is stored. Supplier documents stay on the sovereign model and never leave the tenant.</p></div>
+      <div class="doc__step"><h4>Read</h4><p>OCR plus a layout model finds the supplier, invoice number, date and line table. Each line is matched to an asset code in the catalogue by name and supplier part number.</p></div>
+      <div class="doc__step"><h4>Match</h4><p>Three-way match: request/PO qty vs invoiced qty vs counted qty. The unit price is compared with the 90-day median in Payables, and a supplier + total + asset + date fingerprint finds duplicate invoices.</p></div>
+      <div class="doc__step"><h4>Output</h4><p>Extracted fields with a confidence score, a match chip per line, and plain-English flags with the exact figures. Duplicates block the pre-fill.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer pre-fills, edits counts, holds for I&amp;QA or rejects the read. Every decision goes to <code>/feedback</code>, and corrected fields retrain the extractor for that supplier's layout.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant, 27 Sep 2026. Figures marked "target" are goals for the pilot.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−70%</div><h4>Data entry per receipt</h4><p>Target. Supplier, invoice number, codes, quantities and prices are typed in by hand today for every line.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">1,294 → fewer</div><h4>Faster put-away</h4><p>1,294 items are awaiting put-away and 54 are pending inspection. Clean, pre-matched receipts move through I&amp;QA faster.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0 duplicates paid</div><h4>Duplicate invoice check</h4><p>Target. Payables already holds several NCC Lg Laptop lines of 5 × ₦150,000 within 3 days, which is exactly the pattern a re-sent invoice creates.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&gt; 15% flagged</div><h4>Price outliers caught</h4><p>Any unit price more than 15% above the 90-day median is flagged before Costing approves it.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&gt; 95%</div><h4>Field accuracy target</h4><p>Measured as fields accepted without edits on typed PDFs. Scans are lower and are always shown for review.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in Assets (IMS)</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Receive Asset page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/ims-invoice-capture.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/ims-invoice-capture.js"&gt;&lt;/script&gt;
+
+&lt;ai-invoice-capture history-days="90"
+                    outlier-pct="15"&gt;&lt;/ai-invoice-capture&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-invoice-prefill', e =&gt; {
+  // host page owns the receipt form
+  receiveForm.setHeader(e.detail);
+  receiveForm.setLines(e.detail.lines);
+});
+document.addEventListener('ai-invoice-hold', e =&gt;
+  iqa.flagForReview(e.detail.invoiceNo, e.detail.reasons));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Collect 200+ past invoices and waybills per major supplier (NCC first) with the receipts keyed from them, as labelled data.</li>
+            <li>Run the shared Document Intelligence pipeline (OCR + layout) and map line items to asset codes by name, supplier part number and embeddings.</li>
+            <li>Expose <code>/ims/invoice-capture</code> on the CICOD-AI Gateway: extraction, then match rules against the request, the dock count and Payables history.</li>
+            <li>Add the component to Receive Asset and wire <code>ai-invoice-prefill</code> to the form store.</li>
+            <li>Show the same flags as a column in Payables so Costing sees them before approving a price.</li>
+            <li>Run in suggestion mode for one quarter; track field accuracy and flags confirmed by I&amp;QA.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ims/invoice-capture
+{
+  "fileName": "NCC_Waybill_WB-7781_scan.jpg",
+  "store": "Holding Areas",
+  "dockQty": { "SAMSUNG01": 5 },
+  "historyDays": 90,
+  "outlierPct": 15
+}
+→ 200
+{
+  "model": "cicod-docintel-v2",
+  "confidence": 0.81,
+  "doc": { "supplier": "NCC", "invoiceNo": "INV-2026-0431",
+           "requestRef": "REQ-ICT-0918", "total": 1114000 },
+  "lines": [{ "code": "SAMSUNG01", "qty": 6, "poQty": 5,
+              "dockQty": 5, "unitPrice": 185000,
+              "histPrice": 150000, "status": "mismatch" }],
+  "flags": [{ "kind": "qty" | "price" | "duplicate",
+              "level": "warn" | "bad", "text": "…" }]
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.cicod.imsInvoiceCapture</code> in Assets Settings, on/off per tenant.</li>
+            <li>Price-outlier threshold (default 15%) and history window (default 90 days) are set per asset category.</li>
+            <li>A duplicate flag blocks pre-fill; only an I&amp;QA approver can override it, with a reason.</li>
+            <li>Every read, flag and decision is written to Settings → Audit (feature: <i>CICOD-AI Invoice Capture</i>).</li>
+            <li>Price history is only shown to roles that can already see Payables.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="ims-invoice-capture.js"></script>
+<script>
+  // Host-page wiring: the component emits events; the page fills its own receipt form and tables.
+  const esc = window.AIGateway.esc;
+  const $ = id => document.getElementById(id);
+  let draft = null;
+  const flash = el => { el.classList.remove('rcv-flash'); void el.offsetWidth; el.classList.add('rcv-flash'); };
+  const setVal = (id, v) => { const el = $(id); if (el.tagName === 'SELECT' && ![...el.options].some(o => o.text === v)) el.add(new Option(v)); el.value = v; flash(el); };
+
+  document.addEventListener('ai-invoice-prefill', e => {
+    draft = e.detail;
+    setVal('r-supplier', draft.supplier); setVal('r-invoice', draft.invoiceNo); setVal('r-request', draft.requestRef); setVal('r-store', draft.store);
+    $('r-lines').tBodies[0].innerHTML = draft.lines.map(l => `<tr class="rcv-new"><td class="rcv-code">${esc(l.code)}</td><td>${esc(l.asset)}</td><td>${esc(l.category)}</td><td>${esc(l.qty)}</td><td>${esc(l.unitPrice)}</td><td>${esc(l.qty * l.unitPrice)}</td></tr>`).join('');
+    $('r-note').textContent = '';
+    $('r-save').disabled = false;
+  });
+
+  document.addEventListener('ai-invoice-hold', e => {
+    $('r-note').textContent = `Invoice ${e.detail.invoiceNo} sent to I&QA review: ${e.detail.reasons.length} issue(s) to resolve before receipt.`;
+  });
+
+  $('r-save').addEventListener('click', () => {
+    if (!draft) return;
+    const now = '2026-09-27 ' + new Date().toTimeString().slice(0, 8) + '.0';
+    const hist = $('history').tBodies[0], pay = $('payables').tBodies[0];
+    draft.lines.slice().reverse().forEach(l => {
+      hist.insertAdjacentHTML('afterbegin', `<tr class="rcv-new"><td class="rcv-code">${esc(l.code)}</td><td>${esc(l.category)}</td><td>${esc(l.asset)}</td><td>${esc(l.qty)}</td><td>--</td><td>${esc(draft.store)}</td><td><span class="g-chip g-chip--warn">Awaiting Approval</span></td><td>CICOD-AI pre-filled from ${esc(draft.invoiceNo)}</td><td>${esc(now)}</td></tr>`);
+      pay.insertAdjacentHTML('afterbegin', `<tr class="rcv-new"><td>${esc(draft.invoiceNo)}</td><td>${esc(l.code)}</td><td>${esc(l.category)}</td><td>${esc(l.asset)}</td><td>${esc(l.qty)}</td><td>--</td><td>--</td><td>${esc(draft.store)}</td><td>${esc(draft.supplier)}</td><td>Prince Ekpenyong ${esc(now.slice(0, 16))}</td><td>--</td><td>--</td><td>--</td><td>${esc(l.unitPrice)}</td><td>${esc(l.qty * l.unitPrice)}</td></tr>`);
+    });
+    $('r-lines').tBodies[0].innerHTML = '<tr class="rcv-empty"><td colspan="6">Receipt saved. It is now awaiting I&amp;QA approval.</td></tr>';
+    $('r-save').disabled = true; draft = null;
+    flash($('history'));
+  });
+</script>
+</body>
+</html>

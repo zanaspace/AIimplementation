@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Minute Summary</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="memo-minutes.css">
+<style>
+  /* Page-only layout for the mock memo view with its minute chain */
+  .mm__tabs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .mm__tab { padding: 5px 12px; border-radius: 8px; font-size: 13px; color: var(--text-2); border: 1px solid transparent; }
+  .mm__tab--on { background: var(--gov-green-100); color: var(--gov-green-600); font-weight: 600; }
+  .mm__search { margin-left: auto; width: 260px; max-width: 100%; }
+  .mm__memo { padding: 16px; margin-top: 12px; }
+  .mm__memo h3 { margin: 0 0 4px; font-size: 15px; }
+  .mm__meta { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); margin-bottom: 10px; }
+  .mm__memo p { margin: 0 0 8px; font-size: 13px; }
+  .mm__minutes { list-style: none; margin: 12px 0 0; padding: 0; }
+  .mm__min { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+  .mm__av { width: 34px; height: 34px; border-radius: 50%; background: var(--gov-green-100); color: var(--gov-green-600); display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  .mm__who { font-size: 12px; color: var(--text-2); }
+  .mm__who b { color: var(--text); }
+  .mm__txt { font-size: 13px; margin-top: 2px; overflow-wrap: anywhere; }
+  .mm__add { display: grid; grid-template-columns: 180px 180px minmax(0, 1fr) auto; gap: 8px; margin-top: 12px; align-items: end; }
+  .mm__tasks { margin-top: 12px; padding: 14px 16px; }
+  .mm__tasks h4 { margin: 0 0 8px; font-size: 13px; }
+  .mm__flash { animation: mm-flash 1.4s ease; }
+  @keyframes mm-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+  @media (max-width: 900px) { .mm__add { grid-template-columns: 1fr 1fr; } .mm__add > :nth-child(3), .mm__add > :nth-child(4) { grid-column: 1 / -1; } .mm__search { margin-left: 0; width: 100%; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Memos</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-M3 · E-M4 · Priority 1</span>
+      <h1>Minute Summary &amp; Action Items</h1>
+      <p>A memo file can carry a long chain of minutes: "pls treat", queries, clarifications, "approved subject to availability of funds". This card reads the whole chain and tells a senior officer <b>where the file stands</b>: status, decisions, open queries and who is holding it. It also turns instructions such as <i>"for your action by Friday"</i> into <b>action items</b> with an assignee and due date, each one a click away from becoming a tracked ECMS task.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Memos → Memo view / Draft Reviews</span><span class="g-chip">Component: &lt;ai-minute-summary&gt;</span><span class="g-chip">Endpoint: /ecms/memo/summarise-minutes</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a memo opened from <b>Memos &amp; Drafts</b> with eight minutes on it. The summary card at the top is generated from those minutes. Click <i>Create ECMS task</i> on an action item (change the assignee or due date first if you like) and it appears under <b>Tasks from this file</b>. Then add your own minute at the bottom, e.g. <i>"Head Works: pls submit completion certificate by Friday"</i>, and click <i>Re-summarise</i>.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Memos &amp; Drafts">
+      <div class="shell__content">
+        <div class="mm__tabs"><span class="mm__tab mm__tab--on">All Memos</span><span class="mm__tab">My Drafts</span><span class="mm__tab">Draft Reviews</span><span class="mm__tab">Custom View</span><input class="g-input mm__search" placeholder="Search by name or author..." aria-label="Search memos"></div>
+
+        <div data-ai-spot="CICOD-AI · File summary + action items">
+          <ai-minute-summary source="#minutes" subject="Renovation of Kano Store warehouse roof" ref="CICOD/WKS/MEM/2026/118"></ai-minute-summary>
+        </div>
+
+        <div class="g-card mm__memo">
+          <h3>REQUEST FOR APPROVAL: RENOVATION OF KANO STORE WAREHOUSE ROOF</h3>
+          <div class="mm__meta"><span>Ref No: CICOD/WKS/MEM/2026/118</span><span>Date: 08/09/2026</span><span>From: Head, Works &amp; Maintenance</span><span class="g-chip g-chip--ok">Official</span><span class="g-chip g-chip--info">Published</span></div>
+          <p>1. The roof of the Kano store warehouse leaks badly and stock was damaged during the August rains. A Bill of Quantities is attached.</p>
+          <p>2. Recommendation: the Permanent Secretary may wish to kindly approve the renovation at ₦3,850,000.00.</p>
+          <h4 style="margin:14px 0 0;font-size:13px">Minutes (8)</h4>
+          <ol class="mm__minutes" id="minutes">
+            <li class="mm__min" data-minute data-by="Head, Works & Maintenance" data-name="Engr. T. Bello" data-to="Director, General Services" data-date="08/09/2026"><span class="mm__av">HW</span><div><div class="mm__who"><b>Head, Works &amp; Maintenance</b> (Engr. T. Bello) → Director, General Services · 08/09/2026 10:14</div><div class="mm__txt" data-minute-text>Director, the attached memo on the leaking roof of the Kano store warehouse is for your consideration. BoQ attached at ₦3,850,000.</div></div></li>
+            <li class="mm__min" data-minute data-by="Director, General Services" data-name="Mrs A. Okeke" data-to="Director, Finance & Accounts" data-date="09/09/2026"><span class="mm__av">DG</span><div><div class="mm__who"><b>Director, General Services</b> (Mrs A. Okeke) → DFA · 09/09/2026 09:02</div><div class="mm__txt" data-minute-text>DFA: pls treat. Kindly confirm availability of funds under the 2026 capital vote.</div></div></li>
+            <li class="mm__min" data-minute data-by="Director, Finance & Accounts" data-name="Mr S. Danjuma" data-to="Director, General Services" data-date="11/09/2026"><span class="mm__av">DF</span><div><div class="mm__who"><b>Director, Finance &amp; Accounts</b> (Mr S. Danjuma) → Director, General Services · 11/09/2026 15:40</div><div class="mm__txt" data-minute-text>The amount appears high compared with the ₦2.1m paid for the Central Store roof in 2025. Please clarify the difference and provide 3 quotations.</div></div></li>
+            <li class="mm__min" data-minute data-by="Head, Works & Maintenance" data-name="Engr. T. Bello" data-to="Director, Finance & Accounts" data-date="15/09/2026"><span class="mm__av">HW</span><div><div class="mm__who"><b>Head, Works &amp; Maintenance</b> → DFA · 15/09/2026 11:05</div><div class="mm__txt" data-minute-text>Clarification: the Kano store roof is 1.8 times larger than Central Store and includes gutter replacement. 3 quotations attached; the lowest is ₦3,620,000.</div></div></li>
+            <li class="mm__min" data-minute data-by="Director, Finance & Accounts" data-name="Mr S. Danjuma" data-to="Permanent Secretary" data-date="16/09/2026"><span class="mm__av">DF</span><div><div class="mm__who"><b>Director, Finance &amp; Accounts</b> → Permanent Secretary · 16/09/2026 14:20</div><div class="mm__txt" data-minute-text>Funds are available under capital vote 23020118 for ₦3,620,000. Recommended for approval.</div></div></li>
+            <li class="mm__min" data-minute data-by="Permanent Secretary" data-name="" data-to="Director, General Services" data-date="18/09/2026"><span class="mm__av">PS</span><div><div class="mm__who"><b>Permanent Secretary</b> → Director, General Services · 18/09/2026 10:00</div><div class="mm__txt" data-minute-text>Approved subject to availability of funds. Director GS to ensure the work is completed before the rainy season ends.</div></div></li>
+            <li class="mm__min" data-minute data-by="Director, General Services" data-name="Mrs A. Okeke" data-to="Head, Procurement" data-date="21/09/2026"><span class="mm__av">DG</span><div><div class="mm__who"><b>Director, General Services</b> → Head, Procurement · 21/09/2026 12:30</div><div class="mm__txt" data-minute-text>Head Procurement: for your action by Friday. Issue the LPO to the lowest responsive bidder.</div></div></li>
+            <li class="mm__min" data-minute data-by="Head, Procurement" data-name="Mr K. Musa" data-to="Head, Works & Maintenance" data-date="22/09/2026"><span class="mm__av">HP</span><div><div class="mm__who"><b>Head, Procurement</b> (Mr K. Musa) → Head, Works &amp; Maintenance · 22/09/2026 16:45</div><div class="mm__txt" data-minute-text>Noted. Please submit the revised BoQ with the vendor's name within 48 hours so that the LPO can be raised.</div></div></li>
+          </ol>
+          <div class="mm__add">
+            <div><label class="g-label" for="mm-by">Minute as</label><select class="g-select" id="mm-by"><option>Head, Works &amp; Maintenance</option><option>Director, General Services</option><option>Director, Finance &amp; Accounts</option><option>Head, Procurement</option><option>Permanent Secretary</option></select></div>
+            <div><label class="g-label" for="mm-to">Minute to</label><select class="g-select" id="mm-to"><option>Head, Procurement</option><option>Director, General Services</option><option>Director, Finance &amp; Accounts</option><option>Head, Works &amp; Maintenance</option><option>Permanent Secretary</option></select></div>
+            <div><label class="g-label" for="mm-text">Minute</label><input class="g-input" id="mm-text" placeholder="e.g. Head Works: pls submit completion certificate by Friday"></div>
+            <button class="g-btn g-btn--primary" id="mm-add" type="button">Minute</button>
+          </div>
+        </div>
+
+        <div class="g-card mm__tasks" data-ai-spot="CICOD-AI · Tasks created from minutes">
+          <h4>Tasks from this file (<span id="mm-count">0</span>)</h4>
+          <div class="g-table-wrap"><table class="g-table"><thead><tr><th>Task ID</th><th>Title</th><th>Queue</th><th>Assignee</th><th>Due date</th><th>Status</th></tr></thead>
+            <tbody id="mm-tasks"><tr id="mm-empty"><td colspan="6" style="color:var(--text-3)">No tasks yet. Use "Create ECMS task" on an action item above.</td></tr></tbody></table></div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Top of the memo view opened from <code>/ecms/memos?tab=all</code>, above the memo body and minutes</div>
+      <div class="doc__where-item"><b>Also appears in</b>Draft Reviews (summary before reviewing), the Home Daily Brief ("memo X was minuted to you"), and on publish of a new minute</div>
+      <div class="doc__where-item"><b>Trigger</b>Opening a memo with 3 or more minutes; re-run when a new minute is added</div>
+      <div class="doc__where-item"><b>Who sees it</b>Anyone who can open the memo. The summary only uses minutes the viewer is allowed to read</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">An LLM reads the minute chain in order. Rules pick out executive shorthand, dates and amounts, and ECMS task routing proposes the queue.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>Each minute's author role, addressee role, date and text, plus the memo Ref No and subject, are sent to <code>/ecms/memo/summarise-minutes</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Only minutes the viewer can read are sent. The gateway redacts personal data and keeps Confidential or Secret files on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Understand</h4><p>A shorthand dictionary maps "DFA", "Perm Sec", "pls treat", "KIV" and "for your action" to roles and intents. The LLM then writes the status, decisions and queries, and checks whether each query was answered by a later minute.</p></div>
+      <div class="doc__step"><h4>Extract actions</h4><p>Instructions become action items. The assignee is the addressee or the role named in the sentence ("Director GS to ensure…"). The due date comes from "by Friday" or "within 48 hours", or defaults to 3 working days.</p></div>
+      <div class="doc__step"><h4>Create tasks</h4><p>"Create ECMS task" sends the title, assignee, due date and memo Ref to Tasks, and Smart Routing picks the queue. The task links back to the memo.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Officers can change the assignee or date before creating. "Summary is right" or "Not accurate" and every edit go to <code>/feedback</code> and are used to tune the prompt and the shorthand list.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Targets from the CICOD-AI augmentation analysis and the CICOD business case ("decisions become tracked work").</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">8 minutes → 1 card</div><h4>Senior officer read time</h4><p>Target: under 1 minute to know the state of a file, instead of reading every minute.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0 → 100%</div><h4>Instructions tracked</h4><p>Today "pls treat" and "for your action" live only as text. Every instruction can now become a task with an owner and date.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Overdue flagged</div><h4>No silent delays</h4><p>Actions past their due date with no reply minute are flagged, e.g. the LPO action due Friday 25/09 above.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Who holds it</div><h4>File tracking</h4><p>Replaces "where is the file?" calls: the card shows the holder and how many days they have had it.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Memo view)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/memo-minutes.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/memo-minutes.js"&gt;&lt;/script&gt;
+
+&lt;ai-minute-summary source="#minutes"
+    subject="Renovation of Kano Store warehouse roof"
+    ref="CICOD/WKS/MEM/2026/118"&gt;&lt;/ai-minute-summary&gt;
+
+&lt;!-- each minute --&gt;
+&lt;li data-minute data-by="Permanent Secretary"
+    data-to="Director, General Services"
+    data-date="18/09/2026"&gt;…&lt;/li&gt;
+
+&lt;script&gt;
+on('ai-minute-create-task', e =&gt; tasksApi.create({
+  ...e.detail, links: [{ type: 'memo', ref: e.detail.ref }]
+}));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Build the shorthand dictionary (DFA, Perm Sec, HOD, KIV, "pls treat") with Registry officers, per MDA.</li>
+            <li>Expose <code>/ecms/memo/summarise-minutes</code> on the CICOD-AI Gateway, returning structured JSON only.</li>
+            <li>Mark minutes in the memo view with <code>data-minute</code> attributes and mount the card above the memo.</li>
+            <li>Wire <code>ai-minute-create-task</code> to the Tasks API with a back-link to the memo.</li>
+            <li>Pilot in one directorate; compare the CICOD-AI's action list with what officers actually did.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/memo/summarise-minutes
+{ "ref": "CICOD/WKS/MEM/2026/118",
+  "subject": "Renovation of Kano Store roof",
+  "minutes": [{ "by": "Permanent Secretary",
+    "to": "Director, General Services",
+    "date": "18/09/2026", "text": "Approved subject to …" }] }
+→ 200
+{ "model": "cicod-docgen-v2", "confidence": 0.9,
+  "status": "Approved by the Permanent Secretary …",
+  "holder": { "role": "Head, Works &amp; Maintenance",
+              "since": "22/09/2026", "days": 5 },
+  "decisions": [{ "text": "…", "date": "18/09/2026" }],
+  "queries": [{ "text": "…", "open": false }],
+  "actions": [{ "title": "Issue the LPO …",
+    "assignee": "Head, Procurement", "due": "2026-09-25",
+    "dueSource": "\"by Friday\"", "done": false }] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.memoMinutes</code> in ECMS Settings, on/off per tenant.</li>
+            <li>Minimum chain length before the card shows (default 3 minutes).</li>
+            <li>Summaries and created tasks are written to the ECMS Audit Log (feature: <i>CICOD-AI Minutes</i>) with the memo Ref.</li>
+            <li>The card never shows minutes the viewer can't read; tasks can only be assigned to roles the creator may assign to.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="memo-minutes.js"></script>
+<script>
+  // Host-page wiring: the page owns the minute chain and the task list.
+  const tbody = document.getElementById('mm-tasks');
+  let nextId = 17601, count = 0;
+  const td = t => { const c = document.createElement('td'); c.textContent = t; return c; };
+  const fmt = iso => iso ? iso.split('-').reverse().join('/') : '';
+  document.addEventListener('ai-minute-create-task', e => {
+    const d = e.detail;
+    document.getElementById('mm-empty')?.remove();
+    const tr = document.createElement('tr');
+    [`#${nextId++}`, d.title, `${d.queue} · ${d.queueType}`, d.assignee, fmt(d.due)].forEach(v => tr.appendChild(td(v)));
+    const st = document.createElement('td'); st.innerHTML = '<span class="g-chip g-chip--info">OPEN</span>'; tr.appendChild(st);
+    tbody.appendChild(tr);
+    document.getElementById('mm-count').textContent = ++count;
+    tr.classList.add('mm__flash');
+  });
+  document.getElementById('mm-add').addEventListener('click', () => {
+    const text = document.getElementById('mm-text').value.trim();
+    if (!text) return;
+    const by = document.getElementById('mm-by').value, to = document.getElementById('mm-to').value;
+    const d = new Date(), date = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    const li = document.createElement('li');
+    li.className = 'mm__min mm__flash';
+    Object.assign(li.dataset, { minute: '', by, to, date, name: '' });
+    li.innerHTML = '<span class="mm__av">YOU</span><div><div class="mm__who"></div><div class="mm__txt" data-minute-text></div></div>';
+    li.querySelector('.mm__who').textContent = `${by} → ${to} · ${date}`;
+    li.querySelector('[data-minute-text]').textContent = text;
+    document.getElementById('minutes').appendChild(li);
+    document.getElementById('mm-text').value = '';
+  });
+</script>
+</body>
+</html>

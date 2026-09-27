@@ -1,0 +1,50 @@
+/* <ai-approval-copilot>: approval digest panel (mode="digest") and Safe bulk approve (mode="bulk").
+   All classes are prefixed `aiac-` so the component can be dropped into any ECMS approvals page. */
+ai-approval-copilot { display: block; }
+
+.aiac { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.aiac__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aiac__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aiac__body { padding: 12px 14px; }
+.aiac__empty { color: var(--text-3); font-size: 12.5px; margin: 4px 0; }
+.aiac__done { color: var(--ok); font-weight: 600; font-size: 12.5px; margin: 4px 0; }
+
+.aiac__what { font-size: 13px; }
+.aiac__what b, .aiac__rec-top span { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aiac__amt { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.aiac__amt > span:first-child { font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+.aiac__h { margin: 14px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aiac__h--ok { color: var(--ok); } .aiac__h--bad { color: var(--bad); }
+.aiac__p { margin: 0; font-size: 12.5px; color: var(--text-2); }
+
+.aiac__checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.aiac__check { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 8px; font-size: 12.5px; color: var(--text-2); }
+.aiac__check b { display: block; color: var(--text); font-size: 12.5px; }
+.aiac__ico { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+.aiac__check--ok .aiac__ico { background: var(--ok-bg); color: var(--ok); }
+.aiac__check--warn .aiac__ico { background: var(--warn-bg); color: var(--warn); }
+.aiac__check--fail .aiac__ico { background: var(--bad-bg); color: var(--bad); }
+.aiac__anoms { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--bad); }
+
+.aiac__rec { margin: 14px 0 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--ai-50); border: 1px solid color-mix(in srgb, var(--ai-500) 30%, var(--border)); }
+.aiac__rec-top b { font-size: 14px; color: var(--ai-600); }
+.aiac__rec p { margin: 4px 0 6px; font-size: 12.5px; color: var(--text-2); }
+.aiac__cite { display: grid; gap: 2px; font-size: 11.5px; color: var(--text-2); }
+.aiac__comment { min-height: 72px; font-size: 12.5px; }
+
+.aiac__actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.aiac__actions--flat { padding: 10px 0 0; border-top: 0; background: none; }
+.aiac__mode { font-size: 11px; color: var(--text-3); margin-left: auto; align-self: center; }
+
+/* Bulk mode */
+.aiac__bulk { margin-top: 10px; padding: 12px 14px; background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+.aiac__bulk-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.aiac__bulk-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.aiac__bl { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 12.5px; }
+.aiac__bl li { padding: 6px 8px; border-radius: 8px; background: var(--surface-2); overflow-wrap: anywhere; }
+.aiac__bl small { display: block; color: var(--text-3); font-size: 11.5px; }
+
+@media (max-width: 700px) {
+  .aiac__bulk-cols { grid-template-columns: 1fr; }
+  .aiac__mode { margin-left: 0; }
+}

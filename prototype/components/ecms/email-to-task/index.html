@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CICOD-AI Email to Task</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="email-to-task.css">
+<style>
+  /* Page-only layout for the mock "Settings → Email Integration" screen */
+  .ei-crumb { font-size: 12px; color: var(--text-3); }
+  .ei-crumb b { color: var(--text); }
+  .ei-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .ei-head h2 { margin: 2px 0 0; font-size: 18px; }
+  .ei-card { padding: 14px; margin-bottom: 16px; }
+  .ei-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+  .ei-tools .g-input { max-width: 300px; flex: 1 1 200px; }
+  .ei-tools__spacer { flex: 1; }
+  .ei-table td { white-space: nowrap; }
+  .ei-tabs { display: flex; gap: 16px; border-bottom: 1px solid var(--border); margin-bottom: 12px; font-size: 13px; }
+  .ei-tabs span { padding: 6px 2px; color: var(--text-2); }
+  .ei-tabs .is-on { color: var(--gov-green-600); border-bottom: 2px solid var(--gov-green-600); font-weight: 600; }
+  .ei-created { display: grid; gap: 6px; margin-top: 10px; font-size: 12.5px; }
+  .ei-created div { padding: 8px 10px; border-radius: var(--radius); background: var(--ok-bg); overflow-wrap: anywhere; }
+  .ei-flash { animation: ei-flash 1.4s ease; }
+  @keyframes ei-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Settings</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-S1 · Priority 1</span>
+      <h1>CICOD-AI Email-to-Task</h1>
+      <p>Reads every email that arrives on a mailbox connected in <b>Email Integration</b>. It classifies each one as <b>task, FYI, spam or duplicate</b> and extracts the requester, subject and a short request summary. It reads attachments with OCR, matches the sender to an ECMS <b>contact</b>, and suggests the <b>queue and priority</b>. The officer checks the card and clicks <b>Create task</b> or <b>Discard</b>. Nothing is created without that click.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Settings → Email Integration</span><span class="g-chip">Component: &lt;ai-email-triage&gt;</span><span class="g-chip">Endpoint: /ecms/email-triage</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of ECMS <b>Settings → Email Integration</b> (Add Account, Custom View, the connected mailboxes) with a new <b>Triage inbox</b> tab under it. The live tenant showed no mailboxes, so the three accounts and six emails are realistic examples. Read how each email was classified, change a queue, then click <b>Create task</b> and watch the mailbox's "Tasks Created" count go up. Then paste your own email into the box, for example <i>"From: Prince Zana / Subject: Scanner in Registry not working / Attachment: scanner_error.jpg"</i> and a line of text, and see it analysed live.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Email Integration">
+      <div class="shell__content">
+        <div class="ei-head">
+          <div><div class="ei-crumb">Settings › <b>Email Integration</b></div><h2>Email Integration</h2></div>
+          <button class="g-btn g-btn--primary g-btn--sm" type="button">+ Add Account</button>
+        </div>
+        <div class="ei-tabs"><span class="is-on">Accounts</span><span>Triage inbox <span class="g-chip g-chip--ai">CICOD-AI</span></span></div>
+        <div class="g-card ei-card">
+          <div class="ei-tools"><input class="g-input" placeholder="Search..."><span class="ei-tools__spacer"></span><button class="g-btn g-btn--sm" type="button">Custom View</button><button class="g-btn g-btn--sm" type="button" disabled>Syncing...</button></div>
+          <div class="g-table-wrap">
+            <table class="g-table ei-table">
+              <thead><tr><th>Email Account</th><th>Provider</th><th>Default Queue</th><th>CICOD-AI Triage</th><th>Status</th><th>Last Synced</th><th>Tasks Created</th></tr></thead>
+              <tbody>
+                <tr data-mailbox="registry@cicod.example"><td>registry@cicod.example</td><td>Microsoft 365</td><td>Correspondence</td><td><span class="g-chip g-chip--ai">On · suggest only</span></td><td><span class="g-chip g-chip--ok">Connected</span></td><td>27/09/2026 15:20</td><td data-count>12</td></tr>
+                <tr data-mailbox="complaints@cicod.example"><td>complaints@cicod.example</td><td>IMAP</td><td>Complaints</td><td><span class="g-chip g-chip--ai">On · suggest only</span></td><td><span class="g-chip g-chip--ok">Connected</span></td><td>27/09/2026 15:18</td><td data-count>31</td></tr>
+                <tr data-mailbox="ictsupport@cicod.example"><td>ictsupport@cicod.example</td><td>Google Workspace</td><td>IT Support</td><td><span class="g-chip">Off</span></td><td><span class="g-chip g-chip--warn">Re-authorise</span></td><td>25/09/2026 09:02</td><td data-count>4</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div data-ai-spot="CICOD-AI · Triage inbox (new tab under Email Integration)">
+          <ai-email-triage inbox="#inbox-data" mailbox="registry@cicod.example"></ai-email-triage>
+        </div>
+        <div class="ei-created" id="created"></div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>A <i>Triage inbox</i> tab in <code>/ecms/settings/email-integration</code>, with an "CICOD-AI Triage" switch on each connected mailbox</div>
+      <div class="doc__where-item"><b>Also appears in</b>A Triage inbox filter in All Tasks for low-confidence items, and the Smart routing panel (E-T1), which receives the extracted request</div>
+      <div class="doc__where-item"><b>Trigger</b>Each email as it is synced from a connected mailbox (IMAP, Microsoft 365, Google Workspace), or a pasted sample</div>
+      <div class="doc__where-item"><b>Who sees it</b>Officers in the mailbox's default queue workgroup, and ECMS admins. Spam is kept for 30 days for review, then deleted</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">A classifier sorts the mail. An extractor and OCR pull out the request. Contact matching and the E-T1 router decide where it goes.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The mailbox sync (IMAP, Microsoft 365, Google Workspace) passes each new email: sender, subject, body and attachments to <code>/ecms/email-triage</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway removes personal data (NIN, phone, account numbers) from the text sent to the model and checks sender domains against the tenant allow-list. Everything runs on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Classify</h4><p>A classifier labels each email as task, FYI, spam or duplicate. Duplicates are found by embedding similarity against open tasks and recent emails from the same contact.</p></div>
+      <div class="doc__step"><h4>Extract &amp; OCR</h4><p>An LLM extracts the requester, subject and a two-sentence request summary. OCR reads PDFs and images (invoices, requisitions, photos of errors).</p></div>
+      <div class="doc__step"><h4>Match &amp; route</h4><p>The sender is matched to an ECMS contact (or a new one is proposed), and the Smart routing model (E-T1) suggests queue and priority.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer creates, edits, links or discards. Every choice, including "not spam", is logged via <code>/feedback</code> and used to retrain the classifier each week.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant on 27 Sep 2026. Percentages are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−90%</div><h4>Manual email triage</h4><p>Target. Officers confirm a ready card instead of reading, copying and retyping each email into Create Task.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">169 contacts</div><h4>Cleaner contact records</h4><p>Senders are matched to the tenant's 169 contacts instead of creating a new one per email.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fewer duplicates</div><h4>Follow-ups join the original task</h4><p>"Still not delivered" emails are added to the open task, not raised again. Complaints already has 2,248 open.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&lt; 1 min</div><h4>Email to assigned task</h4><p>Target. The email arrives already routed to the right queue, with attachments read.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0 spam tasks</div><h4>Queues stay clean</h4><p>Target. Prize and phishing emails are held back for review instead of becoming tasks.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Email Integration page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/email-to-task.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/email-to-task.js"&gt;&lt;/script&gt;
+
+&lt;script type="application/json" id="inbox"&gt;
+  {{ untriagedEmails | json }}
+&lt;/script&gt;
+&lt;ai-email-triage inbox="#inbox"&gt;&lt;/ai-email-triage&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-email-create-task', e =&gt; {
+  // host owns task creation
+  e.detail.taskId = tasks.createFromEmail(e.detail);
+});
+document.addEventListener('ai-email-discard', e =&gt;
+  inbox.archive(e.detail.emailId));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Extend the mailbox sync so each new email is stored as "untriaged", with its attachments in Drive (Application Documents → ECMS).</li>
+            <li>Run OCR on attachments during sync and store the text with the file.</li>
+            <li>Expose <code>/ecms/email-triage</code> on the CICOD-AI Gateway: classifier, extractor, contact matcher, then the E-T1 router.</li>
+            <li>Add the Triage inbox tab and the per-mailbox "CICOD-AI Triage" switch. Wire the create event to Create Task.</li>
+            <li>Run in suggestion mode for 4 weeks and track accuracy per category and per mailbox.</li>
+            <li>Allow auto-create per mailbox only where task accuracy is 95% or higher. Spam is never deleted automatically.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/email-triage
+{ "emails": [{ "id": "m-1042",
+    "mailbox": "registry@…", "fromName": "Solomon",
+    "subject": "Request: 20 cartons of A4 paper",
+    "body": "…",
+    "attachments": [{ "name": "Requisition.pdf" }] }] }
+→ 200
+{ "model": "cicod-mail-triage-v1",
+  "results": [{ "id": "m-1042",
+    "category": "task" | "fyi" | "spam" | "duplicate",
+    "confidence": 0.9, "reason": "…",
+    "requester": "Solomon",
+    "contact": { "id": 170, "name": "Solomon" },
+    "subject": "…", "summary": "…",
+    "attachments": [{ "name": "…", "ocr": "…" }],
+    "queue": "Order Fulfilment", "priority": "Normal",
+    "duplicateOf": null }] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.emailToTask</code> in ECMS Settings, plus an on/off switch per connected mailbox.</li>
+            <li>Auto-create threshold is set per mailbox. It defaults to off (suggest only), so an officer always confirms.</li>
+            <li>Every classification, creation, link, discard and override is written to the ECMS Audit Log (feature: <i>CICOD-AI Email Triage</i>).</li>
+            <li>Only members of the mailbox's workgroup see its triage inbox. Attachments keep their Drive classification.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="application/json" id="inbox-data">
+[
+  { "id": "m-1041", "mailbox": "ictsupport@cicod.example", "fromName": "Prince Zana", "received": "27/09/2026 14:52",
+    "subject": "Laptop will not connect to office Wi-Fi",
+    "body": "Good afternoon, my laptop has not connected to the office Wi-Fi since this morning. It says it can't connect to this network. I need to submit the ICT workshop report today. Regards, Prince Zana",
+    "attachments": [{ "name": "wifi_error.png", "ocr": "Can't connect to this network · CICOD-STAFF" }] },
+  { "id": "m-1042", "mailbox": "registry@cicod.example", "fromName": "Solomon", "received": "27/09/2026 13:40",
+    "subject": "Request: 20 cartons of A4 paper for Kano store",
+    "body": "Dear Sir, please supply 20 cartons of A4 paper to Kano store. Our stock will run out next week and the stock-take starts on 6 October. The signed requisition is attached. Thanks, Solomon",
+    "attachments": [{ "name": "Requisition_Kano_0927.pdf", "ocr": "STORE REQUISITION · Item: A4 paper 80gsm · Qty: 20 cartons · Store: Kano store" }] },
+  { "id": "m-1043", "mailbox": "complaints@cicod.example", "fromName": "Rebecca Saku", "received": "27/09/2026 12:15",
+    "subject": "Still waiting: order OF-2231 not delivered, I want a refund",
+    "body": "This is the second time I am writing. My order OF-2231 has still not been delivered and nobody has called me. Please process my refund. Rebecca Saku",
+    "attachments": [] },
+  { "id": "m-1044", "mailbox": "registry@cicod.example", "fromName": "Office of the Head of Service", "received": "27/09/2026 10:03",
+    "subject": "Circular: public holiday on Wednesday 1 October 2026",
+    "body": "For your information, Wednesday 1 October 2026 has been declared a public holiday to mark Independence Day. No action is required. Offices will reopen on Thursday.",
+    "attachments": [{ "name": "Circular_HOS_Holiday.pdf", "ocr": "CIRCULAR · Public holiday · 1 October 2026" }] },
+  { "id": "m-1045", "mailbox": "complaints@cicod.example", "fromName": "Promo Team", "received": "27/09/2026 09:47",
+    "subject": "Congratulations! You have won ₦5,000,000",
+    "body": "Dear winner, your email was selected in our annual draw. Click here to claim your prize before midnight. A small processing fee applies.",
+    "attachments": [] },
+  { "id": "m-1046", "mailbox": "registry@cicod.example", "fromName": "Raissa", "received": "27/09/2026 08:30",
+    "subject": "Official vehicle FG-118-ABJ: brakes squeaking",
+    "body": "Good morning. The official vehicle FG-118-ABJ is due for service and the brakes are squeaking badly. Please book it in with the mechanic this week. Raissa, Transport Unit",
+    "attachments": [{ "name": "dashboard_photo.jpg", "ocr": "SERVICE DUE · 10,000 km · Brake warning" }] }
+]
+</script>
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="email-to-task.js"></script>
+<script>
+  // Host-page wiring: the component proposes; the page creates the task and updates its own mailbox table.
+  let nextId = 17610;
+  document.addEventListener('ai-email-create-task', e => {
+    const d = e.detail;
+    const line = document.createElement('div');
+    if (d.linkTo) {
+      line.textContent = `✓ Email added to task #${d.linkTo} as a remark (from ${d.fields.contact}).`;
+    } else {
+      d.taskId = String(nextId++);
+      line.textContent = `✓ Task #${d.taskId} "${d.fields.title}" created in ${d.fields.queue} · ${d.fields.priority} · contact ${d.fields.contact}`;
+    }
+    const row = document.querySelector(`tr[data-mailbox="${d.mailbox}"]`) || document.querySelector('tr[data-mailbox]');
+    if (!d.linkTo) {
+      const c = row.querySelector('[data-count]');
+      c.textContent = +c.textContent + 1;
+      row.classList.remove('ei-flash'); void row.offsetWidth; row.classList.add('ei-flash');
+    }
+    document.getElementById('created').prepend(line);
+  });
+</script>
+</body>
+</html>

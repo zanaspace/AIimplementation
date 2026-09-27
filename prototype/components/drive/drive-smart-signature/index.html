@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Signature & Routing</title>
+  <link rel="stylesheet" href="../../../shared/tokens.css">
+  <link rel="stylesheet" href="../../../shared/shell.css">
+  <link rel="stylesheet" href="../../../shared/doc.css">
+  <link rel="stylesheet" href="smart-signature.css">
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD Drive</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · D7 · D8 · Phase 2</span>
+      <h1>Smart Signature & Routing</h1>
+      <p>The Smart Signature Copilot transforms the document signing process. When you upload a file for signature, it automatically reads the document to identify who needs to sign it, matches them to users in CICOD, and maps out the exact locations for their signatures and dates. It also generates a "Signer's Brief"—a quick, plain-English summary of the financial commitments or obligations the user is about to authorize.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Drive → Sign File</span><span class="g-chip">Component: &lt;ai-smart-signature&gt;</span><span class="g-chip">Endpoint: /drive/signature/analyze</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a mockup of the Drive <b>Sign File</b> setup screen. The AI automatically scans the contract to detect the required signers and extracts a summary of the obligations. Click <b>Auto-Place Fields</b> to see the AI automatically drop the signature blocks onto the correct lines on the document.</p>
+    
+    <div id="screen" class="shell" data-app="drive" data-active="My Documents">
+      <div class="shell__content">
+        <div class="gd__bar" style="padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          <h2 class="shell__title" style="margin:0; font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Set Up Signature: Q3_Maintenance_Contract.pdf</h2>
+          <button class="g-btn" type="button">Cancel</button>
+        </div>
+        
+        <div class="layout-split">
+          <!-- Document Preview -->
+          <div class="doc-preview">
+            <div class="doc-preview__content">
+              <h2>SERVICE LEVEL AGREEMENT</h2>
+              <p>This agreement is made between CICOD and TechCorp Ltd for the provision of Q3 server maintenance and cloud infrastructure support.</p>
+              <p>Total consideration for these services is strictly capped at ₦4,500,000.00 (Four million, five hundred thousand Naira). Services shall commence on October 1st, 2026.</p>
+              <br><br><br><br>
+              <p>Signed on behalf of CICOD by:</p>
+              <br><br>
+              <div>_________________________________<br>Director, Administration</div>
+              <br><br>
+              <div>_________________________________<br>Head of Finance</div>
+            </div>
+            
+            <!-- AI placed signature boxes -->
+            <div class="doc-preview__sig-line doc-preview__sig-line--left" id="sig-box-1">✦ Prince Ekpenyong (Sign)</div>
+            <div class="doc-preview__sig-line doc-preview__sig-line--left" id="sig-box-2" style="bottom: 20px;">✦ Praise (Sign)</div>
+          </div>
+
+          <!-- AI Setup Panel -->
+          <div data-ai-spot="CICOD-AI · Smart Signature Copilot">
+            <ai-smart-signature></ai-smart-signature>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <ul class="doc__list">
+      <li><b>Signatory Extraction:</b> The LLM reads the document looking for signature blocks, titles, and names, matching them against the tenant's user directory via the CICOD AI Gateway.</li>
+      <li><b>Auto-Placement:</b> Using layout analysis, the AI returns bounding boxes for where the signature, initials, and date fields should be visually overlaid on the PDF.</li>
+      <li><b>Signer's Brief:</b> A strict prompt analyzes the document specifically for financial amounts, legal obligations, and effective dates, presenting them to the signer so they know what they are authorizing without reading a 50-page contract.</li>
+    </ul>
+  </section>
+
+</main>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/shell.js"></script>
+<script src="smart-signature.js"></script>
+<script>
+  // Listen for the AI component's event to show the signature boxes
+  document.addEventListener('fields-placed', () => {
+    document.getElementById('sig-box-1').style.bottom = '100px';
+    document.getElementById('sig-box-2').style.bottom = '40px';
+    document.getElementById('sig-box-1').classList.add('visible');
+    document.getElementById('sig-box-2').classList.add('visible');
+  });
+</script>
+</body>
+</html>

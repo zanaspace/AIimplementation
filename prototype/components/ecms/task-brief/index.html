@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task Brief and Reply</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="task-brief.css">
+<style>
+  /* Page-only layout for the mock "Task detail" screen */
+  .td-crumb { font-size: 12px; color: var(--text-3); margin-bottom: 6px; }
+  .td-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 14px; }
+  .td-head h2 { margin: 0; font-size: 18px; }
+  .td-head__id { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
+  .td-head__chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .td-head__btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .td { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+  .td-card { padding: 16px; }
+  .td-card h3 { margin: 0 0 10px; font-size: 14px; }
+  .td-tl { list-style: none; margin: 0; padding: 0; }
+  .td-entry { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+  .td-entry:last-child { border-bottom: 0; }
+  .td-av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--gov-green-100); color: var(--gov-green-600); }
+  .td-entry__meta { font-size: 12px; color: var(--text-3); }
+  .td-entry__meta b { color: var(--text); font-weight: 600; }
+  .td-entry__text { font-size: 13px; margin-top: 2px; overflow-wrap: anywhere; }
+  .td-file { display: inline-flex; gap: 6px; align-items: center; padding: 4px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); font-size: 12.5px; }
+  .td-entry--new { animation: td-flash 1.4s ease; }
+  .td-remark { margin-top: 20px; border: 1px solid var(--border); border-radius: var(--radius); }
+  .td-remark textarea { border: 0; border-radius: 0; min-height: 110px; }
+  .td-remark__foot { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 12px; background: var(--surface-2); border-top: 1px solid var(--border); }
+  .td-dl { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 8px 10px; margin: 0; font-size: 13px; }
+  .td-dl dt { color: var(--text-3); font-size: 12px; }
+  .td-dl dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+  .td-flash { animation: td-flash 1.2s ease; }
+  @keyframes td-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); background: var(--ai-50); } 100% { box-shadow: none; } }
+  @media (max-width: 1100px) { .td { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Tasks</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-T2 · E-T4 · Priority 1</span>
+      <h1>Task Brief &amp; Suggested Reply</h1>
+      <p>Opens every task with a <b>five-line brief</b> of the whole timeline: what was asked, what has been done, the attachments, the <b>current blocker</b> and <b>what's needed from you</b>. A <b>Next best action</b> chip does the obvious next step in one click. Above the remark box, <b>Suggest reply</b> drafts the next remark or citizen reply in a formal, citizen-friendly or brief tone. The officer inserts it, edits it and posts it.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Tasks → Task detail</span><span class="g-chip">Component: &lt;ai-task-brief&gt;</span><span class="g-chip">Endpoints: /ecms/task-brief · /ecms/suggest-reply</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a plausible ECMS <b>task detail</b> page for task #17572. The live crawl could not open task detail, so the layout follows the All Tasks columns and the Create Task form. The brief loads on its own. Try this: click the <b>Next best action</b> chip to approve the transfer and watch the status and timeline change, then the brief refresh. Then pick a tone and click <b>Suggest reply</b>. Type a note first, for example <i>"Technician will fit it on Tuesday morning"</i>, and the draft will include it.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="All Tasks">
+      <div class="shell__content">
+        <div class="td-crumb">Tasks / All Tasks / #17572</div>
+        <div id="task-detail">
+          <div class="td-head">
+            <div>
+              <span class="td-head__id" data-task-field="id">#17572</span>
+              <h2 data-task-field="title">Printer on 2nd floor not working</h2>
+              <div class="td-head__chips">
+                <span class="g-chip">Queue: IT Support</span><span class="g-chip">Hardware &amp; Network</span>
+                <span class="g-chip g-chip--info" id="st-chip">Status: <span data-task-field="status">In Progress</span></span>
+                <span class="g-chip g-chip--bad">Priority: <span data-task-field="priority">High</span></span>
+              </div>
+            </div>
+            <div class="td-head__btns"><button class="g-btn g-btn--sm" type="button">Reassign</button><button class="g-btn g-btn--sm" type="button">Change Status</button><button class="g-btn g-btn--sm g-btn--primary" type="button">Close Task</button></div>
+          </div>
+
+          <div class="td">
+            <div>
+              <div data-ai-spot="CICOD-AI · Task brief (top of task)">
+                <ai-task-brief id="brief" mode="brief" source="#task-detail" viewer="Prince Ekpenyong"></ai-task-brief>
+              </div>
+
+              <div class="g-card td-card" style="margin-top:16px">
+                <h3>Timeline</h3>
+                <ol class="td-tl" id="timeline">
+                  <li class="td-entry" data-entry data-author="Francis" data-when="26/09/2026 09:12" data-kind="remark"><span class="td-av">AN</span><div><div class="td-entry__meta"><b>Francis</b> created the task · 26/09/2026 09:12</div><div class="td-entry__text" data-entry-text>The HP LaserJet 4250 on the 2nd floor (Room 214) keeps jamming and shows error 49.4C02. We need it for the board meeting papers by Monday 29/09.</div></div></li>
+                  <li class="td-entry" data-entry data-author="Francis" data-when="26/09/2026 09:13" data-kind="attachment" data-ocr="49.4C02 SERVICE ERROR. Turn off then on"><span class="td-av">AN</span><div><div class="td-entry__meta"><b>Francis</b> attached a file · 26/09/2026 09:13</div><div class="td-entry__text"><span class="td-file" data-entry-text>printer_error.jpg</span></div></div></li>
+                  <li class="td-entry" data-entry data-author="Praisen" data-when="26/09/2026 11:40" data-kind="remark"><span class="td-av">EA</span><div><div class="td-entry__meta"><b>Praisen</b> added a remark · 26/09/2026 11:40</div><div class="td-entry__text" data-entry-text>Visited Room 214. The fuser unit is faulty and must be replaced. I have raised a store requisition for 1 fuser unit (HP 4250).</div></div></li>
+                  <li class="td-entry" data-entry data-author="Praisen" data-when="26/09/2026 11:42" data-kind="attachment" data-ocr="Item: Fuser unit HP 4250 · Qty 1 · Requested by IT Support"><span class="td-av">EA</span><div><div class="td-entry__meta"><b>Praisen</b> attached a file · 26/09/2026 11:42</div><div class="td-entry__text"><span class="td-file" data-entry-text>Store requisition SR-0921.pdf</span></div></div></li>
+                  <li class="td-entry" data-entry data-author="Damola Tunde" data-when="26/09/2026 15:05" data-kind="remark"><span class="td-av">DT</span><div><div class="td-entry__meta"><b>Damola Tunde</b> (Central Store) added a remark · 26/09/2026 15:05</div><div class="td-entry__text" data-entry-text>Fuser unit HP 4250 is not in stock at Central Store. Kano store has 2 units. The transfer is pending approval.</div></div></li>
+                  <li class="td-entry" data-entry data-author="Damola Tunde" data-when="27/09/2026 08:30" data-kind="remark"><span class="td-av">DT</span><div><div class="td-entry__meta"><b>Damola Tunde</b> added a remark · 27/09/2026 08:30</div><div class="td-entry__text" data-entry-text>Prince Ekpenyong, please approve the transfer of 1 unit from Kano store so it can be dispatched today.</div></div></li>
+                </ol>
+
+                <div class="td-remark">
+                  <div data-ai-spot="CICOD-AI · Suggest reply (above remark box)">
+                    <ai-task-brief id="reply" mode="reply" source="#task-detail" viewer="Prince Ekpenyong" intent="#remark"></ai-task-brief>
+                  </div>
+                  <label class="g-label" for="remark" style="padding:8px 12px 0">Add a remark</label>
+                  <textarea class="g-textarea" id="remark" placeholder="Write a remark or reply to the requester"></textarea>
+                  <div class="td-remark__foot">
+                    <span><button class="g-btn g-btn--sm" type="button">+ Attach</button> <label style="font-size:12px;color:var(--text-2)"><input type="checkbox" id="to-req" checked> Also email requester</label></span>
+                    <button class="g-btn g-btn--sm g-btn--primary" type="button" id="post">Post remark</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="g-card td-card">
+              <h3>Details</h3>
+              <dl class="td-dl">
+                <dt>Queue</dt><dd>IT Support</dd>
+                <dt>Queue Type</dt><dd>Hardware &amp; Network</dd>
+                <dt>Status</dt><dd id="st-side">In Progress</dd>
+                <dt>Priority</dt><dd>High</dd>
+                <dt>Assigned To</dt><dd>Praisen</dd>
+                <dt>Date Created</dt><dd>26/09/2026</dd>
+                <dt>Date Assigned</dt><dd>26/09/2026</dd>
+                <dt>Contact</dt><dd>Francis</dd>
+                <dt>CC'd</dt><dd>Prince Ekpenyong</dd>
+                <dt>Awaiting Approval</dt><dd id="aw-side">Yes (stock transfer)</dd>
+              </dl>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Top of the task detail page <code>/ecms/tasks/:id</code>, above the timeline, plus a bar above the remark box</div>
+      <div class="doc__where-item"><b>Also appears in</b>The hover preview of a row in All Tasks (brief only), memo minute boxes, and the Workspace "Needs you today" list</div>
+      <div class="doc__where-item"><b>Trigger</b>The brief builds when the task opens and rebuilds after a new remark. Replies are drafted only when the officer clicks Suggest reply</div>
+      <div class="doc__where-item"><b>Who sees it</b>Anyone who can open the task. The brief only uses remarks and files the viewer is allowed to see</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">A summariser reads the timeline in order. Rules find the blocker and the ask. A writer model drafts replies from templates and similar resolved tasks.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>Task header fields, every remark, status change and attachment name, plus OCR text of attached images and PDFs, are sent to <code>/ecms/task-brief</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway removes personal data (NIN, phone, email) and trims remarks the viewer cannot see. Secret-classified tasks stay on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Summarise</h4><p>An LLM writes exactly five lines: request, progress, attachments, activity and deadline. Rules pick out the blocker ("not in stock", "pending") and any ask that names the viewer.</p></div>
+      <div class="doc__step"><h4>Next action</h4><p>The ask is mapped to an ECMS action (approve, reassign, nudge, close) and the status it leads to. It is shown as one chip and never runs on its own.</p></div>
+      <div class="doc__step"><h4>Draft reply</h4><p><code>/ecms/suggest-reply</code> retrieves similar closed tasks and the MDA's tone guide, then writes a remark in the chosen tone, using anything the officer has already typed.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer inserts, edits or discards the draft and rates the brief. Every decision is sent to <code>/feedback</code> and used to tune prompts and templates.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant on 27 Sep 2026. Percentages are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−30 to 50%</div><h4>Handling time per task</h4><p>Target. Officers read five lines instead of scrolling a long remark history before they act.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">488 in progress</div><h4>Faster hand-offs</h4><p>All Tasks shows 488 tasks in progress. A clear blocker and ask on each one cuts the "what is this waiting for?" calls.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">1 click</div><h4>Next step is obvious</h4><p>The next best action turns "please approve" remarks into one click that also updates the status.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−60%</div><h4>Time to reply</h4><p>Target. Replies start from a draft in the MDA's tone instead of a blank box.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Consistent</div><h4>Better citizen replies</h4><p>Citizen-friendly drafts use plain language and always give a status and a next step.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Task detail page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/task-brief.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/task-brief.js"&gt;&lt;/script&gt;
+
+&lt;ai-task-brief mode="brief" source="#task"
+               viewer="{{user.fullName}}"&gt;&lt;/ai-task-brief&gt;
+…
+&lt;ai-task-brief mode="reply" source="#task"
+               intent="#remark"&gt;&lt;/ai-task-brief&gt;
+&lt;textarea id="remark"&gt;&lt;/textarea&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-reply-insert', e =&gt;
+  remarkBox.setValue(e.detail.text));
+document.addEventListener('ai-task-action', e =&gt;
+  taskStore.runAction(e.detail));   // host owns the task
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Expose the task timeline (remarks, status changes, attachments) as one ordered list for the gateway.</li>
+            <li>Run OCR on image and PDF attachments when they are uploaded and store the text with the file.</li>
+            <li>Add <code>/ecms/task-brief</code>: five-line prompt, blocker and ask rules, action mapping.</li>
+            <li>Add <code>/ecms/suggest-reply</code>: retrieval of similar closed tasks, and a tone guide per MDA.</li>
+            <li>Mount both placements on task detail and wire the two events to the task store.</li>
+            <li>Pilot on IT Support and Complaints. Track "Useful" rate and how much officers edit drafts.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/task-brief
+{ "taskId": "17572", "viewer": "Prince Ekpenyong",
+  "timeline": [{ "author": "Francis", "when": "…",
+                 "kind": "remark" | "attachment",
+                 "text": "…", "ocr": "…" }] }
+→ 200
+{ "model": "cicod-summariser-v1",
+  "confidence": 0.88,
+  "lines": ["Request: …", "Progress: …", "…"],
+  "blocker": "Fuser unit not in stock …",
+  "neededFromYou": "Approve the stock transfer",
+  "nextAction": { "action": "approve",
+                  "label": "Approve Kano store transfer",
+                  "status": "Awaiting Delivery" } }
+
+POST /ai/ecms/suggest-reply
+{ "taskId": "17572", "tone": "formal" | "citizen" | "brief",
+  "intent": "Technician will fit it on Tuesday" }
+→ 200
+{ "model": "cicod-writer-v1", "confidence": 0.9,
+  "text": "Dear Ann, …", "basedOn": ["#17492 …"] }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.taskBrief</code> in ECMS Settings, on/off per tenant. Suggested reply can be switched off on its own.</li>
+            <li>The next best action is never run automatically. Actions that need approval rights only appear for users who have them.</li>
+            <li>Every brief, draft and decision is written to the ECMS Audit Log (feature: <i>CICOD-AI Task Brief</i>).</li>
+            <li>The brief is built only from remarks and files the viewer is allowed to see. Drafts are labelled as CICOD-AI-assisted in the audit trail.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="task-brief.js"></script>
+<script>
+  // Host-page wiring: the component emits events; the page owns the task and changes it.
+  const VIEWER = 'Prince Ekpenyong';
+  const tl = document.getElementById('timeline');
+  const remark = document.getElementById('remark');
+  const flash = el => { el.classList.remove('td-flash'); void el.offsetWidth; el.classList.add('td-flash'); };
+  const now = () => { const d = new Date(); return `27/09/2026 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+
+  function addEntry(text, verb) {
+    const li = document.createElement('li');
+    li.className = 'td-entry td-entry--new';
+    li.dataset.entry = ''; li.dataset.author = VIEWER; li.dataset.when = now(); li.dataset.kind = 'remark';
+    li.innerHTML = `<span class="td-av">PE</span><div><div class="td-entry__meta"><b>${VIEWER}</b> ${verb} · ${li.dataset.when}</div><div class="td-entry__text" data-entry-text></div></div>`;
+    li.querySelector('[data-entry-text]').textContent = text;
+    tl.appendChild(li);
+  }
+  function setStatus(s) {
+    document.querySelector('[data-task-field="status"]').textContent = s;
+    document.getElementById('st-side').textContent = s;
+    flash(document.getElementById('st-chip')); flash(document.getElementById('st-side'));
+  }
+
+  document.addEventListener('ai-task-action', e => {
+    const a = e.detail;
+    if (a.action === 'approve') {
+      addEntry(a.remark, 'approved');
+      setStatus(a.status);
+      document.getElementById('aw-side').textContent = 'No';
+      setTimeout(() => document.getElementById('brief').refresh(), 600);
+    } else if (a.action === 'reply') {
+      const r = document.getElementById('reply');
+      r.querySelector('[data-tone]').value = 'citizen';
+      r.suggest();
+      remark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (a.status) setStatus(a.status);
+  });
+
+  document.addEventListener('ai-reply-insert', e => { remark.value = e.detail.text; flash(remark); remark.focus(); });
+
+  document.getElementById('post').addEventListener('click', () => {
+    if (!remark.value.trim()) return;
+    addEntry(remark.value.trim(), 'added a remark');
+    remark.value = '';
+    document.getElementById('brief').refresh();
+  });
+</script>
+</body>
+</html>

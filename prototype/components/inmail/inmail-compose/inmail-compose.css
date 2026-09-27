@@ -1,0 +1,55 @@
+/* <ai-mail-assist>: InMail summaries, draft-from-notes and pre-send check.
+   All classes are prefixed `aima-`. */
+ai-mail-assist { display: block; }
+
+.aima--inline { position: relative; display: inline-block; max-width: 100%; }
+.aima__pop { position: absolute; z-index: 20; top: calc(100% + 6px); right: 0; width: min(440px, calc(100vw - 48px)); background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 40%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 12px 14px; }
+.aima__pop[hidden] { display: none; }
+.aima__pop-head { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; font-size: 13px; }
+.aima__items { list-style: none; margin: 8px 0 0; padding: 0; }
+.aima__items li { display: flex; gap: 8px; align-items: flex-start; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+.aima__items li:last-child { border-bottom: 0; }
+.aima__i-main { min-width: 0; font-size: 12.5px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.aima__i-main p { flex-basis: 100%; margin: 2px 0 0; color: var(--text-2); }
+.aima__rate { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.aima__rate .ai-confidence { margin-right: auto; }
+
+.aima__tl { margin: 10px 0; padding: 12px 14px; background: var(--ai-50); border: 1px solid color-mix(in srgb, var(--ai-500) 30%, var(--border)); border-radius: var(--radius); font-size: 13px; }
+.aima__tl[hidden] { display: none; }
+.aima__tl-head { display: flex; justify-content: space-between; align-items: center; }
+.aima__tldr { margin: 6px 0; font-weight: 500; }
+.aima__points { margin: 4px 0 8px; padding-left: 18px; color: var(--text-2); }
+.aima__points li { margin: 2px 0; }
+.aima__h { margin: 8px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ai-600); }
+
+.aima--panel { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+.aima__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aima__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aima__type { font-size: 11px; color: var(--text-3); }
+.aima__body { padding: 12px 14px; }
+.aima__row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; margin-top: 8px; }
+.aima__tone { display: block; flex: 1; min-width: 140px; }
+.aima__hint { font-size: 12px; color: var(--text-2); margin: 6px 0; }
+.aima__ok { margin: 8px 0 0; padding: 8px 10px; border-radius: var(--radius); background: var(--ok-bg); font-size: 12.5px; }
+.aima__model { margin-left: auto; }
+
+.aima__draft { margin-top: 10px; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
+.aima__d-sub b { font-size: 13px; overflow-wrap: anywhere; }
+.aima__d-body { margin: 8px 0; padding: 10px; background: var(--surface-2); border-radius: var(--radius-sm); font-family: var(--font); font-size: 12px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 260px; overflow-y: auto; }
+.aima__chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.aima__chip { display: inline-flex; gap: 4px; align-items: center; font-size: 11.5px; padding: 3px 8px; border-radius: 999px; background: var(--ai-100); color: var(--ai-600); font-weight: 600; cursor: pointer; }
+.aima__chip input { accent-color: var(--ai-500); margin: 0; }
+.aima__plain { margin-top: 8px; padding: 8px 10px; background: var(--info-bg); border-radius: var(--radius-sm); font-size: 12.5px; }
+.aima__plain p { margin: 0; }
+.aima__plain .aima__h { margin-top: 0; }
+
+.aima__check { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--warn-bg); }
+.aima__issues { list-style: none; margin: 0; padding: 0; }
+.aima__issues li { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; padding: 6px 0; font-size: 12.5px; border-bottom: 1px dashed var(--border); }
+.aima__issues li:last-child { border-bottom: 0; }
+.aima__issue-text { flex: 1; min-width: 180px; }
+
+@media (max-width: 600px) {
+  .aima__pop { position: fixed; left: 12px; right: 12px; top: 80px; width: auto; max-height: 70vh; overflow-y: auto; }
+  .aima__model { margin-left: 0; }
+}

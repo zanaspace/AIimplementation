@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setup Wizard Mapper</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="setup-wizard-mapper.css">
+<style>
+  /* Page-only layout for the mock "Setup Wizard" screen */
+  .sw__crumb { font-size: 13px; color: var(--text-3); }
+  .sw__crumb b { color: var(--text); }
+  .sw__h { margin: 4px 0 12px; font-size: 16px; }
+  .sw__card { padding: 28px 18px; text-align: center; }
+  .sw__icon { width: 52px; height: 52px; margin: 0 auto 10px; border-radius: 12px; background: var(--gov-green-100); color: var(--gov-green-600); display: grid; place-items: center; font-size: 22px; }
+  .sw__card h3 { margin: 0; font-size: 22px; }
+  .sw__card > p { margin: 6px auto 18px; max-width: 380px; color: var(--text-2); font-size: 13px; }
+  .sw__steps { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .sw__step { position: relative; width: 126px; padding: 16px 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); font-size: 13px; font-weight: 500; }
+  .sw__step i { position: absolute; top: 6px; right: 36px; width: 18px; height: 18px; border-radius: 50%; background: var(--gov-green-600); color: #fff; font-size: 10px; font-style: normal; display: grid; place-items: center; }
+  .sw__step span { display: block; width: 36px; height: 36px; margin: 0 auto 6px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border); }
+  .sw__step small { display: block; font-size: 11px; color: var(--text-3); font-weight: 400; margin-top: 2px; }
+  .sw__step--done { border-color: var(--gov-green-600); background: var(--gov-green-50); }
+  .sw__step--done span { background: var(--gov-green-600); }
+  .sw__btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+  .sw__btns div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--text-2); }
+  .sw__ai { margin: 22px auto 0; max-width: 1080px; }
+  .sw__done { margin: 14px auto 0; max-width: 700px; padding: 10px 14px; border-radius: var(--radius); background: var(--ok-bg); font-size: 13px; text-align: left; }
+  .sw__flash { animation: sw-flash 1.4s ease; }
+  @keyframes sw-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); } 100% { box-shadow: none; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Settings</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-W5 · Priority 2</span>
+      <h1>Setup Wizard CICOD-AI Mapper</h1>
+      <p>Setting up a new organization in CICOD usually requires manually typing in every department, job role, employee, and manager from a messy spreadsheet. The Setup Wizard Mapper automates this process. It reads <b>any</b> staff list spreadsheet, automatically matches the columns, fixes inconsistent spellings (like "Fin &amp; Accts" to "Finance"), merges duplicate roles, and figures out who reports to whom. The administrator simply reviews the suggestions and clicks import to instantly build the organization's structure.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Settings → Setup Wizard</span><span class="g-chip">Component: &lt;ai-org-mapper&gt;</span><span class="g-chip">Endpoint: /ecms/setup/map-org</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a demo of the <b>Setup Wizard</b> screen. To see it in action, click <i>Use sample staff list</i> to load a messy example file. You can check how the CICOD-AI automatically maps columns and groups similar departments and roles. Try clicking <i>Fix</i> on a highlighted row to correct it, then click <i>Save</i>. Finally, click <i>Import</i> to see how the system uses this data to automatically set up the organization.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Setup Wizard">
+      <div class="shell__content">
+        <div class="sw__crumb">Settings › <b>Setup Wizard</b></div>
+        <h2 class="sw__h">Setup Wizard</h2>
+        <div class="g-card sw__card">
+          <div class="sw__icon">✧</div>
+          <h3>Ready for a seamless setup?</h3>
+          <p>Let's get started by importing your data for these four key functionalities</p>
+          <div class="sw__steps" id="sw-steps">
+            <div class="sw__step" data-step="dept"><i>1</i><span></span>Departments<small></small></div>
+            <div class="sw__step" data-step="roles"><i>2</i><span></span>Roles<small>192 in tenant</small></div>
+            <div class="sw__step" data-step="users"><i>3</i><span></span>Users<small>100 in tenant</small></div>
+            <div class="sw__step" data-step="wf"><i>4</i><span></span>Workflows<small></small></div>
+          </div>
+          <div class="sw__btns">
+            <div><button class="g-btn g-btn--primary" type="button">Get Started</button>Import data from a config sheet</div>
+            <div><button class="g-btn" type="button">Map Roles</button>Assign menu &amp; workflow access</div>
+          </div>
+          <div id="sw-done"></div>
+          <div class="sw__ai" data-ai-spot="CICOD-AI · Import with CICOD-AI mapper">
+            <ai-org-mapper tenant-roles="192"></ai-org-mapper>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Inside the Setup Wizard card on <code>/ecms/settings/setup-wizard</code>, under "Get Started / Map Roles"</div>
+      <div class="doc__where-item"><b>Also appears in</b>Users → Roles (a "Find duplicate roles" action, E-U2) and Users → Import</div>
+      <div class="doc__where-item"><b>Trigger</b>A file dropped on the wizard, or the sample button in this demo</div>
+      <div class="doc__where-item"><b>Who sees it</b>Tenant administrators (SUPER ADMIN) only. Phone and email columns are masked before the model sees them</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Rules and fuzzy matching do most of the work. An LLM only handles titles the rules can't place, and every row gets a confidence score.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The uploaded Excel, CSV or PDF is converted to rows (PDF tables via document intelligence). The header row and the tenant's existing roles and departments are sent to <code>/ecms/setup/map-org</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Phone, email and NIN columns are detected and masked before any model call. The file stays in the tenant's Drive, and the sovereign model is used.</p></div>
+      <div class="doc__step"><h4>Map &amp; normalise</h4><p>Column headers are matched to CICOD fields. executive abbreviations are expanded ("Asst. Dir." → Assistant Director), and department spellings are grouped.</p></div>
+      <div class="doc__step"><h4>Deduplicate roles</h4><p>Token similarity with a rank guard ("Chief" ≠ "Assistant Chief") clusters titles from the file with the tenant's 192 roles. The admin ticks which merges to apply.</p></div>
+      <div class="doc__step"><h4>Infer line managers</h4><p>A "Reports To" column is used when present. Otherwise the next grade up in the same department is proposed. Ties and department heads below GL 15 are flagged.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Rows under 80% are held back until fixed. Column changes, merge choices and row fixes go to <code>/feedback</code> and extend the tenant's abbreviation list.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines from the cicod tenant (ECMS → Roles, Users), 27 Sep 2026. Other figures are targets.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Weeks → hours</div><h4>Onboarding a new MDA</h4><p>Target: departments, roles and users from a raw nominal roll in one sitting, not weeks of spreadsheet clean-up.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">192 roles</div><h4>A cleaner role catalogue</h4><p>The tenant has 192 roles (190 active), with variants such as three "Assistant Director … Technical Support" roles. Merges are proposed before more variants are created.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Line managers set</div><h4>Approvals route correctly</h4><p>Escalation and "Through" chains need line managers. They're inferred for every row instead of being left blank.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Errors caught early</div><h4>Data quality at import</h4><p>Duplicate IPPIS numbers, missing departments and uncertain matches are held back instead of being imported.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Setup Wizard page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/setup-wizard-mapper.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/setup-wizard-mapper.js"&gt;&lt;/script&gt;
+
+&lt;ai-org-mapper tenant-roles="192"&gt;&lt;/ai-org-mapper&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-org-import', async e =&gt; {
+  const d = e.detail;        // the host performs the import
+  await api.departments.upsert(d.departments);
+  await api.roles.merge(d.merges);
+  await api.users.bulkCreate(d.users);
+  wizard.markDone(['departments', 'roles', 'users']);
+});
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Build the abbreviation and rank dictionary with HR (Asst., Dir., Prog., GL, CSO…).</li>
+            <li>Expose <code>/ecms/setup/map-org</code>: file-to-rows, column mapping, normalisation, clustering, line-manager inference.</li>
+            <li>Add a "merge roles" API that moves users and permissions to the canonical role and suspends the old ones.</li>
+            <li>Mount the component in the Setup Wizard and wire <code>ai-org-import</code> to the bulk APIs.</li>
+            <li>Run it on cicod's own 192 roles first; review the proposed merges with the admin team.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/setup/map-org
+{ "fileName": "Nominal_Roll_Sept2026.xlsx",
+  "rows": [["S/N","Staff Name","IPPIS","Desig.", …], …],
+  "tenant": { "roles": 192 } }
+→ 200
+{ "model": "cicod-orgmap-v1",
+  "columns": [{ "source": "Desig.", "field": "Role",
+                "confidence": 0.9 }],
+  "departments": [{ "name": "Finance &amp; Accounts",
+    "variants": ["Fin &amp; Accts", "FINANCE AND ACCOUNTS"],
+    "existing": true }],
+  "clusters": [{ "canonical": "Assistant Director Accounts Admin",
+    "members": [{ "name": "Asst. Dir. Accounts (Admin)",
+                  "source": "roll" }, …] }],
+  "users": [{ "name": "Adaeze N. Okonkwo", "ippis": "218734",
+    "department": "Finance &amp; Accounts",
+    "role": "Assistant Director Accounts Admin", "gl": 15,
+    "manager": "Emeka Nwosu",
+    "managerSource": "inferred: next grade up",
+    "confidence": 0.84 }],
+  "counts": { "deptBefore": 12, "deptAfter": 4, … } }</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.setupWizardMapper</code> in ECMS Settings, on/off per tenant.</li>
+            <li>Import threshold: rows under 80% confidence are held back until an admin fixes them.</li>
+            <li>Every import, merge and row fix is written to the ECMS Audit Log (feature: <i>CICOD-AI Setup</i>) and can be undone per batch.</li>
+            <li>Only SUPER ADMIN users see the mapper; role merges never grant more permissions than the canonical role has.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="setup-wizard-mapper.js"></script>
+<script>
+  // Host-page wiring: the Setup Wizard performs the import and marks its steps done.
+  const esc = window.AIGateway.esc;
+  document.addEventListener('ai-org-import', e => {
+    const c = e.detail.counts;
+    const set = (step, text) => { const el = document.querySelector(`[data-step="${step}"]`); el.classList.add('sw__step--done'); el.querySelector('small').textContent = text; el.classList.remove('sw__flash'); void el.offsetWidth; el.classList.add('sw__flash'); };
+    set('dept', `${c.departments} mapped · ${c.newDepartments} new`);
+    set('roles', `${c.rolesBefore} → ${c.rolesAfter} (${c.merges} merges)`);
+    set('users', `+${c.users} imported`);
+    document.getElementById('sw-done').innerHTML = `<div class="sw__done"><b>Import complete (demo).</b> ${esc(c.users)} users added across ${esc(c.departments)} departments; ${esc(c.merges)} role clusters confirmed (${esc(c.rolesBefore)} → ${esc(c.rolesAfter)} roles). ${c.heldBack ? `${esc(c.heldBack)} rows held back for fixing.` : 'No rows held back.'} Next: Workflows.</div>`;
+    document.getElementById('sw-steps').scrollIntoView({ block: 'center', behavior: 'smooth' });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Citizen Assistant</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="citizen-assistant.css">
+<style>
+  /* Page-only layout for the mock Paperless Service Portal */
+  .sp { display: flex; flex-direction: column; gap: 20px; }
+  .sp__banner { background: linear-gradient(135deg, var(--gov-green-700), var(--gov-green-500)); color: #fff; padding: 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+  .sp__banner-badge { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: 3px 10px; border-radius: 999px; background: rgba(255,255,255,.2); margin-bottom: 10px; }
+  .sp__banner h2 { margin: 0 0 6px; font-size: 22px; color: #fff; font-weight: 700; }
+  .sp__banner-sub { margin: 0 0 10px; font-size: 14px; font-weight: 600; opacity: .95; color: #ffeb3b; }
+  .sp__banner p { margin: 0; font-size: 13px; line-height: 1.5; opacity: .9; max-width: 780px; }
+
+  .sp__toast { padding: 10px 14px; border-radius: var(--radius); background: var(--ok-bg); font-size: 13px; color: var(--text); border: 1px solid var(--border); }
+  .sp__toast:empty { display: none; }
+
+  .sp__actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .sp__action-card { padding: 18px; border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 8px; justify-content: space-between; }
+  .sp__action-card h3 { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .sp__action-card p { margin: 0; font-size: 12.5px; color: var(--text-2); line-height: 1.45; }
+  .sp__action-card .g-btn { margin-top: 8px; align-self: flex-start; }
+
+  .sp__flow-box { padding: 16px 20px; }
+  .sp__flow-box h4 { margin: 0 0 12px; font-size: 13.5px; color: var(--text-2); text-transform: uppercase; letter-spacing: .06em; }
+  .sp__steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; list-style: none; margin: 0; padding: 0; }
+  .sp__step { padding: 10px; border-radius: var(--radius); background: var(--surface-2); font-size: 12px; border: 1px solid var(--border); }
+  .sp__step b { display: block; font-size: 13px; color: var(--gov-green-600); margin-bottom: 2px; }
+  .sp__step span { color: var(--text-2); }
+
+  .sp__catalogue { padding: 20px; }
+  .sp__cat-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .sp__cat-head h3 { margin: 0 0 4px; font-size: 16px; }
+  .sp__cat-head p { margin: 0; font-size: 12.5px; color: var(--text-2); }
+  .sp__queues { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+  .sp__qbtn { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12.5px; font-family: inherit; cursor: pointer; text-align: left; transition: all .2s; }
+  .sp__qbtn:hover { border-color: var(--gov-green-500); background: var(--surface-2); }
+  .sp__qbtn b { font-weight: 500; overflow-wrap: anywhere; }
+  .sp__qbtn span { font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--surface-2); color: var(--text-3); font-weight: 600; flex-shrink: 0; }
+
+  .sp__qbtn--active {
+    border-color: var(--ai-500) !important;
+    background: var(--ai-50) !important;
+    box-shadow: 0 0 0 3px var(--ai-100);
+    animation: sp-pulse 1.6s ease infinite alternate;
+  }
+  .sp__qbtn--active b { color: var(--ai-700); font-weight: 700; }
+  .sp__qbtn--active span { background: var(--ai-600); color: #fff; }
+  @keyframes sp-pulse { 0% { box-shadow: 0 0 0 2px var(--ai-100); } 100% { box-shadow: 0 0 0 5px var(--ai-200); } }
+
+  .sp__foot { font-size: 11.5px; color: var(--text-3); line-height: 1.5; padding: 12px 4px 4px; text-align: center; }
+
+  @media (max-width: 1000px) {
+    .sp__actions { grid-template-columns: 1fr; }
+    .sp__steps { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .sp__banner { padding: 16px; }
+    .sp__steps { grid-template-columns: 1fr; }
+    .sp__queues { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD / Portal</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · S1 · S2 · S3 · Phase 2</span>
+      <h1>Citizen Assistant</h1>
+      <p>Today the CICOD Paperless Service Portal asks citizens to select from 19 technical queue names (such as <i>Marine Casualty &amp; Incident Investigation</i> or <i>Fraud and Risk Management</i>) and manually fill complex forms. The <b>Citizen Assistant</b> offers conversational intake in plain English, Nigerian Pidgin, Hausa, Yorùbá, or Igbo. It identifies the target MDA desk, extracts incident dates and locations, prompts conversationally for only the missing details, accepts document or receipt uploads, issues an instant Tracking ID, and explains request milestones in plain language.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Paperless Service Portal</span><span class="g-chip">Component: &lt;ai-citizen-assistant&gt;</span><span class="g-chip">Endpoint: /portal/assist</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a replica of the <b>CICOD Paperless Service Portal CICOD</b>. The CICOD-AI assistant opens automatically in the bottom-right. Click a quick suggestion (e.g. <i>"A boat capsized at Apapa jetty yesterday"</i>), or type your own issue. Watch it route to the <b>Marine Casualty &amp; Incident Investigation</b> desk, highlight it in the catalog, prompt for the vessel name and injuries, and accept a photo/receipt upload. Switch to <b>Track my request</b> and enter <code>GT-2026-0918-1123</code> to see plain-language tracking.</p>
+    <div id="screen" class="shell" data-app="portal" data-active="Engage Us">
+      <div class="shell__content">
+        <div class="sp">
+          <div class="sp__toast" id="sp-toast" role="status"></div>
+
+          <div class="sp__banner">
+            <span class="sp__banner-badge">CICOD Paperless Portal</span>
+            <h2>Welcome to the CICOD Paperless Service Portal CICOD</h2>
+            <div class="sp__banner-sub">Fast. Transparent. Easy to Use</div>
+            <p>Our Ministry has transitioned to a fully paperless process, making it easier for you to access services, submit requests, and track progress anytime, anywhere, without visiting our offices.</p>
+          </div>
+
+          <div class="sp__actions">
+            <div class="g-card sp__action-card">
+              <div>
+                <h3><span>💬</span> Engage Us</h3>
+                <p>Through this portal, you can reach us to request a service, make enquiries, submit complaints, make suggestions or simply commend us. We ensure your engagement gets the attention it deserves.</p>
+              </div>
+              <button class="g-btn g-btn--primary g-btn--sm" type="button" id="sp-btn-engage">Engage Us</button>
+            </div>
+            <div class="g-card sp__action-card">
+              <div>
+                <h3><span>🔍</span> Track Engagement</h3>
+                <p>Anytime you engage us, we send you a Tracking ID as reference for your engagement. You can track progress anytime using your email address and Tracking ID.</p>
+              </div>
+              <button class="g-btn g-btn--sm" type="button" id="sp-btn-track">Track Engagement</button>
+            </div>
+            <div class="g-card sp__action-card">
+              <div>
+                <h3><span>🛡️</span> Verify Staff</h3>
+                <p>Is anyone claiming to be staff of CICOD? Confirm the authenticity of our personnel by validating their credentials using their Surname and Staff ID.</p>
+              </div>
+              <button class="g-btn g-btn--sm" type="button" id="sp-btn-verify">Verify Staff</button>
+            </div>
+          </div>
+
+          <div class="g-card sp__flow-box">
+            <h4>How Paperless Service Works</h4>
+            <ol class="sp__steps">
+              <li class="sp__step"><b>1. Select Desk</b><span>Pick queue or describe issue</span></li>
+              <li class="sp__step"><b>2. Provide Info</b><span>Answer missing details</span></li>
+              <li class="sp__step"><b>3. Attach Proof</b><span>Upload receipts or letters</span></li>
+              <li class="sp__step"><b>4. Get Token</b><span>Instant SMS &amp; email ID</span></li>
+              <li class="sp__step"><b>5. Track Live</b><span>Plain-language updates</span></li>
+            </ol>
+          </div>
+
+          <div class="g-card sp__catalogue">
+            <div class="sp__cat-head">
+              <div>
+                <h3>Engage other Ministries Departments and Agencies on CICOD</h3>
+                <p>Click on any of the links below to send a formal request to CICOD desks</p>
+              </div>
+              <span class="g-chip">Showing 15 published desks</span>
+            </div>
+            <div class="sp__queues" id="queue-list">
+              <button class="sp__qbtn" type="button" data-queue="Marine Casualty & Incident Investigation"><b>Marine Casualty &amp; Incident Investigation</b><span>2</span></button>
+              <button class="sp__qbtn" type="button" data-queue="Complaints"><b>Complaints</b><span>7</span></button>
+              <button class="sp__qbtn" type="button" data-queue="Construction"><b>Construction</b><span>2</span></button>
+              <button class="sp__qbtn" type="button" data-queue="Adult Care"><b>Adult Care</b><span>1</span></button>
+              <button class="sp__qbtn" type="button" data-queue="Bid Submission"><b>Bid Submission</b><span>1</span></button>
+              <button class="sp__qbtn" type="button" data-queue="Fraud and Risk Management"><b>Fraud and Risk Management</b><span>1</span></button>
+              <button class="sp__qbtn" type="button" data-queue="Product development"><b>Product development</b><span>13</span></button>
+              <button class="sp__qbtn" type="button" data-queue="Correspondence"><b>Correspondence</b><span>1</span></button>
+              <button class="sp__qbtn" type="button" data-queue="Customer service"><b>Customer service</b><span>1</span></button>
+              <button class="sp__qbtn" type="button" data-queue="Enterprise"><b>Enterprise</b><span>1</span></button>
+              <button class="sp__qbtn" type="button" data-queue="Escalation"><b>Escalation</b><span>1</span></button>
+              <button class="sp__qbtn" type="button" data-queue="CICOD test"><b>CICOD test</b><span>1</span></button>
+              <button class="sp__qbtn" type="button" data-queue="admin portal"><b>admin portal</b><span>1</span></button>
+              <button class="sp__qbtn" type="button" data-queue="QA TEST MOBILE"><b>QA TEST MOBILE</b><span>1</span></button>
+              <button class="sp__qbtn" type="button" data-queue="Select Queue"><b>Select Queue</b><span>1</span></button>
+            </div>
+          </div>
+
+          <div class="sp__foot">
+            The forms have been published by CICOD. Details are stored for the exclusive use of CICOD and by submitting you consent to storing your details with CICOD. Lagos, Nigeria. Powered by Galaxy Backbone CICOD cloud.
+          </div>
+        </div>
+
+        <div data-ai-spot="CICOD-AI · Citizen Assistant widget">
+          <ai-citizen-assistant queues="#queue-list" mda="CICOD" open></ai-citizen-assistant>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Floating bottom-right launcher and interactive panel on <code>/selfservice</code> and <code>/selfservice/engage</code> (Paperless Service Portal)</div>
+      <div class="doc__where-item"><b>Also appears in</b>The CICOD mobile citizen app, public MDA portal embeds, and USSD/SMS conversational intake gateway</div>
+      <div class="doc__where-item"><b>Trigger</b>Floating launcher click, polite auto-prompt after 5 s on portal, or URL query param <code>?track=GT-…</code></div>
+      <div class="doc__where-item"><b>Who sees it</b>Unauthenticated citizens, businesses, contractors, and enterprise staff and users filing public requests or enquiries</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">A zero-shot classifier matches citizen statements against CICOD's active MDA service catalog, while an entity extractor collects dates, locations, and references before asking for missing details.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The citizen describes their situation in plain language (or voice), or uploads a supporting receipt or photo to <code>/portal/assist</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>PII is securely handled within the secure enterprise cloud. Phone numbers and National Identity Numbers (NIN) are verified before submission.</p></div>
+      <div class="doc__step"><h4>Classify &amp; extract</h4><p>The model maps narrative text to the right service queue, extracting dates, locations, vessel names, and receipt numbers with confidence scoring.</p></div>
+      <div class="doc__step"><h4>Conversational intake</h4><p>Instead of presenting a multi-page blank webform, the assistant asks only for the remaining missing fields one at a time.</p></div>
+      <div class="doc__step"><h4>Track &amp; deflect</h4><p>Common questions are answered immediately from the Service Charter, while tracking tokens offer plain-language progress summaries.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The citizen reviews all extracted details and confirms explicit data consent before submission, generating an audit-logged feedback event.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines reflect live portal analytics from 27 Sep 2026. Target figures represent projected improvements during the 90-day pilot.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−45% misrouted</div><h4>Accurate desk routing (target)</h4><p>Eliminates citizen guesswork across 19 technical queue names, routing directly to the responsible ministry team.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&lt; 90 seconds</div><h4>Intake completion time (target)</h4><p>From initial conversational statement to verified Tracking ID issuance, down from 8+ minutes on paper forms.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">32% deflected</div><h4>Charter FAQ deflection (target)</h4><p>Standard questions about timelines, required documents, and office hours are answered instantly before a ticket is created.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">5 languages</div><h4>Multilingual inclusion</h4><p>Full support for English, Nigerian Pidgin, Hausa, Yorùbá, and Igbo using sovereign language translation models.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">100% consent</div><h4>NDPR compliance</h4><p>Explicit, timestamped citizen consent is captured on every submission before personal records are committed to ECMS.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in Paperless Portal</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Paperless Service Portal)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/citizen-assistant.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/citizen-assistant.js"&gt;&lt;/script&gt;
+
+&lt;ai-citizen-assistant
+  queues="#queue-list"
+  mda="CICOD"
+  open&gt;
+&lt;/ai-citizen-assistant&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-citizen-queue', e =&gt; {
+  portal.highlightQueue(e.detail.queue);
+});
+document.addEventListener('ai-citizen-submit', e =&gt; {
+  portal.registerEngagement(e.detail);
+});
+document.addEventListener('ai-citizen-track', e =&gt; {
+  portal.displayMilestones(e.detail);
+});
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Expose <code>/portal/assist</code> on the CICOD-AI Gateway with support for intake, tracking explanations, and Service Charter FAQ deflection.</li>
+            <li>Connect active queue taxonomies and mandatory fields from ECMS Workflows into the assistant's schema registry.</li>
+            <li>Index published MDA Service Charters and FAQs to enable real-time deflection before tickets are raised.</li>
+            <li>Mount <code>&lt;ai-citizen-assistant&gt;</code> in the portal footer; link custom events to queue catalog highlights and tracking views.</li>
+            <li>Deploy sovereign machine translation models for Hausa, Yorùbá, Igbo, and Nigerian Pidgin.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/portal/assist
+{
+  "mode": "intake" | "track" | "faq",
+  "lang": "en" | "ha" | "yo" | "ig" | "pcm",
+  "message": "A boat capsized at Apapa jetty yesterday",
+  "state": { "queue": null, "fields": {} },
+  "upload": null,
+  "queues": ["Complaints", "Marine Casualty…"]
+}
+→ 200
+{
+  "model": "cicod-citizen-v1 (sovereign)",
+  "reply": "This sounds like a matter for Marine Casualty…",
+  "state": {
+    "queue": "Marine Casualty & Incident Investigation",
+    "conf": 0.90,
+    "fields": { "incidentDate": "26 Sep 2026", "location": "Apapa" },
+    "asked": "vessel", "step": "collect"
+  },
+  "card": {
+    "type": "queue",
+    "queue": "Marine Casualty & Incident Investigation",
+    "confidence": 0.90
+  },
+  "chips": ["No one was hurt", "Yes"]
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.portal.citizenAssistant</code> in Administration, controllable per portal and MDA tenant.</li>
+            <li>Classification confidence threshold (default 0.70); prompts user with a queue selector when below threshold.</li>
+            <li>Session auditing: all conversational intake interactions, tracking lookups, and queue overrides are logged.</li>
+            <li>Strict NDPR compliance: citizen consent is captured explicitly before personal data is stored in ECMS.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="citizen-assistant.js"></script>
+<script>
+  // Host-page wiring: highlight queues on classification, show tracking notices, and handle submissions.
+  const toast = document.getElementById('sp-toast');
+  const queueList = document.getElementById('queue-list');
+  const assistant = document.querySelector('ai-citizen-assistant');
+
+  document.addEventListener('ai-citizen-queue', e => {
+    const qName = e.detail.queue;
+    queueList.querySelectorAll('.sp__qbtn').forEach(btn => {
+      const match = btn.dataset.queue.toLowerCase() === qName.toLowerCase();
+      btn.classList.toggle('sp__qbtn--active', match);
+      if (match) {
+        btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+    if (toast) toast.textContent = `CICOD-AI selected destination desk: ${qName} (${Math.round((e.detail.confidence || 0.9) * 100)}% match).`;
+  });
+
+  document.addEventListener('ai-citizen-submit', e => {
+    if (toast) toast.innerHTML = `<b>Engagement Registered!</b> Tracking reference <b>${AIGateway.esc(e.detail.trackingId)}</b> created for ${AIGateway.esc(e.detail.queue)}. Confirmation sent to ${AIGateway.esc(e.detail.fields?.email || 'citizen')}.`;
+  });
+
+  document.addEventListener('ai-citizen-track', e => {
+    if (toast) toast.innerHTML = `<b>Tracking Inquiry:</b> Reference <b>${AIGateway.esc(e.detail.trackingId)}</b> is currently <b>${AIGateway.esc(e.detail.status)}</b> at ${AIGateway.esc(e.detail.queue)}.`;
+  });
+
+  document.getElementById('sp-btn-engage')?.addEventListener('click', () => {
+    assistant?.open('intake');
+  });
+
+  document.getElementById('sp-btn-track')?.addEventListener('click', () => {
+    assistant?.open('track');
+  });
+
+  document.getElementById('sp-btn-verify')?.addEventListener('click', () => {
+    assistant?.open('faq');
+  });
+</script>
+</body>
+</html>

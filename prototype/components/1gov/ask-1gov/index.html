@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask CICOD</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="ask-1gov.css">
+<style>
+  /* Page-only layout for the mock Workspace Home screen */
+  .ah h2 { margin: 0; font-size: 24px; letter-spacing: -.01em; }
+  .ah h2 span { color: var(--gov-green-600); }
+  .ah__sub { margin: 4px 0 16px; color: var(--text-2); }
+  .ah__sub b { color: var(--gov-green-600); font-weight: 600; }
+  .ah__label { font-size: 12px; letter-spacing: .06em; color: var(--text-2); font-weight: 700; margin: 0 0 8px; }
+  .ah__cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .ah__card { border-radius: var(--radius-lg); padding: 16px; color: #fff; min-height: 96px; }
+  .ah__card b { display: block; font-size: 24px; }
+  .ah__card span { font-size: 13px; }
+  .ah__card--a { background: var(--gov-green-500); } .ah__card--b { background: var(--info); } .ah__card--c { background: var(--warn); }
+  .ah__panel { margin-top: 12px; }
+  .ah__panel-h { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .ah__panel-h h4 { margin: 0; font-size: 14px; }
+  .ah__panel-h p { margin: 0; font-size: 12px; color: var(--text-2); }
+  .ah__row { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 9px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .ah__row:last-child { border-bottom: 0; }
+  .ah__row small { display: block; color: var(--text-3); font-size: 11.5px; }
+  .ah__new { animation: ah-flash 1.6s ease; background: var(--ai-50); }
+  @keyframes ah-flash { 0% { box-shadow: inset 3px 0 0 var(--ai-500); } 100% { box-shadow: inset 3px 0 0 transparent; } }
+  .ah__toast { margin-bottom: 12px; padding: 10px 14px; border-radius: var(--radius); background: var(--ok-bg); font-size: 13px; }
+  .ah__toast:empty { display: none; }
+  .ah__tip { margin: 0 0 12px; font-size: 12.5px; color: var(--text-2); }
+  @media (max-width: 600px) { .ah__cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD / Workspace</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · H2 · H5 · Phase 2</span>
+      <h1>Ask CICOD (search &amp; commands)</h1>
+      <p>One box in the top bar of every CICOD app. Staff type a question, a command or a "how do I…" in plain English. It <b>answers with citations</b> from Drive, ECMS, InMail and Assets, <b>hides anything above the user's clearance</b> (and says so), <b>previews actions</b> such as creating a task before anything happens, and answers help questions from the Help Centre and the CICOD Drive User Manual.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Global header, all apps</span><span class="g-chip">Component: &lt;ai-ask-cicod&gt;</span><span class="g-chip">Endpoint: /search/ask</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is <b>Workspace → Home</b>. Click <b>Ask CICOD or search…</b> in the top bar, or press <b>Ctrl+K</b>. Then try <i>"find the 2025 procurement policy"</i> (2 Secret results are hidden), <i>"create a task for IT support about the printer on the 2nd floor"</i> (action preview, then Confirm), or <i>"how do I share a file on CICOD Drive?"</i>.</p>
+
+    <div id="ask-slot" data-ai-spot="CICOD-AI · Ask CICOD (top bar, Ctrl+K)">
+      <ai-ask-cicod clearance="Confidential" user="Prince E." department="Administration"></ai-ask-cicod>
+    </div>
+
+    <div id="screen" class="shell" data-app="workspace" data-active="Home" data-top-slot="ask-slot">
+      <div class="shell__content">
+        <div class="ah">
+          <div class="ah__toast" id="ah-toast" role="status"></div>
+          <h2>Good afternoon, <span>Prince</span></h2>
+          <p class="ah__sub">You have <b>4 approvals</b>, <b>7 tasks</b> and <b>2 new files</b> awaiting you.</p>
+          <p class="ah__tip">Tip: press <b>Ctrl+K</b> from any CICOD app to ask a question or give a command.</p>
+          <p class="ah__label">NEEDS YOU TODAY</p>
+          <div class="ah__cards">
+            <div class="ah__card ah__card--a"><b>3</b><span>My Workflows</span></div>
+            <div class="ah__card ah__card--b"><b id="ah-tasks">7</b><span>Tasks Assigned To Me</span></div>
+            <div class="ah__card ah__card--c"><b>4</b><span>Pending Approvals</span></div>
+          </div>
+          <div class="g-card ah__panel">
+            <div class="ah__panel-h"><h4>Notifications</h4><p>From your CICOD Mail notifications</p></div>
+            <div id="ah-notif">
+              <div class="ah__row"><span>Circular: Resumption of 2026 APER exercise<small>Office of the Permanent Secretary · 10:42</small></span><span class="g-chip g-chip--info">Unread</span></div>
+              <div class="ah__row"><span>RE: Q3 Budget Performance Review<small>Rebecca Saku · 09:15</small></span><span class="g-chip g-chip--info">Unread</span></div>
+            </div>
+          </div>
+          <div class="g-card ah__panel">
+            <div class="ah__panel-h"><h4>Shared with me</h4><p>Files pending your acceptance on CICOD Drive</p></div>
+            <div class="ah__row"><span>Q3 Budget Performance Report.pdf<small>Rebecca Saku · Confidential</small></span><button class="g-btn g-btn--sm" type="button">Accept</button></div>
+          </div>
+          <div class="g-card ah__panel">
+            <div class="ah__panel-h"><h4>Recent documents</h4><p>Across your registry and shared folders</p></div>
+            <div id="ah-recent">
+              <div class="ah__row"><span>CICOD Drive User Manual.pdf<small>General Documents · opened 4 days ago</small></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Top bar of every app, next to the avatar: <code>/admin/tenant</code>, <code>/ecms/*</code>, <code>/CICOD Mail</code>, <code>/CICOD Drive</code>, <code>/ims</code>, <code>/conferencing</code></div>
+      <div class="doc__where-item"><b>Also appears in</b>The Help Centre and Report an Issue links (as the first step before a ticket), and the CICOD mobile app search tab</div>
+      <div class="doc__where-item"><b>Trigger</b>Ctrl+K / Cmd+K or a click on the box. The answer runs 650 ms after typing stops, or on Enter</div>
+      <div class="doc__where-item"><b>Who sees it</b>Every signed-in user. Results are trimmed to the user's own permissions and classification clearance</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Retrieval-augmented generation over one unified index, plus tool calls into the app APIs. Actions always stop at a preview.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>The query, the current app and the user's session go to <code>/search/ask</code>. An intent classifier picks search, command or help.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway filters the index by the user's ACLs and clearance <b>before</b> retrieval, so the model never reads a Secret document for a Confidential user. It only returns a count of hidden hits.</p></div>
+      <div class="doc__step"><h4>Retrieve</h4><p>Hybrid search (keywords + embeddings) over the unified index of Drive files, ECMS tasks and reports, InMail circulars and IMS assets. The Help Centre and CICOD Drive User Manual form a separate help index.</p></div>
+      <div class="doc__step"><h4>Answer or plan</h4><p>The sovereign LLM writes a short answer with [n] citations to the results. For commands it fills a tool call (ECMS create-task, Conference schedule) and checks for duplicates.</p></div>
+      <div class="doc__step"><h4>Preview</h4><p>Commands appear as an editable preview. Only Confirm calls the app API, with the user's own token.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Opened results, Helpful / Not helpful, Confirm, Cancel and escalations go to <code>/feedback</code>. They tune ranking and show which help articles are missing.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant on 27 Sep 2026. Numbers marked "target" are goals for the pilot.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">6 apps → 1 box</div><h4>One place to look</h4><p>Today a policy, a task and a circular sit in three apps with three separate search boxes (Drive, ECMS, InMail).</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&gt; 80%</div><h4>Search success rate (target)</h4><p>Share of queries where the user opens a cited result or rates the answer Helpful.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−5 clicks</div><h4>Faster actions (target)</h4><p>"Create a task for IT support…" replaces ECMS → Tasks → Create Task → pick queue → pick type → fill form.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−30% tickets</div><h4>Support deflection (target)</h4><p>"How do I…" is answered from the Help Centre before Report an Issue opens. When it isn't, the ticket arrives pre-filled.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0 leaks</div><h4>Classification safe</h4><p>Results above the user's clearance are never retrieved. The user only sees "2 results hidden: classified Secret".</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it across CICOD</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (shared app header)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/ask-cicod.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/ask-cicod.js"&gt;&lt;/script&gt;
+
+&lt;!-- in the top bar, left of the avatar --&gt;
+&lt;ai-ask-cicod clearance="Confidential"
+             user="Prince E."
+             department="Administration"&gt;&lt;/ai-ask-cicod&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-ask-open', e =&gt;
+  router.open(e.detail.result.app, e.detail.result.id));
+document.addEventListener('ai-ask-command', e =&gt;
+  actions.run(e.detail.intent, e.detail.fields));
+document.addEventListener('ai-ask-escalate', e =&gt;
+  reportIssue.open(e.detail));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Build the unified index (section 2.2): Drive, ECMS, InMail and IMS push create/update events with ACLs and classification.</li>
+            <li>Index the Help Centre, Start Tour content and the CICOD Drive User Manual as a separate help collection.</li>
+            <li>Expose <code>/search/ask</code>: intent classifier, ACL-filtered hybrid retrieval, then LLM answer with citations.</li>
+            <li>Register tools with strict schemas: <code>ecms.createTask</code>, <code>conference.schedule</code>. Every tool needs Confirm.</li>
+            <li>Add the component to the shared header. Log zero-result queries to find index and help gaps.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/search/ask
+{
+  "query": "find the 2025 procurement policy",
+  "clearance": "Confidential",
+  "app": "workspace"
+}
+→ 200
+{
+  "model": "cicod-rag-v1",
+  "mode": "search" | "command" | "help",
+  "answer": "Section 4.2: purchases above ₦5m … [1]",
+  "results": [{ "id": "d1", "app": "Drive", "type": "File",
+    "title": "Procurement Policy 2025 (Revised).pdf",
+    "path": "General Documents / Policies",
+    "classification": "Restricted" }],
+  "hidden": { "count": 2, "level": "Secret" },
+  "command": { "intent": "ecms.createTask",
+    "fields": { "Queue": "IT Support", "Title": "…" },
+    "confidence": 0.91 } | null,
+  "help": { "title": "…", "steps": ["…"],
+            "source": "CICOD Drive User Manual.pdf, p. 14" } | null
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.cicod.askCicod</code> in Administration, on/off per tenant. Commands can be switched off separately.</li>
+            <li>Answers need at least one citation with a retrieval score of 0.35 or more. Otherwise the user sees results only, with no generated answer.</li>
+            <li>Every query, result opened and confirmed action is written to the audit log (feature: <i>Ask CICOD</i>). Query text is kept for 30 days.</li>
+            <li>Permission trimming happens at retrieval time using the user's ACLs and clearance. Hidden results are counted, never named.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="ask-1gov.js"></script>
+<script>
+  // Host-page wiring: the component asks, the page (and the real app APIs) act.
+  const esc = AIGateway.esc;
+  const toast = document.getElementById('ah-toast');
+  const addRow = (listId, html) => {
+    const list = document.getElementById(listId);
+    list.insertAdjacentHTML('afterbegin', `<div class="ah__row ah__new">${html}</div>`);
+  };
+  document.addEventListener('ai-ask-open', e => {
+    const r = e.detail.result;
+    toast.textContent = `Opening ${r.app}: ${r.title}`;
+    addRow('ah-recent', `<span>${esc(r.title)}<small>${esc(r.path)} · opened just now from Ask CICOD</small></span>`);
+  });
+  document.addEventListener('ai-ask-command', e => {
+    const f = e.detail.fields;
+    if (e.detail.intent === 'ecms.createTask') {
+      toast.textContent = `Task #17601 created in ECMS → ${f.Queue}: "${f.Title}".`;
+      addRow('ah-notif', `<span>Task #17601 created: ${esc(f.Title)}<small>ECMS · ${esc(f.Queue)} · ${esc(f['Queue type'])} · Priority ${esc(f.Priority)}</small></span><span class="g-chip g-chip--ok">New</span>`);
+    } else {
+      toast.textContent = `Meeting scheduled in ${f.Room}, ${f.When}. Invites sent by InMail.`;
+      addRow('ah-notif', `<span>Meeting scheduled: ${esc(f.Room)}, ${esc(f.When)}<small>Conference · ${esc(f.Invitees)}</small></span><span class="g-chip g-chip--ok">New</span>`);
+    }
+  });
+  document.addEventListener('ai-ask-escalate', e => { toast.textContent = `Report an Issue opened with the subject "${e.detail.subject}" and the description pre-filled.`; });
+</script>
+</body>
+</html>

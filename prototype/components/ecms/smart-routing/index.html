@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Intake Routing</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="smart-routing.css">
+<style>
+  /* Page-only layout for the mock "Create Task" screen */
+  .ct { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+  .ct__card { padding: 16px; }
+  .ct__card h3 { margin: 0 0 2px; font-size: 14px; }
+  .ct__card p { margin: 0 0 12px; font-size: 12px; color: var(--text-2); }
+  .ct__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ct__full { grid-column: 1 / -1; }
+  .ct__flash { animation: ct-flash 1.2s ease; }
+  @keyframes ct-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); border-color: var(--ai-500); } 100% { box-shadow: none; } }
+  @media (max-width: 1100px) { .ct { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .ct__grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Tasks</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-T1 · Priority 1</span>
+      <h1>Smart Intake &amp; Routing</h1>
+      <p>Reads each new request as it's typed, or as it arrives by email or the portal. It suggests the <b>Queue, Queue Type, Priority and Assignee</b> and explains why. It also warns when the request looks like a duplicate. The officer confirms every suggestion.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Tasks → Create Task</span><span class="g-chip">Component: &lt;ai-smart-routing&gt;</span><span class="g-chip">Endpoint: /ecms/route-task</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This is a copy of the ECMS <b>Create Task</b> screen. Type a request into Title or Description, for example <i>"Printer on 2nd floor not working, urgent for today's board meeting"</i> or <i>"Third time complaining, my order was still not delivered"</i>.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Create Task">
+      <div class="shell__content">
+        <h2 class="shell__title">New Task</h2>
+        <div class="ct">
+          <form id="task-form" class="ct__stack" onsubmit="return false">
+            <div class="g-card ct__card">
+              <h3>Workflow</h3><p>Select the queue and queue type, then configure assignment</p>
+              <div class="ct__grid">
+                <div><label class="g-label" for="f-queue">Queue *</label>
+                  <select class="g-select" id="f-queue" name="queue"><option value="">Select queue</option><option>IT Support</option><option>Complaints</option><option>Order Fulfilment</option><option>AUTO MOBILE REPAIR</option><option>CICOD-AI IMPLEMENTATION</option><option>Correspondence</option></select></div>
+                <div><label class="g-label" for="f-type">Queue Type *</label>
+                  <select class="g-select" id="f-type" name="queueType"><option value="">Select queue type</option><option>Hardware &amp; Network</option><option>Application issue</option><option>Delivery</option><option>REPAIR DETAILS</option><option>PROCESS GATHERING</option><option>General enquiry</option></select></div>
+                <div><label class="g-label" for="f-priority">Priority</label>
+                  <select class="g-select" id="f-priority" name="priority"><option>Normal</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></div>
+                <div><label class="g-label" for="f-assignee">Assign to</label>
+                  <input class="g-input" id="f-assignee" name="assignee" placeholder="Search user, resource or workgroup"></div>
+              </div>
+            </div>
+            <div class="g-card ct__card" style="margin-top:12px">
+              <h3>Form</h3><p>Complete the workflow form</p>
+              <div class="ct__grid">
+                <div class="ct__full"><label class="g-label" for="f-title">Title *</label><input class="g-input" id="f-title" name="title" placeholder="Short summary of the request"></div>
+                <div class="ct__full"><label class="g-label" for="f-desc">Description *</label><textarea class="g-textarea" id="f-desc" name="description" placeholder="Describe the request"></textarea></div>
+                <div><label class="g-label" for="f-contact">Contact</label><input class="g-input" id="f-contact" name="contact" placeholder="Name, email or phone"></div>
+                <div><label class="g-label">Attachments</label><button class="g-btn" type="button">+ Add file</button></div>
+              </div>
+              <div style="margin-top:14px"><button class="g-btn g-btn--primary" type="button">Submit</button></div>
+            </div>
+          </form>
+          <div data-ai-spot="CICOD-AI · Smart routing panel (right rail)">
+            <ai-smart-routing source="#task-form" auto-threshold="0.9"></ai-smart-routing>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Right rail of <code>/ecms/tasks/new</code>, next to the Workflow + Form cards</div>
+      <div class="doc__where-item"><b>Also appears in</b>Settings → Email Integration (email-to-task), the Portal "Engage Us" intake, and a <i>Triage inbox</i> tab in All Tasks for low-confidence items</div>
+      <div class="doc__where-item"><b>Trigger</b>700 ms after typing stops in Title/Description, or when an email or portal submission arrives</div>
+      <div class="doc__where-item"><b>Who sees it</b>Anyone who can create tasks. Auto-routing above the threshold is enabled per tenant by an admin</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">A trained classifier handles the routing labels, an LLM covers new queues and writes the explanation, and a load-aware picker chooses the assignee.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Capture</h4><p>Title, description, contact, attachment names and the channel (form, email, portal) are sent to <code>/ecms/route-task</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway removes personal data (NIN, phone, email) and applies the tenant's classification policy. Secret content stays on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Classify</h4><p>A classifier trained on the tenant's roughly 16k historical tasks predicts queue, queue type and priority. New or rare queues fall back to an LLM with the queue catalogue in the prompt.</p></div>
+      <div class="doc__step"><h4>Assign</h4><p>Candidates come from the workgroup and resource type. They're scored on shift and schedule, skills level and current open load, taken from ECMS Resources.</p></div>
+      <div class="doc__step"><h4>Check</h4><p>Embedding similarity against the last 90 days of tasks finds duplicates and similar resolved cases.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer uses, edits or rejects each field. Every decision is recorded via <code>/feedback</code> and used to retrain the model each week.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">Baselines are from the cicod tenant, 27 Sep 2026.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">11,003 → moving</div><h4>Unblocks stuck queues</h4><p>Order Fulfilment had 11,003 open tasks and 1 in progress. Tasks now arrive with an assignee instead of waiting in the queue.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−80%</div><h4>Time to first assignment</h4><p>Target: from days of manual triage down to seconds for high-confidence tasks.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">&gt; 90%</div><h4>Routing accuracy target</h4><p>Measured as the share of suggestions accepted without edits. Auto-routing only switches on above the threshold.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fewer duplicates</div><h4>Cleaner backlog</h4><p>Repeat requests are linked to the original task instead of creating new ones.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0% → balanced</div><h4>Utilisation</h4><p>Load-aware assignment spreads work across resources. Resource Utilization shows 0% today.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Create Task page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/smart-routing.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/smart-routing.js"&gt;&lt;/script&gt;
+
+&lt;ai-smart-routing source="#task-form"
+                  auto-threshold="0.9"&gt;&lt;/ai-smart-routing&gt;
+
+&lt;script&gt;
+document.addEventListener('ai-route-apply', e =&gt; {
+  // host page owns the form state
+  taskForm.setField(e.detail.field, e.detail.value);
+});
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Export historical tasks (title, description, queue, queue type, priority, assignee, status timings) as training data.</li>
+            <li>Train a text classifier per tenant; hold out 20% to measure accuracy per queue.</li>
+            <li>Expose <code>/ecms/route-task</code> on the CICOD-AI Gateway: classifier, then LLM fallback and explanation, then assignee scoring.</li>
+            <li>Add the component to Create Task. Wire <code>ai-route-apply</code> to the form store.</li>
+            <li>Run in <b>suggestion mode</b> for 4 weeks and track acceptance per queue.</li>
+            <li>Turn on auto-routing per queue where acceptance is 90% or higher. Low-confidence items go to the Triage inbox.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/route-task
+{
+  "title": "Printer on 2nd floor not working",
+  "description": "urgent for board meeting",
+  "contact": "ann.nya@…",
+  "channel": "ecms-create-task" | "email" | "portal"
+}
+→ 200
+{
+  "model": "cicod-router-v1",
+  "suggestions": {
+    "queue":     { "value": "IT Support", "confidence": 0.93, "alt": "…" },
+    "queueType": { "value": "Hardware &amp; Network", "confidence": 0.88 },
+    "priority":  { "value": "High", "confidence": 0.91 },
+    "assignee":  { "value": "user:1043", "label": "Eyitayo A.", "confidence": 0.81 }
+  },
+  "reasons": ["…"],
+  "similar": [{ "id": "#17569", "outcome": "Closed in 2d" }],
+  "duplicate": { "id": "#17572" } | null
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.smartRouting</code> in ECMS Settings, on/off per tenant.</li>
+            <li>Auto-routing threshold is set per queue. It defaults to off, so the officer always confirms.</li>
+            <li>Every suggestion and decision is written to the ECMS Audit Log (feature: <i>CICOD-AI Routing</i>).</li>
+            <li>Assignee suggestions only include users the requester's role is allowed to assign to.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="smart-routing.js"></script>
+<script>
+  // Host-page wiring: the component emits an event, and the page applies the value to its own field.
+  const map = { queue: 'f-queue', queueType: 'f-type', priority: 'f-priority', assignee: 'f-assignee' };
+  document.addEventListener('ai-route-apply', e => {
+    const el = document.getElementById(map[e.detail.field]);
+    if (!el) return;
+    if (el.tagName === 'SELECT' && ![...el.options].some(o => o.value === e.detail.value || o.text === e.detail.value)) el.add(new Option(e.detail.value));
+    el.value = e.detail.value;
+    el.classList.remove('ct__flash'); void el.offsetWidth; el.classList.add('ct__flash');
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+/* <ai-meeting-minutes>: minutes, decisions, action items and transcript search for a Conference recording.
+   All classes are prefixed `aimm-`. */
+ai-meeting-minutes { display: block; }
+
+.aimm { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+.aimm__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aimm__title { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.aimm__meta { font-size: 12px; color: var(--text-2); }
+.aimm__body { padding: 12px 14px; font-size: 13px; }
+.aimm__empty { color: var(--text-3); font-size: 12.5px; margin: 4px 0; }
+.aimm__hint { font-size: 12px; color: var(--text-2); margin: 0 0 8px; }
+
+.aimm__tabs { display: flex; gap: 2px; padding: 0 10px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.aimm__tab { border: 0; background: transparent; padding: 10px 10px 8px; font-size: 13px; color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+.aimm__tab[aria-selected="true"] { color: var(--ai-600); font-weight: 700; border-bottom-color: var(--ai-500); }
+.aimm__count { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--ai-100); color: var(--ai-600); font-size: 10.5px; font-weight: 700; }
+
+.aimm__summary { margin: 0 0 8px; padding: 10px 12px; background: var(--ai-50); border-radius: var(--radius); font-weight: 500; }
+.aimm__present { margin: 0 0 8px; color: var(--text-2); font-size: 12.5px; }
+.aimm__agenda { margin: 0; padding-left: 20px; }
+.aimm__agenda li { margin: 6px 0; }
+.aimm__agenda p { margin: 2px 0 0; color: var(--text-2); }
+.aimm__edit { margin-top: 10px; }
+.aimm__edit summary { cursor: pointer; font-size: 12.5px; color: var(--ai-600); font-weight: 600; }
+.aimm__edit textarea { margin-top: 6px; font-family: var(--mono); font-size: 11.5px; }
+
+.aimm__list { list-style: none; margin: 0; padding: 0; }
+.aimm__list li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+.aimm__list li:last-child { border-bottom: 0; }
+.aimm__ts { font-family: var(--mono); font-size: 11px; padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-2); color: var(--ai-600); cursor: pointer; flex-shrink: 0; }
+.aimm__ts:hover { border-color: var(--ai-500); }
+
+.aimm__acts { display: grid; gap: 8px; }
+.aimm__act { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); }
+.aimm__chk input { accent-color: var(--ai-500); margin-top: 10px; }
+.aimm__act-main { min-width: 0; display: grid; gap: 6px; }
+.aimm__act-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.aimm__act-main small { color: var(--text-3); font-size: 11.5px; }
+
+.aimm__search { margin-bottom: 8px; }
+.aimm__tx { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow-y: auto; }
+.aimm__tx li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+.aimm__tx li > div { min-width: 0; overflow-wrap: anywhere; }
+.aimm__tx mark { background: var(--warn-bg); color: var(--text); padding: 0 2px; border-radius: 3px; }
+
+.aimm__actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.aimm__actions .g-btn { white-space: normal; height: auto; min-height: 28px; text-align: left; }
+
+@media (max-width: 600px) {
+  .aimm__act-row { grid-template-columns: 1fr; }
+}
