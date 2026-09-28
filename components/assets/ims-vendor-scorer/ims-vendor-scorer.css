@@ -1,0 +1,58 @@
+/* <ai-vendor-scorer>: reliability scores for suppliers on a purchase order, with adjustable
+   weights, evidence and a recommended supplier.
+   All classes are prefixed `aivs-` so the component can be dropped into any IMS page. */
+ai-vendor-scorer { display: block; min-width: 0; }
+
+.aivs { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.aivs__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aivs__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aivs__body { padding: 12px 14px; }
+.aivs__empty { color: var(--text-3); font-size: 12.5px; margin: 0; }
+.aivs__h5 { margin: 12px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+
+/* Recommendation */
+.aivs__rec { border: 1px solid var(--border); border-left: 4px solid var(--ok); border-radius: var(--radius); padding: 10px 12px; background: var(--ok-bg); }
+.aivs__rec-top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.aivs__rec-name { font-weight: 700; font-size: 14px; }
+.aivs__rec p { margin: 6px 0 8px; font-size: 12.5px; color: var(--text); }
+
+/* Ranking */
+.aivs__vendor { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; background: var(--surface); }
+.aivs__vendor-btn { width: 100%; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 4px 10px; align-items: center; padding: 10px 12px; background: transparent; border: 0; text-align: left; cursor: pointer; }
+.aivs__vendor-btn:hover { background: var(--surface-2); }
+.aivs__score { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; font-weight: 700; font-size: 15px; color: #fff; background: var(--ok); }
+.aivs__score--mid { background: var(--warn); }
+.aivs__score--low { background: var(--bad); }
+.aivs__vname { font-weight: 600; font-size: 13px; }
+.aivs__vsub { display: block; font-size: 11.5px; color: var(--text-3); font-weight: 400; }
+/* Flags sit on their own line under the name so long flag lists never squeeze the supplier name */
+.aivs__flags { grid-column: 2; display: flex; gap: 4px; flex-wrap: wrap; }
+.aivs__flags:empty { display: none; }
+
+.aivs__detail { border-top: 1px dashed var(--border); padding: 10px 12px; }
+.aivs__detail[hidden] { display: none; }
+.aivs__metrics { display: grid; gap: 6px; }
+.aivs__metric { display: grid; grid-template-columns: 140px minmax(0, 1fr) 64px; gap: 8px; align-items: center; font-size: 12px; }
+.aivs__metric-bar { height: 6px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.aivs__metric-bar > i { display: block; height: 100%; background: var(--gov-green-500); }
+.aivs__metric-val { font-family: var(--mono); font-size: 11.5px; text-align: right; color: var(--text-2); }
+.aivs__why { margin: 8px 0 0; padding-left: 16px; font-size: 12px; color: var(--text-2); }
+.aivs__why li { margin: 3px 0; }
+.aivs__ledger { margin-top: 8px; }
+.aivs__ledger .g-table { font-size: 11.5px; }
+.aivs__ledger .g-table td, .aivs__ledger .g-table th { padding: 6px 8px; }
+.aivs__late { color: var(--bad); font-weight: 600; }
+
+/* Weights */
+.aivs__weights { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }
+.aivs__weights summary { cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-2); }
+.aivs__w { display: grid; grid-template-columns: 140px minmax(0, 1fr) 40px; gap: 8px; align-items: center; font-size: 12px; }
+.aivs__w input[type=range] { width: 100%; accent-color: var(--ai-500); }
+.aivs__w output { font-family: var(--mono); font-size: 11.5px; text-align: right; }
+
+.aivs__actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.aivs__mode { font-size: 11px; color: var(--text-3); margin-left: auto; }
+
+@media (max-width: 600px) {
+  .aivs__metric, .aivs__w { grid-template-columns: 110px minmax(0, 1fr) 48px; }
+}

@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Goal Alignment Assistant</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="pms-goal-alignment.css">
+<style>
+  /* Page-only layout for the assumed PMS "My Goals" screen */
+  .gl { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 16px; align-items: start; }
+  .gl__note { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; margin-bottom: 14px; border-radius: var(--radius); background: var(--warn-bg); font-size: 12.5px; border: 1px dashed var(--warn); }
+  .gl__note .g-chip { flex-shrink: 0; }
+  .gl__card { padding: 16px; min-width: 0; }
+  .gl__card h3 { margin: 0 0 2px; font-size: 14px; }
+  .gl__card > p { margin: 0 0 12px; font-size: 12px; color: var(--text-2); }
+  .gl__dept { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .gl__dept li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 12.5px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); }
+  .gl__dept-id { font-family: var(--mono); font-weight: 700; color: var(--gov-green-600); }
+  .gl__goal { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-top: 10px; background: var(--surface); }
+  .gl__goal-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+  .gl__goal-grid { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 10px; }
+  .gl__goal textarea { min-height: 58px; }
+  .gl__chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  .gl__total { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: 13px; align-items: center; }
+  .gl__flash { animation: gl-flash 1.2s ease; }
+  @keyframes gl-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); border-color: var(--ai-500); } 100% { box-shadow: none; } }
+  @media (max-width: 1100px) { .gl { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .gl__goal-grid { grid-template-columns: 1fr; } .gl__dept li { grid-template-columns: 36px minmax(0, 1fr); } .gl__dept li > :last-child { grid-column: 2; justify-self: start; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD / PMS</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · P6 · Phase 3</span>
+      <h1>Goal Alignment Assistant</h1>
+      <p>When an officer drafts their quarterly goals, the assistant checks each one against the <b>departmental goals</b>. It shows which departmental goal each one supports and scores it on <b>SMART</b>. It suggests a rewrite that fixes the gaps while keeping the officer's intent. It also flags <b>departmental goals no one is working on</b> and weightings that don't match the department's priorities. The officer decides what to change.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: PMS → My Goals (assumed)</span><span class="g-chip">Component: &lt;ai-goal-alignment&gt;</span><span class="g-chip">Endpoint: /pms/goal-alignment</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede"><b>This screen is assumed.</b> The live PMS returned "Unauthorized" for this account on 27 Sep 2026. The four draft goals below are typical first drafts. Click <b>✦ Check alignment</b>, then <b>Use rewrite</b> on a goal and <b>Add this goal</b> for an uncovered departmental goal. The check re-runs as you edit, so try typing a date or a number into a goal.</p>
+    <div id="screen" class="shell" data-app="pms" data-active="My Goals">
+      <div class="shell__content">
+        <h2 class="shell__title">My Goals</h2>
+        <div class="gl__note"><span class="g-chip g-chip--warn">Assumed screen</span><span>The real PMS was not accessible. The layout and departmental goals are illustrative and will be matched to the live PMS during build.</span></div>
+        <div class="gl">
+          <div style="min-width:0">
+            <div class="g-card gl__card">
+              <h3>Administration · Departmental goals, Q4 2026</h3>
+              <p>Set by the Director. Every officer's goals should support at least one of these.</p>
+              <ul class="gl__dept" id="dept-goals">
+                <li data-dept-goal data-id="DG1" data-weight="30"><span class="gl__dept-id">DG1</span><span data-text>Move 80% of Administration's internal processes onto ECMS workflows by December 2026</span><span class="g-chip">30%</span></li>
+                <li data-dept-goal data-id="DG2" data-weight="25"><span class="gl__dept-id">DG2</span><span data-text>Cut the average turnaround on citizen and staff requests to under 48 hours</span><span class="g-chip">25%</span></li>
+                <li data-dept-goal data-id="DG3" data-weight="20"><span class="gl__dept-id">DG3</span><span data-text>Clear the Order Fulfilment backlog assigned to Administration and Supplies</span><span class="g-chip">20%</span></li>
+                <li data-dept-goal data-id="DG4" data-weight="15"><span class="gl__dept-id">DG4</span><span data-text>All officers complete their APER appraisal on PMS by 31 October 2026</span><span class="g-chip">15%</span></li>
+                <li data-dept-goal data-id="DG5" data-weight="10"><span class="gl__dept-id">DG5</span><span data-text>Reduce stationery and consumables spend by 15% against Q3</span><span class="g-chip">10%</span></li>
+              </ul>
+            </div>
+            <form id="goal-form" class="g-card gl__card" style="margin-top:12px" onsubmit="return false">
+              <h3>Prince Ekpenyong · My goals, Q4 2026 <span class="g-chip g-chip--info">Draft</span></h3>
+              <p>Supervisor: Ann Nya. Goals are locked once your supervisor approves them.</p>
+              <div id="goal-list"></div>
+              <div class="gl__total"><span>Total weight: <b id="w-total">0%</b> <span id="w-note" class="g-chip">must equal 100%</span></span>
+                <span><button class="g-btn g-btn--sm" id="add-goal" type="button">+ Add goal</button> <button class="g-btn g-btn--primary g-btn--sm" type="button">Submit to supervisor</button></span></div>
+            </form>
+          </div>
+          <div data-ai-spot="CICOD-AI · Goal alignment (right rail)">
+            <ai-goal-alignment source="#goal-form" dept-goals="#dept-goals" department="Administration" period="Q4 2026"></ai-goal-alignment>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Right rail of <code>/pms/goals</code>, next to the officer's draft goals</div>
+      <div class="doc__where-item"><b>Also appears in</b>The supervisor's goal-approval screen (as an alignment summary for each officer) and a department roll-up showing coverage of each departmental goal across the team</div>
+      <div class="doc__where-item"><b>Trigger</b>The officer clicks Check alignment. After that it re-checks 900 ms after each edit. It runs automatically when the officer clicks Submit to supervisor</div>
+      <div class="doc__where-item"><b>Who sees it</b>The officer drafting goals, and their supervisor. Departmental goals are visible to everyone in the department</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Embeddings link goals by meaning, rules check SMART quality, and an LLM writes the rewrite and the missing goals.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Collect</h4><p>The draft goals and weights, the departmental goals and their weights, the officer's role and grade, and the review period are sent to <code>/pms/goal-alignment</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway checks the officer can see these departmental goals and removes personal data. PMS data counts as staff personal data, so it stays on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Link</h4><p>Each goal and departmental goal is embedded, and cosine similarity gives an alignment score. Links below 0.55 aren't shown, so goals aren't forced onto a departmental goal.</p></div>
+      <div class="doc__step"><h4>Check SMART</h4><p>Rules and a small classifier check for a concrete deliverable, a number, a realistic target for the time allowed, a link to a departmental goal and a date inside the review period.</p></div>
+      <div class="doc__step"><h4>Suggest</h4><p>An LLM rewrites only the goals that fail a check, keeping the officer's numbers and intent. It drafts a goal for each uncovered departmental goal and suggests a weight from the department's priorities.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer uses or ignores each suggestion. Every decision is sent to <code>/feedback</code>, and the links are saved on the goal for the supervisor and for the appraisal at year end.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">These are targets. There's no baseline yet, because PMS couldn't be opened during the walkthrough.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">100%</div><h4>Goals linked to department goals</h4><p>Every submitted goal is traceable to a departmental goal. That link is what makes the year-end appraisal and department reporting meaningful.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0 gaps</div><h4>No departmental goal left uncovered</h4><p>The Director can see straight away whether a departmental goal has no one working on it, before the quarter starts rather than at year end.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−60%</div><h4>Fewer goals sent back</h4><p>Supervisors spend less time returning vague goals like "improve customer service", because they arrive already SMART.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fairer reviews</div><h4>Measurable from day one</h4><p>Goals with numbers and dates can be scored from ECMS and Assets data at appraisal time. This feeds the Appraisal Copilot's evidence.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in PMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (My Goals page)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/pms-goal-alignment.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/pms-goal-alignment.js"&gt;&lt;/script&gt;
+
+&lt;ai-goal-alignment source="#goal-form"
+                   dept-goals="#dept-goals"
+                   department="Administration"
+                   period="Q4 2026"&gt;&lt;/ai-goal-alignment&gt;
+
+&lt;script&gt;
+el.addEventListener('ai-goal-rewrite', e =&gt;
+  goals.update(e.detail.index, { text: e.detail.text }));
+el.addEventListener('ai-goal-link', e =&gt;
+  goals.update(e.detail.index, { deptGoalIds: e.detail.deptGoalIds }));
+el.addEventListener('ai-goal-add', e =&gt; goals.add(e.detail));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Add a <b>departmental goals</b> record to PMS (id, text, weight, period, owner) if it doesn't exist yet. The Director enters them each quarter.</li>
+            <li>Add a <code>deptGoalIds[]</code> field to each personal goal, so the links are stored.</li>
+            <li>Build <code>/pms/goal-alignment</code> on the AI Gateway: embeddings, then SMART rules, then an LLM to rewrite and suggest. Use the sovereign model only.</li>
+            <li>Build an evaluation set: 300 past goals labelled by HR for SMART quality and the correct departmental goal.</li>
+            <li>Mount the component on My Goals and pass a summary to the supervisor's approval screen.</li>
+            <li>Pilot with one department for one quarter. Measure how many goals are sent back and how many departmental goals are left uncovered.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/pms/goal-alignment
+{
+  "department": "Administration",
+  "period": "Q4 2026",
+  "deptGoals": [{ "id": "DG1", "text": "…", "weight": 30 }],
+  "goals":     [{ "index": 0, "text": "Improve customer service", "weight": 30 }]
+}
+→ 200
+{
+  "model": "cicod-pms-align-v1",
+  "overall": 46,
+  "goals": [{
+    "index": 0,
+    "links": [{ "id": "DG2", "score": 0.78 }],
+    "smart": { "S": false, "M": false, "A": true, "R": true, "T": false },
+    "issues": ["No measure…", "No deadline…"],
+    "rewrite": "Resolve 90% of citizen complaints…",
+    "confidence": 0.78
+  }],
+  "coverage": [{ "id": "DG4", "covered": false, "score": 0 }],
+  "suggestions": [{ "deptGoalId": "DG4", "text": "…", "weight": 10 }],
+  "weight": { "total": 100, "note": "…" }
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.cicod.pmsGoalAlignment</code>, on or off per tenant and per review cycle.</li>
+            <li>Suggestions only. Nothing changes a goal unless the officer clicks. Once a supervisor approves goals, they're locked.</li>
+            <li>The link threshold (default 0.55) is set per tenant, so weak links aren't counted as coverage.</li>
+            <li>Every check and decision goes to the PMS audit log (feature: <i>CICOD-AI Goal Alignment</i>).</li>
+            <li>An officer only sees their own department's goals. A supervisor sees their team's alignment summary, not other teams'.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="pms-goal-alignment.js"></script>
+<script>
+  // Host-page wiring: the page owns the goals. The component only suggests changes through events.
+  const goals = [
+    { text: 'Improve customer service', weight: 30, links: [] },
+    { text: 'Work on ECMS workflows for the department', weight: 30, links: [] },
+    { text: 'Clear pending order tasks by December', weight: 20, links: [] },
+    { text: 'Attend team meetings regularly', weight: 20, links: [] },
+  ];
+  const list = document.getElementById('goal-list');
+  const form = document.getElementById('goal-form');
+  const esc = AIGateway.esc;
+
+  function render(flashIndex) {
+    list.innerHTML = goals.map((g, i) => `
+      <div class="gl__goal" data-goal data-index="${i}">
+        <div class="gl__goal-head"><span>Goal ${i + 1}</span><span class="gl__chips">${g.links.map(id => `<span class="g-chip g-chip--ai">Supports ${esc(id)}</span>`).join('') || '<span class="g-chip">Not linked</span>'}</span></div>
+        <div class="gl__goal-grid">
+          <div><label class="g-label" for="g-${i}">Goal</label><textarea class="g-textarea ${i === flashIndex ? 'gl__flash' : ''}" id="g-${i}" name="goal">${esc(g.text)}</textarea></div>
+          <div><label class="g-label" for="w-${i}">Weight %</label><input class="g-input" id="w-${i}" name="weight" type="number" min="0" max="100" value="${g.weight}"></div>
+        </div>
+      </div>`).join('');
+    totals();
+  }
+  function totals() {
+    const t = goals.reduce((s, g) => s + (Number(g.weight) || 0), 0);
+    document.getElementById('w-total').textContent = t + '%';
+    const note = document.getElementById('w-note');
+    note.className = 'g-chip ' + (t === 100 ? 'g-chip--ok' : 'g-chip--warn');
+    note.textContent = t === 100 ? 'OK' : 'must equal 100%';
+  }
+  const recheck = () => form.dispatchEvent(new Event('input', { bubbles: true }));
+
+  list.addEventListener('input', e => {
+    const row = e.target.closest('[data-goal]'); if (!row) return;
+    const g = goals[Number(row.dataset.index)];
+    if (e.target.name === 'goal') g.text = e.target.value;
+    if (e.target.name === 'weight') { g.weight = Number(e.target.value) || 0; totals(); }
+  });
+  document.getElementById('add-goal').addEventListener('click', () => { goals.push({ text: '', weight: 0, links: [] }); render(); });
+
+  document.addEventListener('ai-goal-rewrite', e => { goals[e.detail.index].text = e.detail.text; render(e.detail.index); recheck(); });
+  document.addEventListener('ai-goal-link', e => { goals[e.detail.index].links = e.detail.deptGoalIds; render(); });
+  document.addEventListener('ai-goal-add', e => {
+    // The AI names the unaligned goal to take the weight from, so the total stays at 100%.
+    const donor = e.detail.takeFrom != null ? goals[e.detail.takeFrom] : null;
+    if (donor) donor.weight = Math.max(0, donor.weight - e.detail.weight);
+    goals.push({ text: e.detail.text, weight: e.detail.weight, links: [e.detail.deptGoalId] });
+    render(goals.length - 1); recheck();
+  });
+  render();
+</script>
+</body>
+</html>

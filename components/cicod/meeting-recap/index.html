@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>In-Meeting Context Copilot</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="meeting-recap.css">
+<style>
+  /* Mock Conference Live Room */
+  .mr-room { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; background: #000; color: #fff; height: 600px; border-radius: var(--radius-lg); overflow: hidden; }
+  .mr-video { display: flex; flex-direction: column; }
+  .mr-video__main { flex: 1; display: flex; align-items: center; justify-content: center; background: #222; font-size: 24px; color: #888; }
+  .mr-video__bar { display: flex; gap: 12px; padding: 16px; background: #111; justify-content: center; align-items: center; }
+  .mr-video__btn { width: 40px; height: 40px; border-radius: 50%; background: #333; border: none; color: #fff; cursor: pointer; display: grid; place-items: center; }
+  .mr-video__btn:hover { background: #444; }
+  .mr-video__btn--red { background: #d32f2f; }
+  .mr-video__btn--ai { background: var(--gov-green-600); width: auto; padding: 0 16px; border-radius: 20px; font-weight: 600; font-size: 14px; gap: 6px; }
+  .mr-sidebar { background: #fff; color: var(--text); display: flex; flex-direction: column; overflow-y: auto; }
+  
+  @media (max-width: 900px) { .mr-room { grid-template-columns: 1fr; height: auto; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD / Conference</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · C6 · Phase 2</span>
+      <h1>In-Meeting Context Copilot (Live Recap)</h1>
+      <p>During a live recurring meeting (e.g., Weekly Standups, Monthly Board Meetings), this copilot sits in the sidebar. It automatically surfaces the <b>Summary, Key Decisions, and Pending Action Items</b> from the <i>previous</i> meeting in the series. Users can track live ECMS task statuses without leaving the video call, add carried-forward items to the next agenda, and ensure settled decisions aren't re-litigated.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Conference → Live Room</span><span class="g-chip">Component: &lt;ai-meeting-recap&gt;</span><span class="g-chip">Endpoint: /conference/recap</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">This mocks a live Conference room for the "Weekly Management Meeting". Click the <b>✦ AI Context</b> button in the bottom bar to open the side panel. It instantly pulls up the recap of the series. Try exploring the <b>Action items</b> tab to see live ECMS task statuses, and click <b>Create ECMS task</b> on an untracked item.</p>
+    <div id="screen" class="shell" data-app="conference" data-active="Live Room">
+      <div class="shell__content">
+        <h2 class="shell__title">Live Room: Weekly Management Meeting</h2>
+        
+        <div class="mr-room">
+          <div class="mr-video">
+            <div class="mr-video__main">
+              <div>Live Video Feed (Prince Ekpenyong)</div>
+            </div>
+            <div class="mr-video__bar">
+              <button class="mr-video__btn">🎤</button>
+              <button class="mr-video__btn">📷</button>
+              <button class="mr-video__btn">⬆️</button>
+              <button class="mr-video__btn">😊</button>
+              <div style="flex: 1"></div>
+              <button class="mr-video__btn mr-video__btn--ai" id="toggle-recap">✦ AI Context</button>
+              <button class="mr-video__btn mr-video__btn--red">📞</button>
+            </div>
+          </div>
+          
+          <div class="mr-sidebar" id="recap-sidebar" style="display: none;" data-ai-spot="CICOD-AI · In-Meeting Recap (Sidebar)">
+            <ai-meeting-recap meeting="mgmt" viewer="Prince Ekpenyong"></ai-meeting-recap>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Sidebar inside the live Conference Room</div>
+      <div class="doc__where-item"><b>Also appears in</b>Meeting Invites History / Recordings page (as a standalone on-demand recap)</div>
+      <div class="doc__where-item"><b>Trigger</b>The user clicks the ✦ AI Context button during the meeting</div>
+      <div class="doc__where-item"><b>Who sees it</b>Any attendee in the live meeting, but restricted items (e.g. Secret classification or disciplinary actions) are hidden from unauthorized attendees.</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">It retrieves past occurrences, checks live ECMS statuses, and uses an LLM to summarise the timeline.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Identify Series</h4><p>The gateway finds the series from the meeting's recurrence rule. If there is none, it uses embeddings to find past meetings with a similar title and mostly the same attendees in the same room.</p></div>
+      <div class="doc__step"><h4>Collect Context</h4><p>It pulls the AI Minutes of Meeting for all included occurrences in the series. It then queries the live ECMS to get the current status of any tracked Action Items.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway applies the viewer's permissions. Any minute line items tagged as restricted for a specific subset of users are redacted from the recap if the viewer is unauthorized.</p></div>
+      <div class="doc__step"><h4>Synthesise</h4><p>An LLM generates a "Since last time" summary to orient the attendees. It identifies decisions that are being brought up again ("re-litigated") and flags action items that have been carried forward across multiple meetings without closing.</p></div>
+      <div class="doc__step"><h4>Act</h4><p>Users can instantly create an ECMS task from an untracked action item directly inside the sidebar, or push a carried-forward item onto the agenda for the next meeting.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">15 min</div><h4>Saved per meeting</h4><p>Eliminates the "What did we discuss last week?" phase at the start of recurring meetings.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Live</div><h4>ECMS Task Tracking</h4><p>Action items are linked to their live ECMS task status, so teams don't rely on outdated minutes to know if something was done.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Zero</div><h4>Re-litigation</h4><p>Automatically flags when a decision has already been settled in a previous meeting, keeping the agenda moving forward.</p></div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="meeting-recap.js"></script>
+<script>
+  // Toggle the sidebar visibility
+  const btn = document.getElementById('toggle-recap');
+  const sidebar = document.getElementById('recap-sidebar');
+  
+  btn.addEventListener('click', () => {
+    if (sidebar.style.display === 'none') {
+      sidebar.style.display = 'flex';
+      btn.style.background = '#444';
+      btn.style.color = 'var(--gov-green-400)';
+    } else {
+      sidebar.style.display = 'none';
+      btn.style.background = 'var(--gov-green-600)';
+      btn.style.color = '#fff';
+    }
+  });
+
+  // Host page event wiring (mimicking Conference Room actions)
+  document.addEventListener('ai-recap-task', e => {
+    AIGateway.feedback(null, 'conference.recap.host', 'mock-task-created', e.detail);
+    console.log('Task created from recap:', e.detail);
+  });
+  
+  document.addEventListener('ai-recap-agenda', e => {
+    AIGateway.feedback(null, 'conference.recap.host', 'mock-agenda-added', e.detail);
+    console.log('Added to next agenda from recap:', e.detail);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+/* <ai-roster-copilot>: demand forecast, generated weekly roster and coverage heatmap.
+   All classes are prefixed `airo-` so the component can be dropped into any ECMS page. */
+ai-roster-copilot { display: block; min-width: 0; }
+
+.airo { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.airo__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.airo__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.airo__controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.airo__controls .g-select, .airo__controls .g-input { min-height: 32px; padding: 5px 8px; font-size: 12.5px; }
+.airo__ctl { display: grid; gap: 3px; min-width: 150px; }
+.airo__check { display: flex; gap: 6px; align-items: center; font-size: 12px; color: var(--text-2); }
+.airo__check input { accent-color: var(--ai-500); }
+.airo__body { padding: 12px 14px; }
+.airo__empty { color: var(--text-3); font-size: 12.5px; margin: 0; }
+.airo__h5 { margin: 16px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.airo__h5:first-child { margin-top: 0; }
+
+.airo__kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.airo__kpi { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; background: var(--surface-2); }
+.airo__kpi b { display: block; font-size: 19px; letter-spacing: -.01em; }
+.airo__kpi span { font-size: 11.5px; color: var(--text-2); }
+.airo__kpi s { color: var(--text-3); font-weight: 400; font-size: 13px; margin-right: 4px; }
+.airo__summary { margin: 10px 0 0; font-size: 12.5px; color: var(--text-2); }
+
+/* Heatmap: one row per day, one cell per hour */
+.airo__heat-wrap { overflow-x: auto; }
+.airo__heat { display: grid; grid-template-columns: 40px repeat(var(--h, 14), minmax(26px, 1fr)); gap: 2px; min-width: 460px; font-size: 10.5px; }
+.airo__heat-label { color: var(--text-3); display: flex; align-items: center; }
+.airo__heat-hour { color: var(--text-3); text-align: center; }
+.airo__cell { height: 26px; border-radius: 4px; display: grid; place-items: center; font-family: var(--mono); font-weight: 700; color: var(--text); background: var(--surface-2); }
+.airo__cell--ok { background: var(--ok-bg); color: var(--ok); }
+.airo__cell--over { background: var(--info-bg); color: var(--info); }
+.airo__cell--short { background: var(--bad-bg); color: var(--bad); }
+.airo__cell--closed { background: transparent; color: var(--text-3); font-weight: 400; }
+.airo__legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11.5px; color: var(--text-2); margin-top: 6px; }
+.airo__legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+
+/* Roster grid */
+.airo__roster-wrap { overflow-x: auto; }
+.airo__roster { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 560px; }
+.airo__roster th { text-align: center; font-size: 11px; color: var(--text-2); font-weight: 600; padding: 6px 4px; background: var(--surface-2); border-bottom: 1px solid var(--border); }
+.airo__roster th:first-child, .airo__roster td:first-child { text-align: left; padding-left: 8px; }
+.airo__roster td { padding: 4px; border-bottom: 1px solid var(--border); text-align: center; }
+.airo__person b { display: block; font-size: 12px; }
+.airo__person span { font-size: 10.5px; color: var(--text-3); }
+.airo__shift { width: 100%; min-width: 44px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); font-size: 11px; font-weight: 700; cursor: pointer; }
+.airo__shift[data-code="M"] { background: var(--info-bg); color: var(--info); border-color: transparent; }
+.airo__shift[data-code="D"] { background: var(--gov-green-100); color: var(--gov-green-600); border-color: transparent; }
+.airo__shift[data-code="L"] { background: var(--ai-100); color: var(--ai-600); border-color: transparent; }
+.airo__shift[data-code="-"] { color: var(--text-3); }
+.airo__shift[data-code="LV"] { background: var(--warn-bg); color: var(--warn); border-color: transparent; cursor: not-allowed; }
+.airo__shift--edited { outline: 2px solid var(--ai-500); outline-offset: 1px; }
+.airo__count { font-family: var(--mono); font-size: 11px; color: var(--text-2); }
+.airo__count--max { color: var(--warn); font-weight: 700; }
+
+.airo__why { margin: 8px 0 0; padding-left: 16px; font-size: 12px; color: var(--text-2); }
+.airo__why li { margin: 3px 0; }
+.airo__done { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--ok-bg); font-size: 12.5px; }
+
+.airo__actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.airo__mode { font-size: 11px; color: var(--text-3); margin-left: auto; }
+

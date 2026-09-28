@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vendor Performance Scorer</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="ims-vendor-scorer.css">
+<style>
+  /* Page-only layout for the Assets → Supplier → New Purchase Order screen */
+  .vp { display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 16px; align-items: start; }
+  .vp__card { padding: 16px; min-width: 0; }
+  .vp__card h3 { margin: 0 0 2px; font-size: 14px; }
+  .vp__card > p { margin: 0 0 12px; font-size: 12px; color: var(--text-2); }
+  .vp__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .vp__full { grid-column: 1 / -1; }
+  .vp__tablecard { margin-top: 16px; overflow: hidden; }
+  .vp__tablecard h3 { margin: 0; padding: 14px 16px 10px; font-size: 14px; }
+  .vp__score { display: inline-grid; place-items: center; min-width: 34px; height: 24px; padding: 0 6px; border-radius: 6px; font-weight: 700; font-size: 12px; color: #fff; background: var(--ok); }
+  .vp__score--mid { background: var(--warn); }
+  .vp__score--low { background: var(--bad); }
+  .vp__pending { color: var(--text-3); font-size: 12px; }
+  .vp__flash { animation: vp-flash 1.2s ease; }
+  @keyframes vp-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); border-color: var(--ai-500); } 100% { box-shadow: none; } }
+  @media (max-width: 1150px) { .vp { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .vp__grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / Assets / Supplier</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ASSETS · A11 · Phase 2</span>
+      <h1>Vendor Performance Scorer</h1>
+      <p>When an officer raises a purchase order, CICOD-AI scores each supplier's <b>reliability for this order</b> from their record in IMS: <b>on-time delivery, quantity accepted by I&amp;QA, invoice prices against the agreed price, price against other suppliers</b>, and experience with the asset category. It recommends a supplier with a written justification for the file, and flags risks such as <b>invoices split to stay under an approval limit</b>. The officer makes the award decision.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Assets → Supplier → New Purchase Order</span><span class="g-chip">Component: &lt;ai-vendor-scorer&gt;</span><span class="g-chip">Endpoint: /ims/vendors/score</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">NCC and its Lg Laptop delivery (5 supplied, ₦150,000 each, Holding Areas) come from the govtest Payables screen. The other suppliers and their delivery records are made up for the demo. Try it: click <b>✦ Score suppliers</b>, open <b>Sahel Logistics</b> to see the split-invoice flag, change <b>Asset Category</b> to Stationaries and watch the ranking change, and move the <b>price</b> slider up. Then click <b>Use … on this PO</b>.</p>
+    <div id="screen" class="shell" data-app="ims" data-active="Supplier">
+      <div class="shell__content">
+        <h2 class="shell__title">New Purchase Order</h2>
+        <div class="vp">
+          <form id="po-form" class="g-card vp__card" onsubmit="return false">
+            <h3>Purchase order details</h3>
+            <p>The PO goes to the approval level for its value once submitted</p>
+            <div class="vp__grid">
+              <div><label class="g-label" for="po-cat">Asset Category *</label>
+                <select class="g-select" id="po-cat" name="category"><option>Personal Information Technology Device</option><option>Stationaries</option><option>Power Equipment</option></select></div>
+              <div><label class="g-label" for="po-asset">Asset *</label><input class="g-input" id="po-asset" name="asset" value="Lg Laptop"></div>
+              <div><label class="g-label" for="po-qty">Quantity *</label><input class="g-input" id="po-qty" name="qty" type="number" value="20"></div>
+              <div><label class="g-label" for="po-need">Needed by *</label><input class="g-input" id="po-need" name="needBy" type="date" value="2026-10-15"></div>
+              <div><label class="g-label" for="po-store">Deliver to store</label><select class="g-select" id="po-store"><option>Holding Areas</option><option>Central Store</option><option>Kano store</option><option>Secondary Store</option></select></div>
+              <div><label class="g-label" for="po-supplier">Supplier *</label><select class="g-select" id="po-supplier"><option value="">Select supplier</option></select></div>
+              <div class="vp__full"><label class="g-label" for="po-just">Justification for supplier choice</label><textarea class="g-textarea" id="po-just" placeholder="Required for audit when the supplier is chosen"></textarea></div>
+            </div>
+            <div style="margin-top:14px"><button class="g-btn g-btn--primary" type="button">Submit for approval</button></div>
+          </form>
+          <div data-ai-spot="CICOD-AI · Supplier reliability (right rail)">
+            <ai-vendor-scorer source="#po-form" vendors="#vendor-table"></ai-vendor-scorer>
+          </div>
+        </div>
+        <div class="g-card vp__tablecard">
+          <h3>Suppliers</h3>
+          <div class="g-table-wrap">
+            <table class="g-table" id="vendor-table">
+              <thead><tr><th>Supplier</th><th>Categories supplied</th><th>Deliveries (12 months)</th><th>Last delivery</th><th>Status</th><th data-ai-spot="CICOD-AI · score column">CICOD-AI score</th></tr></thead>
+              <tbody>
+                <tr data-vendor="NCC"><td>NCC</td><td>Personal Information Technology Device</td><td>5</td><td>22 Sep 2026</td><td>Active</td><td data-score><span class="vp__pending">Not scored</span></td></tr>
+                <tr data-vendor="Abuja Tech Hub Supplies"><td>Abuja Tech Hub Supplies</td><td>Personal Information Technology Device</td><td>4</td><td>19 Aug 2026</td><td>Active</td><td data-score><span class="vp__pending">Not scored</span></td></tr>
+                <tr data-vendor="Kano Stationers Ltd"><td>Kano Stationers Ltd</td><td>Stationaries</td><td>3</td><td>10 Sep 2026</td><td>Active</td><td data-score><span class="vp__pending">Not scored</span></td></tr>
+                <tr data-vendor="Greenfield Power Solutions"><td>Greenfield Power Solutions</td><td>Power Equipment, IT</td><td>3</td><td>25 Jul 2026</td><td>Active</td><td data-score><span class="vp__pending">Not scored</span></td></tr>
+                <tr data-vendor="Sahel Logistics &amp; Supplies"><td>Sahel Logistics &amp; Supplies</td><td>IT, Stationaries</td><td>4</td><td>6 Sep 2026</td><td>Active</td><td data-score><span class="vp__pending">Not scored</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Right rail of the New Purchase Order form (<code>/ims/supplier</code> → New PO), next to the Supplier field</div>
+      <div class="doc__where-item"><b>Also appears in</b>A <b>CICOD-AI score</b> column in the Suppliers list, the Approval screen (so approvers see the score and the justification), and a quarterly supplier review report</div>
+      <div class="doc__where-item"><b>Trigger</b>The officer clicks Score suppliers. It re-scores when the category, asset, quantity or date changes, or when a weight slider moves</div>
+      <div class="doc__where-item"><b>Who sees it</b>Store and procurement officers raising POs, and approvers. Supplier scores are internal and never shown to suppliers</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">The score is a transparent weighted formula over IMS records, so every point can be traced to a delivery. The LLM only writes the justification.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Collect the record</h4><p>For each supplier, the gateway reads every receipt: the promised date on the PO, the date received, Qty. Supplied / Approved / Rejected from I&amp;QA, and the invoiced unit price against the agreed price in Payables.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Only supplier names and transaction figures are processed. Contact persons and bank details are never sent. Everything runs on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Score</h4><p>Five measures go from 0 to 1: on time (within a 2-day grace period), quantity accepted, invoice match (within 1%), price against the median for the same items, and category experience. They're combined with the officer's weights. A supplier new to the category loses 20%.</p></div>
+      <div class="doc__step"><h4>Check for risk</h4><p>Rules look for same-day invoices each just under the approval limit (possible split orders), price outliers, chronic short delivery and repeated lateness. A split-invoice flag takes 15 points off and blocks the supplier from being recommended.</p></div>
+      <div class="doc__step"><h4>Recommend</h4><p>The top eligible supplier is recommended. An LLM writes a short justification comparing it with the runner-up, and notes the delivery-date risk if the order is urgent.</p></div>
+      <div class="doc__step"><h4>Decide &amp; learn</h4><p>The officer picks any supplier. If it isn't the recommended one, a reason is needed. The choice and the justification are saved on the PO and sent to <code>/feedback</code>.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">These are targets. The baselines come from Payables and Received Asset History before the pilot.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−30%</div><h4>Late deliveries</h4><p>Orders go to suppliers who deliver on time, not just the ones who come to mind first.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fewer rejects</div><h4>Less I&amp;QA rework</h4><p>Suppliers with repeated short or rejected quantities drop down the list before the next order.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Flagged</div><h4>Split-invoice detection</h4><p>Orders split to stay under the approval limit are flagged automatically. This supports the audit of approval-threshold evasion.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">100%</div><h4>Justified awards</h4><p>Every PO carries a written, evidence-based reason for the supplier choice, ready for internal audit and the Bureau of Public Procurement.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Price</div><h4>Better value</h4><p>Invoice prices above the agreed price, and prices above the market median, are visible before the award rather than after payment.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in Assets (IMS)</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (New Purchase Order)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/ims-vendor-scorer.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/ims-vendor-scorer.js"&gt;&lt;/script&gt;
+
+&lt;ai-vendor-scorer source="#po-form"
+                  vendors="#vendor-table"&gt;&lt;/ai-vendor-scorer&gt;
+
+&lt;script&gt;
+el.addEventListener('ai-vendor-select', e =&gt; {
+  po.set('supplier', e.detail.vendor);
+  po.set('justification', e.detail.justification);
+  po.set('aiScore', e.detail.score);   // saved for approvers
+});
+el.addEventListener('ai-vendor-scores', e =&gt;
+  supplierTable.showScores(e.detail.scores));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Make sure each receipt stores the <b>promised delivery date</b> and the <b>agreed unit price</b> from the PO. Payables already has supplied, approved and rejected quantities and the invoiced price.</li>
+            <li>Normalise supplier names (one supplier record, many spellings) with the same entity matcher used by Contact Dedup.</li>
+            <li>Build <code>/ims/vendors/score</code>: scoring SQL/view, then risk rules, then an LLM justification on the sovereign model.</li>
+            <li>Add the component to the New PO form and the score column to the Suppliers list. Store the score and justification on the PO.</li>
+            <li>Show the score and justification on the Approval screen for every approval level.</li>
+            <li>Pilot with IT and stationery purchases for one quarter. Compare late deliveries and I&amp;QA rejections with the previous quarter.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ims/vendors/score
+{
+  "po": { "category": "Personal Information Technology Device",
+          "asset": "Lg Laptop", "qty": 20, "needBy": "2026-10-15" },
+  "vendors": ["NCC", "Abuja Tech Hub Supplies", "…"],
+  "weights": { "onTime": 30, "qty": 25, "invoice": 20,
+               "price": 15, "experience": 10 }
+}
+→ 200
+{
+  "model": "cicod-ims-vendor-v1",
+  "vendors": [{
+    "vendor": "NCC", "score": 92,
+    "metrics": { "onTime": 1, "qty": 0.99, "invoice": 0.8,
+                 "price": 0.7, "experience": 1 },
+    "flags": [],
+    "reasons": ["100% of 5 deliveries arrived within 2 days…"],
+    "ledger": [{ "ref": "1790291686099", "asset": "Lg Laptop", "late": 2,
+                 "qty": "5/5", "price": "₦150,000" }]
+  }],
+  "recommendation": { "vendor": "NCC", "text": "NCC is the most reliable…" },
+  "confidence": 0.9
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.assets.vendorScorer</code>, set per tenant. The default weights and the approval limit used by the split-invoice rule are tenant settings.</li>
+            <li>It's a recommendation only. Choosing a different supplier is allowed, but a reason is needed, and both are kept on the PO.</li>
+            <li>A split-invoice flag also sends a notice to the Head of Procurement and is written to the IMS Audit log.</li>
+            <li>Scores are internal procurement records. They're never shown to suppliers and never used as the only award criterion.</li>
+            <li>Every scoring run, weight change and selection goes to the audit log with the model version.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="ims-vendor-scorer.js"></script>
+<script>
+  // Host-page wiring: the page owns the PO and the supplier table. The component only suggests.
+  const esc = AIGateway.esc;
+  const supplier = document.getElementById('po-supplier');
+  document.querySelectorAll('#vendor-table [data-vendor]').forEach(r => supplier.add(new Option(r.dataset.vendor, r.dataset.vendor)));
+  const cls = s => 'vp__score' + (s >= 75 ? '' : s >= 55 ? ' vp__score--mid' : ' vp__score--low');
+
+  document.addEventListener('ai-vendor-scores', e => {
+    e.detail.scores.forEach(s => {
+      const cell = [...document.querySelectorAll('#vendor-table [data-vendor]')].find(r => r.dataset.vendor === s.vendor)?.querySelector('[data-score]');
+      if (cell) cell.innerHTML = `<span class="${cls(s.score)}" title="${esc(s.flags.join(', ') || 'No flags')}">${s.score}</span>`;
+    });
+  });
+  document.addEventListener('ai-vendor-select', e => {
+    supplier.value = e.detail.vendor;
+    const just = document.getElementById('po-just');
+    just.value = e.detail.justification;
+    [supplier, just].forEach(el => { el.classList.remove('vp__flash'); void el.offsetWidth; el.classList.add('vp__flash'); });
+    if (!e.detail.followed) just.focus();
+  });
+</script>
+</body>
+</html>

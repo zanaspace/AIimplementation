@@ -1,0 +1,57 @@
+/* <ai-meeting-recap>: recap of earlier meetings in a series: since-last-time summary, action items
+   with live ECMS status, carried-forward items, decisions log and the viewer's own items.
+   All classes are prefixed `aimr-` so the component can be dropped into any Conference page. */
+ai-meeting-recap { display: block; min-width: 0; }
+
+.aimr { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.aimr__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aimr__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.aimr__series { display: block; font-size: 11.5px; color: var(--text-2); font-weight: 400; margin-top: 3px; }
+.aimr__body { padding: 12px 14px; }
+.aimr__empty { color: var(--text-3); font-size: 12.5px; margin: 0; }
+.aimr__h5 { margin: 14px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aimr__h5:first-child { margin-top: 0; }
+
+.aimr__tabs { display: flex; gap: 2px; flex-wrap: wrap; border-bottom: 1px solid var(--border); margin: -4px -14px 12px; padding: 0 8px; }
+.aimr__tab { border: 0; background: transparent; padding: 8px 10px; font-size: 12px; font-weight: 600; color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent; }
+.aimr__tab[aria-selected="true"] { color: var(--ai-600); border-bottom-color: var(--ai-500); }
+.aimr__pane[hidden] { display: none; }
+
+.aimr__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.aimr__stat { border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; background: var(--surface-2); }
+.aimr__stat b { display: block; font-size: 18px; }
+.aimr__stat span { font-size: 11px; color: var(--text-2); }
+.aimr__stat--bad b { color: var(--bad); }
+.aimr__stat--ok b { color: var(--ok); }
+
+.aimr__since { margin: 0; padding: 10px 12px; border-left: 3px solid var(--ai-500); background: var(--ai-50); border-radius: var(--radius-sm); font-size: 12.5px; line-height: 1.55; }
+.aimr__cite { font-family: var(--mono); font-size: 10.5px; font-weight: 700; color: var(--ai-600); white-space: nowrap; }
+
+/* Action items */
+.aimr__item { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; background: var(--surface); }
+.aimr__item--carried { border-left: 4px solid var(--bad); }
+.aimr__item-top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: flex-start; }
+.aimr__item-text { font-weight: 600; font-size: 12.5px; min-width: 0; overflow-wrap: anywhere; }
+.aimr__item-meta { font-size: 11.5px; color: var(--text-2); margin-top: 4px; }
+.aimr__chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.aimr__trail { display: flex; gap: 3px; margin-top: 6px; flex-wrap: wrap; }
+.aimr__dot { font-size: 10px; padding: 1px 6px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-3); font-family: var(--mono); }
+.aimr__dot--on { background: var(--bad-bg); color: var(--bad); border-color: transparent; }
+.aimr__item-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; align-items: center; }
+.aimr__done { color: var(--ok); font-weight: 600; font-size: 12px; }
+
+/* Decisions */
+.aimr__dec { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 12.5px; }
+.aimr__dec:last-child { border-bottom: 0; }
+.aimr__dec time { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+.aimr__relit { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--warn-bg); font-size: 12.5px; }
+
+/* Series */
+.aimr__occ { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; gap: 8px; align-items: start; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 12.5px; }
+.aimr__occ:last-child { border-bottom: 0; }
+.aimr__occ input { margin-top: 2px; accent-color: var(--ai-500); }
+.aimr__occ small { display: block; color: var(--text-3); font-size: 11.5px; }
+.aimr__hidden { margin-top: 10px; font-size: 12px; color: var(--warn); font-weight: 600; }
+
+.aimr__actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.aimr__mode { font-size: 11px; color: var(--text-3); margin-left: auto; }

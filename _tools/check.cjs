@@ -3,7 +3,7 @@
 // optionally types into a field and clicks a button, then saves a screenshot.
 const path = require('path');
 const { pathToFileURL } = require('url');
-const { chromium } = require(path.join(__dirname, '../../../QATestingApp/node_modules/playwright'));
+const { chromium } = require(path.join(__dirname, '../../QATestingApp/node_modules/playwright'));
 
 (async () => {
   const args = process.argv.slice(2);

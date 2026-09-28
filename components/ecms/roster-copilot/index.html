@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shift and Roster Copilot</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="roster-copilot.css">
+<style>
+  /* Page-only layout for ECMS → Resources → Resource Schedule */
+  .rs__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .rs__stat { padding: 12px 14px; }
+  .rs__stat b { display: block; font-size: 20px; }
+  .rs__stat span { font-size: 12px; color: var(--text-2); }
+  .rs__card { overflow: hidden; margin-bottom: 16px; }
+  .rs__bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; padding: 12px 16px; }
+  .rs__bar .g-input { max-width: 240px; }
+  .rs__new td { animation: rs-flash 1.6s ease; }
+  @keyframes rs-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Resources</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ECMS · E-U4 · Phase 2</span>
+      <h1>Shift &amp; Roster Copilot</h1>
+      <p>For departments that run shifts, such as Customer Service or IT Support, CICOD-AI <b>forecasts next week's hourly task volume</b> from past ECMS tickets and works out <b>how many officers each hour needs</b>. It then <b>generates the roster</b>: who works Early, Daily or Late on each day, respecting leave and the maximum shifts per officer. A heatmap shows where the current schedule leaves the department understaffed. Supervisors can change any shift, and coverage is recalculated straight away. This builds on <a href="../smart-dispatch/index.html">Smart Dispatch</a>, which checks that shifts are valid, by also deciding which shifts are needed.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Resources → Resource Schedule</span><span class="g-chip">Component: &lt;ai-roster-copilot&gt;</span><span class="g-chip">Endpoint: /ecms/roster/generate</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">The schedule rows, the "Daily Shift" (09:30–16:30) and the officer names come from the govtest Resources pages. The demand profile is made up for the demo. Try it: click <b>✦ Generate roster</b>, then compare the struck-through figures (the current schedule) with the new ones. Click any shift to change it (Early → Daily → Late → Off) and watch the heatmap update. Switch to <b>IT Support</b>, or untick <b>Include known events</b>. Then click <b>Apply as Resource Schedule</b>.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Resource Schedule">
+      <div class="shell__content">
+        <h2 class="shell__title">Resource Schedules</h2>
+        <div class="rs__stats">
+          <div class="g-card rs__stat"><b id="rs-total">7</b><span>Total Schedules</span></div>
+          <div class="g-card rs__stat"><b id="rs-active">6</b><span>Active Schedules</span></div>
+          <div class="g-card rs__stat"><b>1</b><span>Suspended Schedules</span></div>
+        </div>
+        <div data-ai-spot="CICOD-AI · Roster copilot (above the schedules table)" style="margin-bottom:16px">
+          <ai-roster-copilot department="Customer Service"></ai-roster-copilot>
+        </div>
+        <div class="g-card rs__card">
+          <div class="rs__bar"><input class="g-input" placeholder="Search resource schedules..." aria-label="Search resource schedules"><button class="g-btn g-btn--primary g-btn--sm" type="button">Create</button></div>
+          <div class="g-table-wrap">
+            <table class="g-table">
+              <thead><tr><th>Name</th><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th><th>Saturday</th><th>Sunday</th><th>Created By</th><th>Status</th></tr></thead>
+              <tbody id="schedules">
+                <tr><td>Project Officer Schedule</td><td>Daily Shift</td><td>Daily Shift</td><td>Daily Shift</td><td>Daily Shift</td><td>Daily Shift</td><td>Daily Shift</td><td>Daily Shift</td><td>Ann Nya</td><td><span class="g-chip g-chip--warn">SUSPENDED</span></td></tr>
+                <tr><td>dembe</td><td>Dispatch riders shift</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Comfort Oladeji</td><td><span class="g-chip g-chip--ok">ACTIVE</span></td></tr>
+                <tr><td>IT Manager Schedule</td><td>IT</td><td>—</td><td>IT</td><td>—</td><td>IT</td><td>—</td><td>—</td><td>Ann Nya</td><td><span class="g-chip g-chip--ok">ACTIVE</span></td></tr>
+                <tr><td>Fast Lane zero</td><td>Dispatch riders shift</td><td>Dispatch riders shift</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>Ann Nya</td><td><span class="g-chip g-chip--ok">ACTIVE</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Above the schedules table on <code>/ecms/resources/schedules</code>, as a "Generate with CICOD-AI" panel</div>
+      <div class="doc__where-item"><b>Also appears in</b>A "Next week's coverage" card on Resource Utilization, and a Thursday reminder in the supervisor's Daily Brief to review the draft roster</div>
+      <div class="doc__where-item"><b>Trigger</b>The supervisor clicks Generate roster. A draft is prepared automatically every Thursday for the following week</div>
+      <div class="doc__where-item"><b>Who sees it</b>Department heads and supervisors with permission to create Resource Schedules. Officers see only their own shifts once it's applied</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">A forecast plus an optimiser produce the roster, and both can be explained hour by hour. The LLM only writes the "why" bullets.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Learn the pattern</h4><p>The department's ECMS tasks from the last 12 weeks are counted by weekday and hour of creation, giving the usual Monday-morning peak and the quiet Friday afternoon.</p></div>
+      <div class="doc__step"><h4>Forecast next week</h4><p>The pattern is adjusted for known events, such as a payment-gateway spike flagged by the Citizen Sentiment report, or a laptop roll-out from an approved PO. Public holidays are also taken into account.</p></div>
+      <div class="doc__step"><h4>Officers needed</h4><p>Officers needed each hour = forecast tasks ÷ tasks one officer handles per hour, from their median handling time. At least one officer is needed whenever the department is open.</p></div>
+      <div class="doc__step"><h4>Build the roster</h4><p>An optimiser assigns Early, Daily or Late shifts to cover the most unmet hours first. It respects leave, the maximum shifts per officer and fair weekend rotation, using only shifts defined under Resource Shift.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Only officer names, roles, leave days and shift definitions are processed. Leave reasons and personal details are never sent. Everything runs on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Review &amp; learn</h4><p>The supervisor edits and applies the roster. Edits are sent to <code>/feedback</code>. After the week, actual volume is compared with the forecast to improve the next one.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">The figures come from the demo data, and the baseline is the flat Daily Shift schedule. Resource Utilization showed 0% in govtest, so real baselines will be measured once rosters are in ECMS.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">56% → 100%</div><h4>Hours fully staffed</h4><p>Early and Late shifts cover the hours the flat 09:30–16:30 schedule misses: before 09:30, after 16:30 and Saturday.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−13%</div><h4>Fewer staff-hours</h4><p>264 staff-hours instead of 304, because staff move away from quiet Friday afternoons rather than being added.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Never short</div><h4>Peaks covered</h4><p>The Monday morning peak (6 officers needed at 10:00–12:00) is staffed before the week starts, not discovered when citizens complain about waiting.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fair</div><h4>Leave and weekends respected</h4><p>Leave is never overwritten, nobody goes over the shift limit, and Saturday shifts rotate.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Minutes</div><h4>Rostering time</h4><p>Supervisors review a draft instead of building a spreadsheet each week. It links to Smart Dispatch for assigning tasks within each shift.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in ECMS</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Resource Schedule)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/roster-copilot.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/roster-copilot.js"&gt;&lt;/script&gt;
+
+&lt;ai-roster-copilot department="Customer Service"&gt;&lt;/ai-roster-copilot&gt;
+
+&lt;script&gt;
+el.addEventListener('ai-roster-apply', async e =&gt; {
+  // one Resource Schedule per officer for the week
+  for (const row of e.detail.rows)
+    await ecms.resources.schedules.upsert({
+      resource: row.name, weekOf: e.detail.weekOf,
+      days: row.days.map(c =&gt; e.detail.shifts[c] || null) });
+  inmail.notify(e.detail.rows.map(r =&gt; r.name), 'Your shifts for next week');
+});
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Define Early, Daily and Late shifts under Resource Shift for each department that runs shifts, and fix invalid shifts first (Smart Dispatch flags them).</li>
+            <li>Add <b>leave</b> to Resources (dates only). Link resources to their department and queue types.</li>
+            <li>Build the hourly demand history from ECMS task creation times per department, and the handling rate from median time-to-close.</li>
+            <li>Build <code>/ecms/roster/generate</code>: seasonal forecast, then need per hour, then the shift optimiser (greedy or integer programming), then an LLM explanation.</li>
+            <li>Allow Resource Schedules to hold a <b>week-specific</b> schedule per resource (today they're a repeating weekly pattern).</li>
+            <li>Pilot with Customer Service for 4 weeks. Compare the share of tasks waiting more than 30 minutes before first action.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ecms/roster/generate
+{ "department": "Customer Service", "weekOf": "2026-10-05",
+  "maxShifts": 5, "includeEvents": true }
+→ 200
+{
+  "model": "cicod-ecms-roster-v1",
+  "rate": 4,
+  "forecast": [[3, 8, 15, 23, 24, …], …],     // tasks per hour, Mon–Sun × 07–19
+  "need":     [[1, 2, 4, 6, 6, …], …],         // officers needed
+  "officers": [{ "name": "Benita Benita", "role": "Senior officer", "leave": [2] }],
+  "roster":   [["M", "L", "LV", "M", "-", "M", "-"], …],
+  "baseline": [["D", "D", "LV", "D", "D", "-", "-"], …],
+  "reasons":  ["Peak demand is Mon 10:00…"],
+  "confidence": 0.81
+}
+// Shift codes: M 07:00–15:00 · D 09:30–16:30 · L 12:00–20:00
+//              "-" off · "LV" leave (never changed)</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.ecms.rosterCopilot</code>, set per tenant and per department. The shift limit and opening hours are department settings.</li>
+            <li>Leave is fixed: the optimiser and the edit buttons can never schedule an officer on leave.</li>
+            <li>Nothing is applied until the supervisor clicks Apply. The previous schedule is kept, so it can be restored.</li>
+            <li>Only shifts defined under Resource Shift are used. The copilot never invents working hours.</li>
+            <li>Each generation, edit and apply goes to the ECMS Audit Log with the model version.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="roster-copilot.js"></script>
+<script>
+  // Host-page wiring: in production this writes one week-specific Resource Schedule per officer.
+  const esc = AIGateway.esc;
+  document.addEventListener('ai-roster-apply', e => {
+    const d = e.detail;
+    // Summarise each day as shift counts, e.g. "M2 D3 L2".
+    const perDay = [0, 1, 2, 3, 4, 5, 6].map(i => {
+      const c = { M: 0, D: 0, L: 0 };
+      d.rows.forEach(r => { if (c[r.days[i]] !== undefined) c[r.days[i]]++; });
+      const s = Object.entries(c).filter(([, n]) => n).map(([k, n]) => `${k}${n}`).join(' ');
+      return s || '—';
+    });
+    const tr = document.createElement('tr');
+    tr.className = 'rs__new';
+    tr.innerHTML = `<td>${esc(d.department)} roster · week of ${esc(d.weekOf)} <span class="g-chip g-chip--ai">CICOD-AI</span></td>${perDay.map(s => `<td>${esc(s)}</td>`).join('')}<td>Prince Ekpenyong</td><td><span class="g-chip g-chip--ok">ACTIVE</span></td>`;
+    document.getElementById('schedules').prepend(tr);
+    document.getElementById('rs-total').textContent = Number(document.getElementById('rs-total').textContent) + 1;
+    document.getElementById('rs-active').textContent = Number(document.getElementById('rs-active').textContent) + 1;
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+/* <ai-goal-alignment>: checks personal goals against departmental goals, scores alignment
+   and SMART quality, and proposes rewrites and missing goals.
+   All classes are prefixed `aiga-` so the component can be dropped into any PMS page. */
+ai-goal-alignment { display: block; min-width: 0; }
+
+.aiga { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.aiga__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aiga__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aiga__body { padding: 12px 14px; }
+.aiga__empty { color: var(--text-3); font-size: 12.5px; margin: 0 0 10px; }
+
+/* Overall score */
+.aiga__score { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: center; padding-bottom: 12px; border-bottom: 1px dashed var(--border); }
+.aiga__ring { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--aiga-c, var(--ok)) calc(var(--aiga-p, 0) * 1%), var(--border) 0); }
+.aiga__ring span { width: 50px; height: 50px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+.aiga__score p { margin: 0; font-size: 12.5px; color: var(--text-2); }
+.aiga__score b { color: var(--text); }
+
+.aiga__h5 { margin: 14px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+
+/* Per-goal result */
+.aiga__goal { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; margin-bottom: 8px; background: var(--surface-2); }
+.aiga__goal-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+.aiga__goal-name { font-weight: 600; font-size: 12.5px; min-width: 0; overflow-wrap: anywhere; }
+.aiga__links { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+.aiga__smart { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+.aiga__letter { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--ok-bg); color: var(--ok); }
+.aiga__letter--miss { background: var(--bad-bg); color: var(--bad); }
+.aiga__issues { margin: 4px 0 0; padding-left: 16px; font-size: 12px; color: var(--text-2); }
+.aiga__rewrite { margin-top: 8px; padding: 8px 10px; border-left: 3px solid var(--ai-500); background: var(--ai-50); border-radius: var(--radius-sm); font-size: 12.5px; }
+.aiga__rewrite-text { display: block; margin: 2px 0 8px; color: var(--text); overflow-wrap: anywhere; }
+.aiga__row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.aiga__done { font-size: 12px; color: var(--ok); font-weight: 600; }
+
+/* Coverage of departmental goals */
+.aiga__cov { display: grid; gap: 6px; }
+.aiga__cov-row { display: grid; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 12px; }
+.aiga__cov-id { font-family: var(--mono); font-weight: 700; color: var(--text-2); }
+.aiga__cov-bar { height: 6px; border-radius: 99px; background: var(--border); overflow: hidden; margin-top: 3px; }
+.aiga__cov-bar > i { display: block; height: 100%; background: var(--ok); }
+.aiga__cov-row--gap .aiga__cov-bar > i { background: var(--bad); }
+.aiga__cov-name { min-width: 0; overflow-wrap: anywhere; color: var(--text); }
+
+.aiga__suggest { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--warn-bg); font-size: 12.5px; }
+.aiga__suggest p { margin: 0 0 8px; }
+
+.aiga__weight { margin-top: 10px; font-size: 12px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--info-bg); color: var(--text); }
+
+.aiga__actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.aiga__mode { font-size: 11px; color: var(--text-3); margin-left: auto; }

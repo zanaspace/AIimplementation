@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Public Sentiment Analyzer</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="sentiment-analyzer.css">
+<style>
+  /* Page-only layout for ECMS → Reports → Citizen Sentiment */
+  .cs__tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 14px; flex-wrap: wrap; }
+  .cs__tab { padding: 8px 12px; font-size: 13px; color: var(--text-2); border-bottom: 2px solid transparent; }
+  .cs__tab--on { color: var(--gov-green-600); border-bottom-color: var(--gov-green-600); font-weight: 600; }
+  .cs__grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+  .cs__side { padding: 14px 16px; min-width: 0; }
+  .cs__side h3 { margin: 0 0 8px; font-size: 14px; }
+  .cs__side ul { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--text-2); }
+  .cs__side li { margin: 4px 0; }
+  .cs__side b { color: var(--text); }
+  .cs__side + .cs__side { margin-top: 12px; }
+  @media (max-width: 1100px) { .cs__grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD / Service Portal</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · S7 · Phase 2</span>
+      <h1>Public Sentiment &amp; Feedback Analyzer</h1>
+      <p>CICOD-AI reads <b>every citizen submission</b>: Paperless Service Portal "Engage Us" requests, public webforms, feedback forms, emails and WhatsApp messages, in English and Nigerian Pidgin. It scores each one's sentiment and groups the complaints into <b>systemic issues</b>. It also spots issues that are <b>spiking</b>. Each week it writes an <b>Executive Sentiment Report</b>, for example <i>"58% of complaints this week were about the online payment gateway failing"</i>, with a recommended action for each issue that becomes an ECMS task in one click.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Reports → Citizen Sentiment (new)</span><span class="g-chip">Component: &lt;ai-sentiment-report&gt;</span><span class="g-chip">Endpoint: /portal/sentiment</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">The queues (Bid Submission, Complaints, Customer service, Fraud and Risk Management) come from the govtest Paperless Service Portal. The 223 submissions are generated for the demo, with a payment-gateway surge in the last 5 days. Try it: switch the period between <b>This week</b>, <b>Last week</b> and <b>Last 30 days</b>, filter to <b>Complaints</b>, click <b>Create ECMS task</b> on the payment issue, then <b>Send report to Perm Sec</b>.</p>
+    <div id="screen" class="shell" data-app="ecms" data-active="Reports">
+      <div class="shell__content">
+        <h2 class="shell__title">Reports</h2>
+        <div class="cs__tabs"><span class="cs__tab">Reports</span><span class="cs__tab">Audit Log</span><span class="cs__tab cs__tab--on">Citizen Sentiment <span class="g-chip g-chip--ai">New</span></span></div>
+        <div class="cs__grid">
+          <div data-ai-spot="CICOD-AI · Executive sentiment report">
+            <ai-sentiment-report period="week" queue="all"></ai-sentiment-report>
+          </div>
+          <div>
+            <div class="g-card cs__side">
+              <h3>Tasks raised from this report</h3>
+              <ul id="tasks"><li>None yet.</li></ul>
+            </div>
+            <div class="g-card cs__side">
+              <h3>Report distribution</h3>
+              <ul id="sent"><li>Scheduled: every Monday 08:00 to the Permanent Secretary and Directors (InMail)</li></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>A new <b>Citizen Sentiment</b> tab in <code>/ecms/reports</code>, next to Reports and Audit Log</div>
+      <div class="doc__where-item"><b>Also appears in</b>A weekly InMail report to the Perm Sec and Directors, a sentiment card on the Workflow Dashboard, and an alert in the Daily Brief when an issue spikes</div>
+      <div class="doc__where-item"><b>Trigger</b>New submissions are scored as they arrive. Issues are regrouped every night. The report is sent every Monday at 08:00, or at any time on demand</div>
+      <div class="doc__where-item"><b>Who sees it</b>Directors, the Perm Sec, service-quality and communications officers. Quotes have personal details removed</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Each submission is scored once as it arrives. Issues are found by grouping similar complaints, not from a fixed list, so new problems show up without anyone configuring them.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Collect</h4><p>Engage Us submissions, public webforms, feedback forms (e.g. PARTICIPANT EVALUATION), email-to-task and WhatsApp messages are sent to <code>/portal/sentiment</code> with their queue and channel.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Names, phone numbers, emails, NINs and tracking IDs are removed before any text is stored for analysis. Citizen data stays on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Score sentiment</h4><p>A multilingual sentiment model (English, Pidgin, Hausa, Yoruba and Igbo) gives each submission a score from −1 to +1. The sentiment index is the share positive minus the share negative, from −100 to 100.</p></div>
+      <div class="doc__step"><h4>Find issues</h4><p>Embeddings of the negative submissions are grouped each night, and an LLM names each group ("Online payment gateway failing"). A spike is when the last 3 days run at 2× or more the daily rate of the previous 2 weeks.</p></div>
+      <div class="doc__step"><h4>Write the report</h4><p>An LLM writes the headline, summary and a recommended action for each issue, using only the computed figures. Quotes are real submissions with personal details removed.</p></div>
+      <div class="doc__step"><h4>Act &amp; learn</h4><p>Officers create ECMS tasks from recommendations or skip them. When the task closes, the next reports show whether that issue's complaints went down.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">These are targets. The baselines come from the public queues (Complaints held 2,248 open tasks on 27 Sep 2026).</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Days → hours</div><h4>Systemic issues found early</h4><p>A failing payment gateway shows up as a spike within a day, not after weeks of individual complaints sitting in the Complaints queue.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">1 page</div><h4>Leadership sees the citizen's view</h4><p>The Perm Sec gets a plain-English weekly summary instead of 2,000 unread tickets.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fix the cause</div><h4>One fix, many complaints closed</h4><p>A single IT task for the payment gateway resolves the cause of dozens of complaints, instead of each one being answered separately.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">+20 pts</div><h4>Sentiment index target</h4><p>Track whether actions work: the index and each issue's share are compared week on week.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fraud</div><h4>Scam alerts sooner</h4><p>Reports of people posing as staff are grouped and escalated to Fraud and Risk Management, with a Verify Staff alert for the public.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Reports → Citizen Sentiment)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/sentiment-analyzer.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/sentiment-analyzer.js"&gt;&lt;/script&gt;
+
+&lt;ai-sentiment-report period="week" queue="all"&gt;&lt;/ai-sentiment-report&gt;
+
+&lt;script&gt;
+el.addEventListener('ai-sentiment-task', e =&gt;
+  ecms.tasks.create({ ...e.detail, source: 'CICOD-AI Sentiment' }));
+el.addEventListener('ai-sentiment-send', e =&gt;
+  inmail.send({ to: 'Perm Sec + Directors', subject:
+    'Weekly citizen sentiment: ' + e.detail.headline,
+    body: e.detail.summary }));
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Stream new public submissions (portal, webforms, feedback forms, email-to-task, WhatsApp) to the AI Gateway with queue, channel and timestamp.</li>
+            <li>Score sentiment as each one arrives and store only the score, the redacted text and the embedding.</li>
+            <li>Run a nightly job that groups the negative submissions into issues, names them and computes shares and spikes.</li>
+            <li>Build <code>/portal/sentiment</code> to return the report for a period and queue, with an LLM-written headline and summary.</li>
+            <li>Add the Citizen Sentiment tab to Reports, a card on the Workflow Dashboard, and the Monday InMail schedule.</li>
+            <li>Validate with communications officers: check a sample of 200 submissions by hand for sentiment and issue accuracy each month.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/portal/sentiment
+{ "period": "week", "queue": "all" }
+→ 200
+{
+  "model": "cicod-portal-sentiment-v1",
+  "total": 76, "index": -67, "prevIndex": -46,
+  "split": { "neg": 60, "neu": 7, "pos": 9 },
+  "trend": [{ "label": "Mon", "neg": 10, "neu": 1, "pos": 1 }],
+  "headline": "58% of complaints this week were about online
+               payment gateway failing, running at 14× the usual…",
+  "summary": "76 citizen submissions this week…",
+  "issues": [{
+    "theme": "payment", "name": "Online payment gateway failing",
+    "count": 35, "share": 0.58, "spike": 14,
+    "queue": "Bid Submission", "channels": "Portal, Email, WhatsApp",
+    "quotes": ["The payment page keeps failing…"],
+    "action": { "queue": "IT Support", "priority": "Critical",
+                "title": "Investigate payment gateway failures…" }
+  }],
+  "confidence": 0.75
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.cicod.sentimentAnalyzer</code>, set per tenant. The recipient list and send time are tenant settings.</li>
+            <li>Personal details are removed before storage. Quotes never include names, phone numbers, emails, NINs or tracking IDs.</li>
+            <li>Issue names and actions are suggestions. Tasks are only created when an officer clicks.</li>
+            <li>Individual citizens are never scored or profiled. The report only works with groups of submissions.</li>
+            <li>Each report, task and send goes to the ECMS Audit Log with the model version.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="sentiment-analyzer.js"></script>
+<script>
+  // Host-page wiring: in production these call the ECMS tasks API and InMail.
+  const esc = AIGateway.esc;
+  let n = 17611;
+  const clearNone = ul => { if (ul.textContent.trim() === 'None yet.') ul.innerHTML = ''; };
+  document.addEventListener('ai-sentiment-task', e => {
+    const ul = document.getElementById('tasks'); clearNone(ul);
+    const li = document.createElement('li');
+    li.innerHTML = `<b>#${n++}</b> ${esc(e.detail.queue)} · ${esc(e.detail.priority)} · ${esc(e.detail.title)}`;
+    ul.prepend(li);
+  });
+  document.addEventListener('ai-sentiment-send', e => {
+    const li = document.createElement('li');
+    li.innerHTML = `<b>Sent now</b> to the Permanent Secretary and Directors: "${esc(e.detail.headline)}"`;
+    document.getElementById('sent').prepend(li);
+  });
+</script>
+</body>
+</html>

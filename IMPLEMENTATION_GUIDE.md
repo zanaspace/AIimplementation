@@ -1,13 +1,13 @@
 # 1Gov CICOD-AI Implementation Guide
 
-This guide explains how to take the components in `prototype/` into the real 1Gov products: **ECMS first, then the rest of the suite**. Each component's `index.html` shows where it sits on the screen, how it works and what it delivers. This guide covers what those pages share: architecture, the gateway contract, integration pattern, rollout, testing and governance.
+This guide explains how to take the components in this folder into the real 1Gov products: **ECMS first, then the rest of the suite**. Each component's `index.html` shows where it sits on the screen, how it works and what it delivers. This guide covers what those pages share: architecture, the gateway contract, integration pattern, rollout, testing and governance.
 
 ---
 
 ## 1. Folder structure
 
 ```
-prototype/
+AI Implementation/
 ├── index.html                  hub: every component, filterable by phase
 ├── IMPLEMENTATION_GUIDE.md     this file
 ├── shared/
@@ -18,7 +18,8 @@ prototype/
 │   └── registry.js             catalogue of components (slug, code, phase, screen, tag)
 ├── components/
 │   ├── ecms/<feature>/         index.html (demo + docs) · <feature>.css · <feature>.js
-│   └── 1gov/<feature>/         same layout for Workspace, InMail, Drive, Conference, IMS, Portal, PMS
+│   ├── drive/ assets/ inmail/  Drive, Assets (IMS) and InMail features
+│   └── cicod/<feature>/        Workspace, Conference, Portal, PMS and cross-app features
 └── _tools/check.cjs            headless render check (console errors + mobile overflow + screenshot)
 ```
 

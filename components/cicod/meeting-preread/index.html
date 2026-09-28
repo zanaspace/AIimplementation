@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meeting Pre-Read Generator</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="meeting-preread.css">
+<style>
+  /* Page-only layout for Conference → Rooms → Schedule Meeting */
+  .sm { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 16px; align-items: start; }
+  .sm__card { padding: 16px; min-width: 0; }
+  .sm__card h3 { margin: 0 0 2px; font-size: 14px; }
+  .sm__card > p { margin: 0 0 12px; font-size: 12px; color: var(--text-2); }
+  .sm__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sm__full { grid-column: 1 / -1; }
+  .sm__people { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; }
+  .sm__people label { display: flex; gap: 6px; align-items: center; font-size: 12.5px; padding: 6px 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); }
+  .sm__people input { accent-color: var(--gov-green-600); }
+  .sm__people small { color: var(--text-3); }
+  .sm__invites { margin-top: 16px; padding: 14px 16px; }
+  .sm__invites h3 { margin: 0 0 8px; font-size: 14px; }
+  .sm__invites ul { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--text-2); }
+  .sm__invites li { margin: 4px 0; }
+  .sm__invites b { color: var(--text); }
+  @media (max-width: 1150px) { .sm { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .sm__grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD / Conference</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · C4 · Phase 2</span>
+      <h1>Meeting Pre-Read Generator</h1>
+      <p>When a meeting is scheduled, CICOD-AI reads the <b>title, agenda and attendees</b> and finds the relevant recent context in <b>Drive, ECMS, InMail and earlier minutes</b>. It drafts a <b>Pre-Read Brief</b> covering the purpose, agenda, background with sources, open action items from the last meeting and the decisions needed, plus <b>what each attendee should prepare</b>. The brief is sent by InMail <b>24 hours before</b> the meeting, and each copy only includes items that attendee is allowed to open.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Conference → Room(s) → Schedule Meeting</span><span class="g-chip">Component: &lt;ai-meeting-preread&gt;</span><span class="g-chip">Endpoint: /conference/preread</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">Prince Room and the attendees come from the govtest tenant. The meeting content is made up for the demo. Try it: click <b>✦ Prepare pre-read</b>, then open <b>Sources</b>. The budget file is Secret and the supplier flag is Confidential, so they're left out for attendees who can't open them. Check <b>Per attendee</b>, edit a line in the brief, then <b>Schedule pre-read</b>. Change the title to <i>"Complaints backlog stand-up"</i> or <i>"APER briefing"</i> and click <b>Regenerate</b> to see different context.</p>
+    <div id="screen" class="shell" data-app="conference" data-active="Room(s)">
+      <div class="shell__content">
+        <h2 class="shell__title">Schedule Meeting · Prince Room</h2>
+        <div class="sm">
+          <form id="schedule-form" class="g-card sm__card" onsubmit="return false">
+            <h3>Meeting details</h3>
+            <p>Invites are sent from Gov InMail with the room link <code>/conferencing/join/ekp16pr30</code></p>
+            <div class="sm__grid">
+              <div class="sm__full"><label class="g-label" for="m-title">Meeting title *</label><input class="g-input" id="m-title" name="title" value="Q3 budget review and laptop procurement"></div>
+              <div><label class="g-label" for="m-start">Start *</label><input class="g-input" id="m-start" name="start" type="datetime-local"></div>
+              <div><label class="g-label" for="m-dur">Duration</label><select class="g-select" id="m-dur"><option>30 min</option><option selected>1 hour</option><option>2 hours</option></select></div>
+              <div class="sm__full"><label class="g-label" for="m-agenda">Agenda (one item per line)</label><textarea class="g-textarea" id="m-agenda" name="agenda">Action items from the last management meeting
+Q3 budget performance and the unspent release
+Laptop purchase order: supplier and approval
+Any other business</textarea></div>
+              <div class="sm__full"><span class="g-label">Attendees</span>
+                <div class="sm__people">
+                  <label><input type="checkbox" name="attendee" value="Prince Ekpenyong" checked> Prince Ekpenyong <small>chair</small></label>
+                  <label><input type="checkbox" name="attendee" value="Toriola" checked> Toriola <small>Finance</small></label>
+                  <label><input type="checkbox" name="attendee" value="Rebecca Saku" checked> Rebecca Saku</label>
+                  <label><input type="checkbox" name="attendee" value="Adeola Adesina" checked> Adeola Adesina <small>Stores</small></label>
+                  <label><input type="checkbox" name="attendee" value="Isaac" checked> Isaac</label>
+                  <label><input type="checkbox" name="attendee" value="Rainat" checked> Rainat</label>
+                  <label><input type="checkbox" name="attendee" value="Raissa"> Raissa <small>IT</small></label>
+                  <label><input type="checkbox" name="attendee" value="Ahmed"> Ahmed <small>Stores</small></label>
+                </div></div>
+              <div class="sm__full" style="display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--text-2)">
+                <label><input type="checkbox" checked> Mute users on join</label><label><input type="checkbox"> Disable Group Chat</label></div>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><button class="g-btn" type="button">Cancel</button><button class="g-btn g-btn--primary" type="button">Schedule Meeting</button></div>
+          </form>
+          <div data-ai-spot="CICOD-AI · Pre-read brief (right rail)">
+            <ai-meeting-preread source="#schedule-form" lead-hours="24"></ai-meeting-preread>
+          </div>
+        </div>
+        <div class="g-card sm__invites">
+          <h3>Invites History</h3>
+          <ul id="invites"><li>Management meeting · 27 Sep 2026 · 8 invites sent</li></ul>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Right rail of the <b>Schedule Meeting</b> form on <code>/conferencing/myrooms</code></div>
+      <div class="doc__where-item"><b>Also appears in</b>The scheduled pre-read listed in <code>/conferencing/invites</code> (editable until sent), a "Pre-read" link on the invite in InMail, and the Daily Brief on the day of the meeting</div>
+      <div class="doc__where-item"><b>Trigger</b>The organiser clicks Prepare pre-read. The brief is refreshed and re-checked for access 1 hour before it's sent, so late changes are picked up</div>
+      <div class="doc__where-item"><b>Who sees it</b>The organiser sees everything they can open. Each attendee receives only the items they're allowed to open</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">Search finds the context and an LLM writes the brief. The access check runs for every attendee, not just the organiser.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Read the meeting</h4><p>The title, agenda lines, attendees and start time are sent to <code>/conference/preread</code> when the organiser asks.</p></div>
+      <div class="doc__step"><h4>Find context</h4><p>Hybrid search (keyword and embeddings) over the unified index covers Drive files, ECMS memos and queue figures, InMail circulars, and minutes from earlier meetings with the same attendees. The top 6–8 sources from the last 90 days are kept.</p></div>
+      <div class="doc__step"><h4>Check access for each attendee</h4><p>Every source is checked against each attendee's Drive access, ECMS role and the file's classification. Items an attendee can't open are left out of their copy, and the organiser is told which ones.</p></div>
+      <div class="doc__step"><h4>Write the brief</h4><p>An LLM on the sovereign model writes the purpose, background (each point cites its source), decisions needed and a "prepare" list for each attendee. Open action items come from the last meeting's minutes.</p></div>
+      <div class="doc__step"><h4>Review &amp; schedule</h4><p>The organiser can untick sources and edit any text. Scheduling queues an InMail for 24 hours before the start. If the meeting is sooner, it's sent straight away.</p></div>
+      <div class="doc__step"><h4>Learn</h4><p>Excluded sources, edits and open rates are sent to <code>/feedback</code>. Sources organisers keep removing are ranked lower next time.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">These are targets. The baselines come from Conference attendance and meeting-minute action items before the pilot.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−15 min</div><h4>Shorter meetings</h4><p>Less time spent at the start of the meeting catching everyone up. Attendees arrive having read the background.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">0 min</div><h4>Organiser prep time</h4><p>No more hunting through Drive and ECMS for the right files. The brief takes one click and a quick review.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">+50%</div><h4>Action items closed</h4><p>Open items from the last meeting are put in front of their owners 24 hours before, with overdue ones highlighted.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">No leaks</div><h4>Classification respected</h4><p>Secret and Confidential files reach only the attendees cleared for them, so the organiser can't overshare by accident.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Decisions</div><h4>Meetings that decide</h4><p>Listing the decisions needed up front makes it clearer what the meeting must conclude. This feeds the AI Minutes of Meeting.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in Conference</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Schedule Meeting)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/meeting-preread.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/meeting-preread.js"&gt;&lt;/script&gt;
+
+&lt;ai-meeting-preread source="#schedule-form"
+                    lead-hours="24"&gt;&lt;/ai-meeting-preread&gt;
+
+&lt;script&gt;
+el.addEventListener('ai-preread-schedule', e =&gt; {
+  // one InMail per attendee, with only their permitted attachments
+  e.detail.perAttendee.forEach(p =&gt; inmail.schedule({
+    to: p.name, at: e.detail.sendAt, subject: e.detail.subject,
+    body: e.detail.brief, prepare: p.prepare,
+    attachments: e.detail.sources.filter(s =&gt; !p.withheld.includes(s.id))
+  }));
+});
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Add an <b>agenda</b> field to Schedule Meeting (one item per line) and store it on the meeting.</li>
+            <li>Make sure the unified index covers Drive, ECMS memos and tasks, InMail circulars and meeting minutes, with access metadata.</li>
+            <li>Build <code>/conference/preread</code>: hybrid search, then an access check for each attendee, then the LLM brief on the sovereign model.</li>
+            <li>Add scheduled sending to InMail (a queued message with a send time), with an access re-check just before sending.</li>
+            <li>Show scheduled pre-reads in Invites History so they can be edited or cancelled.</li>
+            <li>Pilot on management meetings for one month. Track open rate, time spent on the first item and how many action items are closed.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/conference/preread
+{
+  "title": "Q3 budget review and laptop procurement",
+  "start": "2026-10-01T10:00",
+  "agenda": ["Action items…", "Q3 budget performance…"],
+  "attendees": ["Prince Ekpenyong", "Toriola", "…"]
+}
+→ 200
+{
+  "model": "cicod-conference-preread-v1",
+  "sources": [{
+    "id": "D-FMLD", "app": "Drive", "name": "Budget FMLD_1224_V 2.pdf",
+    "why": "Latest budget performance file…",
+    "classification": "Secret (S)",
+    "allowed": ["Prince Ekpenyong", "Toriola", "Rebecca Saku"]
+  }],
+  "brief": {
+    "purpose": "…", "agenda": ["…"],
+    "background": [{ "text": "Q3 release was ₦412m…", "cite": "M-2031" }],
+    "actions": [{ "text": "Send the APER invitation…", "owner": "Isaac",
+                  "due": "2026-09-30", "status": "open", "cite": "MIN-0927" }],
+    "decisions": ["Agree which programmes receive the unspent 29%…"]
+  },
+  "perAttendee": [{ "name": "Toriola",
+                    "prepare": ["Bring the programme-by-programme spend…"], "hidden": 0 }],
+  "confidence": 0.82
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.cicod.meetingPreread</code>, set per tenant. The lead time (default 24 hours) is a tenant setting.</li>
+            <li>Access is checked for every attendee, twice: when the brief is drafted and again just before it's sent.</li>
+            <li>Nothing is sent without the organiser clicking Schedule. Scheduled pre-reads can be edited or cancelled until they're sent.</li>
+            <li>External attendees (outside the MDA) only get Official items, and only if the organiser ticks "include external".</li>
+            <li>Each brief, source decision and send goes to the Conference audit trail with the model version.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="meeting-preread.js"></script>
+<script>
+  // Host-page wiring: default the start to three days from now at 10:00, so the 24-hour send time is in the future.
+  const start = new Date(); start.setDate(start.getDate() + 3); start.setHours(10, 0, 0, 0);
+  const pad = n => String(n).padStart(2, '0');
+  document.getElementById('m-start').value = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}T10:00`;
+
+  const esc = AIGateway.esc;
+  document.addEventListener('ai-preread-schedule', e => {
+    const d = e.detail;
+    const withheld = d.perAttendee.filter(p => p.withheld.length).map(p => `${p.name} (${p.withheld.length})`);
+    const li = document.createElement('li');
+    li.innerHTML = `<b>${esc(d.subject)}</b> · InMail to ${d.recipients.length} attendees at ${d.sendAt ? esc(new Date(d.sendAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) : 'once saved'} · ${d.sources.length} sources${withheld.length ? ` · restricted items left out for ${esc(withheld.join(', '))}` : ''}`;
+    document.getElementById('invites').prepend(li);
+  });
+</script>
+</body>
+</html>

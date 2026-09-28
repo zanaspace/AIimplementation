@@ -1,0 +1,86 @@
+/* <ai-maintenance-scheduler>: failure-risk forecast per asset, with a drawer that explains
+   the prediction and drafts a preventive ECMS repair task.
+   All classes are prefixed `aipm-` so the component can be dropped into any IMS page. */
+ai-maintenance-scheduler { display: block; min-width: 0; }
+
+.aipm { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.aipm__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
+.aipm__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.aipm__controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); }
+.aipm__controls .g-select { width: auto; min-height: 30px; padding: 4px 8px; font-size: 12px; }
+
+.aipm__summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+.aipm__stat { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; }
+.aipm__stat b { display: block; font-size: 18px; letter-spacing: -.01em; }
+.aipm__stat span { font-size: 11.5px; color: var(--text-2); }
+.aipm__stat--bad b { color: var(--bad); }
+.aipm__stat--warn b { color: var(--warn); }
+.aipm__stat--ok b { color: var(--ok); }
+
+.aipm__list { padding: 6px 14px 10px; }
+.aipm__row { display: grid; grid-template-columns: minmax(0, 1.5fr) 110px minmax(0, 1.4fr) auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border); font-size: 12.5px; }
+.aipm__row:last-child { border-bottom: 0; }
+.aipm__asset b { display: block; font-size: 13px; }
+.aipm__asset span { color: var(--text-3); font-size: 11.5px; }
+.aipm__risk { display: grid; gap: 3px; }
+.aipm__risk-val { font-weight: 700; font-family: var(--mono); font-size: 12px; }
+.aipm__bar { height: 6px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.aipm__bar > i { display: block; height: 100%; background: var(--ok); }
+.aipm__row--high .aipm__bar > i { background: var(--bad); }
+.aipm__row--med .aipm__bar > i { background: var(--warn); }
+.aipm__row--high .aipm__risk-val { color: var(--bad); }
+.aipm__row--med .aipm__risk-val { color: var(--warn); }
+.aipm__driver { color: var(--text-2); min-width: 0; overflow-wrap: anywhere; }
+.aipm__row-actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+.aipm__scheduled { color: var(--ok); font-weight: 600; font-size: 12px; white-space: nowrap; }
+
+/* Detail drawer */
+.aipm__drawer { border-top: 1px solid var(--border); background: var(--surface-2); padding: 14px; }
+.aipm__drawer[hidden] { display: none; }
+.aipm__drawer-head { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 10px; }
+.aipm__drawer-head h4 { margin: 0; font-size: 14px; }
+.aipm__drawer-head p { margin: 2px 0 0; font-size: 12px; color: var(--text-2); }
+.aipm__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.aipm__grid > .aipm__panel:nth-child(3) { grid-column: 1 / -1; }
+.aipm__panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; min-width: 0; }
+.aipm__h5 { margin: 0 0 8px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+
+.aipm__curve { width: 100%; height: auto; display: block; }
+.aipm__curve-line { fill: none; stroke: var(--ai-500); stroke-width: 2; }
+.aipm__curve-area { fill: var(--ai-100); }
+.aipm__curve-axis { stroke: var(--border-strong); stroke-width: 1; }
+.aipm__curve-now { stroke: var(--text-3); stroke-dasharray: 3 3; }
+.aipm__curve-win { fill: var(--bad); opacity: .12; }
+.aipm__curve-text { font-size: 10px; fill: var(--text-3); font-family: var(--font); }
+.aipm__legend { font-size: 11.5px; color: var(--text-2); margin-top: 4px; }
+
+.aipm__hist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.aipm__hist li { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 8px; font-size: 12px; color: var(--text-2); }
+.aipm__hist li b { color: var(--text); font-weight: 600; }
+.aipm__hist time { font-family: var(--mono); font-size: 11px; color: var(--text-3); }
+
+.aipm__why { margin: 0; padding-left: 16px; font-size: 12px; color: var(--text-2); }
+.aipm__why li { margin: 3px 0; }
+
+.aipm__cost { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.aipm__cost div { padding: 8px 10px; border-radius: var(--radius-sm); font-size: 12px; }
+.aipm__cost b { display: block; font-size: 15px; }
+.aipm__cost-pre { background: var(--ok-bg); }
+.aipm__cost-fail { background: var(--bad-bg); }
+
+.aipm__task { margin-top: 12px; border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius); padding: 12px; background: var(--surface); }
+.aipm__task-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size: 12px; margin-bottom: 10px; }
+.aipm__task-grid span { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
+.aipm__task-grid .aipm__full { grid-column: 1 / -1; }
+.aipm__task textarea { min-height: 64px; font-size: 12.5px; }
+.aipm__task-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; align-items: center; }
+
+.aipm__actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.aipm__mode { font-size: 11px; color: var(--text-3); margin-left: auto; }
+
+@media (max-width: 760px) {
+  .aipm__row { grid-template-columns: minmax(0, 1fr) 96px; }
+  .aipm__driver { grid-column: 1 / -1; }
+  .aipm__row-actions { grid-column: 1 / -1; justify-content: flex-start; }
+  .aipm__grid, .aipm__task-grid { grid-template-columns: 1fr; }
+}

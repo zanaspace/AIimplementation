@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Predictive Maintenance Scheduler</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="ims-predictive-maintenance.css">
+<style>
+  /* Page-only layout for the Assets → Manage Asset → Maintenance screen */
+  .mt__tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 14px; flex-wrap: wrap; }
+  .mt__tab { padding: 8px 12px; font-size: 13px; color: var(--text-2); border-bottom: 2px solid transparent; }
+  .mt__tab--on { color: var(--gov-green-600); border-bottom-color: var(--gov-green-600); font-weight: 600; }
+  .mt__bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .mt__bar .g-input { max-width: 260px; }
+  .mt__card { padding: 0; overflow: hidden; }
+  .mt__stack { display: grid; gap: 14px; }
+  .mt__status--done { color: var(--ok); font-weight: 600; }
+  .mt__tasks { padding: 14px 16px; }
+  .mt__tasks h3 { margin: 0 0 8px; font-size: 14px; }
+  .mt__tasks ul { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--text-2); }
+  .mt__tasks li { margin: 4px 0; }
+  .mt__tasks li b { color: var(--text); }
+  .mt__flash { animation: mt-flash 1.4s ease; }
+  @keyframes mt-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / Assets / Manage Asset</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">ASSETS · A10 · Phase 3</span>
+      <h1>Predictive Maintenance Auto-Scheduler</h1>
+      <p>Reads each asset's <b>repair history in ECMS</b> and its <b>usage</b> (run-hours, kilometres, days in service) and predicts which assets are likely to <b>fail before they're serviced</b>. For each one it explains why, compares the cost of servicing now with the cost of a breakdown, and <b>drafts a preventive repair task</b> for the right ECMS queue. A store officer confirms every task.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Assets → Manage Asset → Maintenance (new tab)</span><span class="g-chip">Component: &lt;ai-maintenance-scheduler&gt;</span><span class="g-chip">Endpoint: /ims/maintenance/forecast</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">IMS has no maintenance screen today, so this adds a <b>Maintenance</b> tab next to the existing Manage Asset list. The Floor Scrubber, Solar Sheet and Lg Laptop are real assets from the govtest tenant. The generator, vehicle and AC are added for the demo. Try it: switch the <b>Forecast window</b> between 30, 60 and 90 days and watch the risks change. Click <b>Why?</b> on the generator, then <b>Draft task</b> and <b>Create task in ECMS</b>.</p>
+    <div id="screen" class="shell" data-app="ims" data-active="Manage Asset">
+      <div class="shell__content">
+        <h2 class="shell__title">Asset</h2>
+        <div class="mt__tabs"><span class="mt__tab">All Asset</span><span class="mt__tab">Received Asset History</span><span class="mt__tab">Putaway History</span><span class="mt__tab mt__tab--on">Maintenance <span class="g-chip g-chip--ai">New</span></span></div>
+        <div class="mt__stack">
+          <div class="g-card mt__card">
+            <div class="g-table-wrap">
+              <table class="g-table" id="asset-table">
+                <thead><tr><th>Asset Code</th><th>Asset Category</th><th>Name</th><th>Location</th><th>Usage since last service</th><th>Last service</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr data-asset data-code="GEN-01"><td>GEN-01</td><td>Power Equipment</td><td>Perkins 100kVA Generator</td><td>HQ power house</td><td>460 run-hours</td><td>14 Aug 2026</td><td data-status>Active</td></tr>
+                  <tr data-asset data-code="VEH-FG-214"><td>VEH-FG-214</td><td>Vehicles</td><td>Toyota Hilux (FG 214 KJA)</td><td>Fleet pool</td><td>18,200 km</td><td>11 Feb 2026</td><td data-status>Active</td></tr>
+                  <tr data-asset data-code="784783FS"><td>784783FS</td><td>Cleaning Equipment</td><td>Floor Scrubber 100CL</td><td>Central Store</td><td>165 days</td><td>16 Apr 2026</td><td data-status>Active</td></tr>
+                  <tr data-asset data-code="AC-HQ-07"><td>AC-HQ-07</td><td>Refrigeration Equipment</td><td>Split AC 2HP (Director's office)</td><td>HQ, 3rd floor</td><td>300 days</td><td>1 Dec 2025</td><td data-status>Active</td></tr>
+                  <tr data-asset data-code="SAMSUNG01"><td>SAMSUNG01</td><td>Personal Information Technology Device</td><td>Lg Laptop</td><td>Issued to ICT</td><td>700 days (battery)</td><td>—</td><td data-status>Active</td></tr>
+                  <tr data-asset data-code="8765065"><td>8765065</td><td>Power Equipment</td><td>Solar Sheet</td><td>HQ roof</td><td>40 days</td><td>19 Aug 2026</td><td data-status>Active</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div data-ai-spot="CICOD-AI · Failure forecast + task drafting">
+            <ai-maintenance-scheduler assets="#asset-table" horizon="30" high="0.5" medium="0.25"></ai-maintenance-scheduler>
+          </div>
+          <div class="g-card mt__tasks">
+            <h3>Preventive maintenance tasks sent to ECMS</h3>
+            <ul id="scheduled"><li>None yet.</li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>A new <b>Maintenance</b> tab in <code>/ims/asset</code>, below the list of maintainable assets</div>
+      <div class="doc__where-item"><b>Also appears in</b>A "Due for service" card on <code>/ims/asset-registry</code>, a risk badge on each asset's detail page, and a weekly InMail digest to the store manager</div>
+      <div class="doc__where-item"><b>Trigger</b>Recalculated every night from new ECMS repair tasks and IMS meter readings. It's also recalculated when the tab opens or the window changes</div>
+      <div class="doc__where-item"><b>Who sees it</b>Store managers and facility or fleet officers. Creating the task needs permission to raise tasks in the target queue</div>
+    </div>
+    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">A survival model does the prediction and an LLM only writes the explanation and the task text, so the numbers are reproducible and can be audited.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Collect history</h4><p>Repair tasks are matched to an asset by its code and by text such as "generator", "brake" or "FG 214 KJA" in ECMS queues (AUTO MOBILE REPAIR, IT Support, Facility). Usage comes from IMS meter readings, trip logs and issue dates.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Only asset codes and repair metadata go to the gateway. Nothing about individual staff is sent. Everything runs on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Model failure</h4><p>A Weibull survival model is fitted per asset category, giving a shape and a scale. Where there's enough history, it's adjusted per asset. The model gives the chance of failing in the next N days, given the usage since the last service.</p></div>
+      <div class="doc__step"><h4>Pick the service date</h4><p>The "service by" date is when the chance of failure passes 20%. The "likely failure" date is when it passes 50%. Expected avoidable cost is (breakdown cost − preventive cost) × chance of failure.</p></div>
+      <div class="doc__step"><h4>Draft the task</h4><p>An LLM writes the reason and a task description from the model's output. The queue, type and assignee come from the category's repair routing and the Resources shifts.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer creates, edits or dismisses the task. When the repair task closes, its outcome (whether a fault was found) is fed back, and the model is refitted every month.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <p class="doc__lede">These are targets, based on typical results from preventive maintenance programmes. The baseline is measured from ECMS repair tasks before the pilot.</p>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−40%</div><h4>Unplanned breakdowns</h4><p>Fewer emergency repair tasks raised after something has already failed, such as the generator shutdown in task #17391.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">4–7×</div><h4>Cheaper to act early</h4><p>A preventive service costs a fraction of a breakdown. The generator example is ₦85,000 against ₦620,000, plus two days without power.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Less downtime</div><h4>Assets available when needed</h4><p>Vehicles, generators and AC units are serviced in a planned slot, not when the Director's office is already too hot to work in.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Budget</div><h4>Plannable maintenance spend</h4><p>The forecast list becomes next quarter's maintenance budget, with the expected avoidable cost as the justification.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Audit</div><h4>A traceable reason for every job</h4><p>Each preventive task records the prediction, the evidence and who approved it.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. INTEGRATION -->
+  <section class="doc__section">
+    <h2>4. How to implement it in Assets (IMS)</h2>
+    <div class="doc__cols">
+      <div>
+        <div class="doc__panel"><h4>Mount (Manage Asset → Maintenance tab)</h4>
+<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/ims-predictive-maintenance.css"&gt;
+&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
+&lt;script src="/ai/components/ims-predictive-maintenance.js"&gt;&lt;/script&gt;
+
+&lt;ai-maintenance-scheduler assets="#asset-table"
+                          horizon="30" high="0.5" medium="0.25"&gt;
+&lt;/ai-maintenance-scheduler&gt;
+
+&lt;script&gt;
+el.addEventListener('ai-maintenance-schedule', async e =&gt; {
+  // host creates the task through the existing ECMS API
+  const id = await ecms.tasks.create(e.detail.task);
+  ims.assets.setStatus(e.detail.code, 'Service scheduled', { taskId: id });
+});
+&lt;/script&gt;</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
+          <ol class="doc__list">
+            <li>Add <b>usage fields</b> to maintainable assets in IMS: meter unit (hours, km or days), current reading and last service date. Add a "Maintainable" flag to the Asset Type setting.</li>
+            <li>Link repair tasks to assets: add an optional <code>assetCode</code> field to repair queue forms, and backfill history by matching task text.</li>
+            <li>Fit Weibull models per category from the linked history. Where a category has fewer than 5 failures, fall back to manufacturer service intervals.</li>
+            <li>Build <code>/ims/maintenance/forecast</code> on the AI Gateway as a nightly batch plus on-demand requests.</li>
+            <li>Add the Maintenance tab and the component. Wire task creation to the ECMS tasks API. Suggest creating a "Facility Management" queue if the tenant doesn't have one.</li>
+            <li>Pilot with generators and vehicles. Compare unplanned repair tasks against the previous 6 months.</li>
+          </ol></div>
+      </div>
+      <div>
+        <div class="doc__panel"><h4>API contract</h4>
+<pre class="doc__code">POST /ai/ims/maintenance/forecast
+{ "assets": ["GEN-01", "VEH-FG-214"], "horizonDays": 30 }
+→ 200
+{
+  "model": "cicod-ims-maintenance-v1",
+  "asOf": "28 Sep 2026",
+  "assets": [{
+    "code": "GEN-01",
+    "risk": 0.86, "level": "high",
+    "failBy": "5 Oct 2026", "serviceBy": "30 Sep 2026",
+    "driver": "460 run-hours since last service…",
+    "reasons": ["3 fuel-filter failures…"],
+    "history": [["2026-08-14", "#17391", "Fuel filter blocked…"]],
+    "curve": [[0, 0], [3, 0.12], …],
+    "cost": { "preventive": 85000, "breakdown": 620000, "downtimeDays": 2 },
+    "task": { "queue": "Facility Management", "queueType": "Preventive maintenance",
+              "title": "…", "priority": "High", "assignee": "…", "due": "2026-09-30",
+              "description": "…" },
+    "confidence": 0.91
+  }]
+}</pre></div>
+        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
+          <ul class="doc__list">
+            <li>Feature flag <code>ai.assets.predictiveMaintenance</code>, set per tenant.</li>
+            <li>The High and Medium thresholds are set per tenant (defaults 50% and 25%). Categories can be excluded.</li>
+            <li>Suggestions only. Every task needs a click, and bulk creation asks for confirmation and lists every task first.</li>
+            <li>Each forecast, task and dismissal goes to the IMS Audit log (Settings → Audit) with the model version.</li>
+            <li>Officers only see assets in stores they manage. Tasks can only go to queues the officer may raise.</li>
+          </ul></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="ims-predictive-maintenance.js"></script>
+<script>
+  // Host-page wiring: in production the host calls the ECMS tasks API. Here it shows the result.
+  let taskNo = 17601;
+  const list = document.getElementById('scheduled');
+  const esc = AIGateway.esc;
+  document.addEventListener('ai-maintenance-schedule', e => {
+    const { code, task } = e.detail;
+    if (list.textContent.trim() === 'None yet.') list.innerHTML = '';
+    const li = document.createElement('li');
+    li.className = 'mt__flash';
+    li.innerHTML = `<b>#${taskNo++}</b> ${esc(task.queue)} → ${esc(task.queueType)} · ${esc(task.title)} · due ${esc(task.due)} · ${esc(task.assignee)}`;
+    list.prepend(li);
+    const row = document.querySelector(`[data-code="${CSS.escape(code)}"] [data-status]`);
+    if (row) { row.textContent = 'Service scheduled'; row.className = 'mt__status--done'; }
+  });
+  document.addEventListener('ai-maintenance-dismiss', e => {
+    const row = document.querySelector(`[data-code="${CSS.escape(e.detail.code)}"] [data-status]`);
+    if (row) row.textContent = 'Active (forecast dismissed)';
+  });
+</script>
+</body>
+</html>

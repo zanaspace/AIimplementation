@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asset Approval Copilot</title>
+<link rel="stylesheet" href="../../../shared/tokens.css">
+<link rel="stylesheet" href="../../../shared/shell.css">
+<link rel="stylesheet" href="../../../shared/doc.css">
+<link rel="stylesheet" href="ims-approval-copilot.css">
+<style>
+  /* Mock Assets Request Review Page */
+  .req-page { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+  .req-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; }
+  .req-card h3 { margin: 0 0 16px; font-size: 16px; }
+  .req-meta { display: grid; grid-template-columns: 120px 1fr; gap: 12px; font-size: 13px; margin-bottom: 12px; }
+  .req-meta strong { color: var(--text-2); }
+  .req-meta span { color: var(--text); }
+  
+  .req-tabs { display: flex; gap: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .req-tab { padding: 8px 0; font-size: 14px; color: var(--text-2); cursor: pointer; border-bottom: 2px solid transparent; }
+  .req-tab--active { color: var(--gov-green-600); border-bottom-color: var(--gov-green-600); font-weight: 600; }
+  
+  @media (max-width: 900px) { .req-page { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="doc">
+  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD / Assets</div>
+  <header class="doc__hero">
+    <div>
+      <span class="ai-badge">CICOD · A12 · Phase 2</span>
+      <h1>Asset Approval Copilot</h1>
+      <p>When an approver views an asset requisition (e.g., a laptop for staff) or a bulk store dispatch (e.g., branch restocking), the AI instantly provides the necessary context to make a decision. It checks the user's <b>current asset allocation</b>, applies <b>grade-level policies</b>, checks <b>inventory levels</b>, and flags <b>historical consumption anomalies</b> (like hoarding stock) to prevent fraud and waste.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: Assets → Asset Approvals</span><span class="g-chip">Component: &lt;ai-asset-approval&gt;</span><span class="g-chip">Endpoint: /assets/approval-copilot</span></div>
+    </div>
+    <div class="doc__toolbar">
+      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
+      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+    </div>
+  </header>
+
+  <!-- 1. LIVE PLACEMENT -->
+  <section class="doc__section">
+    <h2>1. Where it goes: live demo</h2>
+    <p class="doc__lede">Below is a mock Asset Requisition review screen. The Copilot sits in the right sidebar. Click <b>Load Bulk Dispatch Request</b> to see how the AI adapts its insights for a completely different type of asset approval (anomalous consumption detection).</p>
+    
+    <div style="margin-bottom: 16px;">
+      <button class="g-btn g-btn--sm" id="btn-req1" type="button">Load Laptop Requisition (REQ-8812)</button>
+      <button class="g-btn g-btn--sm" id="btn-req2" type="button">Load Bulk Dispatch Request (REQ-8813)</button>
+    </div>
+
+    <div id="screen" class="shell" data-app="assets" data-active="Asset Registry">
+      <div class="shell__content">
+        <h2 class="shell__title">Review Request: <span id="mock-title">REQ-8812</span></h2>
+        
+        <div class="req-page">
+          <div class="req-card" id="mock-details">
+            <!-- Mock details populated by JS -->
+          </div>
+          
+          <div data-ai-spot="CICOD-AI · Asset Approval Copilot">
+            <ai-asset-approval id="ai-copilot" request="REQ-8812"></ai-asset-approval>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+    <div class="doc__where" style="margin-top:12px">
+      <div class="doc__where-item"><b>Primary placement</b>Sidebar on any detailed Asset Approval or Dispatch Approval screen.</div>
+      <div class="doc__where-item"><b>Trigger</b>Loads automatically when the approver opens the request.</div>
+    </div>
+  </section>
+
+  <!-- 2. HOW IT WORKS -->
+  <section class="doc__section">
+    <h2>2. How it works</h2>
+    <p class="doc__lede">The AI integrates live inventory data and HR records to evaluate the request.</p>
+    <div class="doc__flow">
+      <div class="doc__step"><h4>Identify Request</h4><p>The gateway receives the request ID and determines if it is a personal requisition or a bulk branch dispatch.</p></div>
+      <div class="doc__step"><h4>Gather Context</h4><p>For individuals, it pulls HR Grade Level, current asset assignments, and repair history. For bulk dispatches, it pulls historical consumption rates for that branch over the last 12 months.</p></div>
+      <div class="doc__step"><h4>Check Inventory</h4><p>It checks the central store for current stock levels, pending incoming orders, and critical reorder points.</p></div>
+      <div class="doc__step"><h4>Analyse & Recommend</h4><p>An LLM evaluates the context against company policies (e.g. "Grade 8 cannot have a MacBook") or mathematical models (e.g. "Requested 500 reams, average is 40"). It issues a concrete recommendation.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. BENEFITS -->
+  <section class="doc__section">
+    <h2>3. Benefits to this feature</h2>
+    <div class="doc__benefits">
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fraud</div><h4>Prevention</h4><p>Stops branches from hoarding stock or requesting impossible volumes by instantly comparing requests to historical consumption averages.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Policy</div><h4>Enforcement</h4><p>Eliminates subjective approvals by hard-checking requests against HR grade policies and current asset assignments.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">-70%</div><h4>Investigation Time</h4><p>Approvers no longer need to switch tabs to check the employee's history, current stock, or policy manuals. It's all pre-digested.</p></div>
+    </div>
+  </section>
+</main>
+
+<script src="../../../shared/shell.js"></script>
+<script src="../../../shared/ai-gateway.js"></script>
+<script src="../../../shared/doc.js"></script>
+<script src="ims-approval-copilot.js"></script>
+<script>
+  const detailsDiv = document.getElementById('mock-details');
+  const titleSpan = document.getElementById('mock-title');
+  const copilot = document.getElementById('ai-copilot');
+  
+  const reqData = {
+    'REQ-8812': `
+      <h3>Staff Asset Requisition</h3>
+      <div class="req-tabs">
+        <div class="req-tab req-tab--active">Request Details</div>
+        <div class="req-tab">Approval Trail</div>
+      </div>
+      <div class="req-meta"><strong>Requested By</strong><span>Prince Ekpenyong (Administration)</span></div>
+      <div class="req-meta"><strong>Item</strong><span>MacBook Pro 16" M3</span></div>
+      <div class="req-meta"><strong>Quantity</strong><span>1 Unit</span></div>
+      <div class="req-meta"><strong>Est. Cost</strong><span>₦3,800,000</span></div>
+      <div class="req-meta"><strong>Justification</strong><span>Needed for heavy video editing for internal comms.</span></div>
+    `,
+    'REQ-8813': `
+      <h3>Branch Stock Restock (Dispatch)</h3>
+      <div class="req-tabs">
+        <div class="req-tab req-tab--active">Request Details</div>
+        <div class="req-tab">Approval Trail</div>
+      </div>
+      <div class="req-meta"><strong>Destination</strong><span>Kano Branch Office</span></div>
+      <div class="req-meta"><strong>Item</strong><span>A4 Paper (Reams)</span></div>
+      <div class="req-meta"><strong>Quantity</strong><span>500 Units</span></div>
+      <div class="req-meta"><strong>Justification</strong><span>Quarterly restocking for the printing room.</span></div>
+    `
+  };
+
+  function loadReq(id) {
+    titleSpan.textContent = id;
+    detailsDiv.innerHTML = reqData[id];
+    copilot.setAttribute('request', id);
+  }
+
+  document.getElementById('btn-req1').addEventListener('click', () => loadReq('REQ-8812'));
+  document.getElementById('btn-req2').addEventListener('click', () => loadReq('REQ-8813'));
+  
+  // Initial load
+  loadReq('REQ-8812');
+
+  document.addEventListener('ai-asset-decision', e => {
+    alert('Decision recorded: ' + e.detail.action);
+  });
+</script>
+</body>
+</html>
