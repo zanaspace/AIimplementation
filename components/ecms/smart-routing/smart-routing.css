@@ -1,36 +1,49 @@
-/* <ai-smart-routing>: suggestion panel for queue, queue type, priority and assignee.
-   All classes are prefixed `aisr-` so the component can be dropped into any ECMS page. */
+/* <ai-smart-routing trigger="#btn">: inline "Describe the request" box for the ECMS Create Task
+   Workflow card. It opens from the ✦ link on the Queue label row, reads what the officer types, and
+   suggests Queue, Queue Type, Priority and Assignee.
+   All classes are prefixed `aisr-` so the component can be dropped into the live ECMS page. */
 ai-smart-routing { display: block; }
+ai-smart-routing[hidden] { display: none; }
 
-.aisr { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
-.aisr__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
-.aisr__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-.aisr__body { padding: 12px 14px; }
+/* Trigger as a text link on the Queue label row (recommended placement) */
+.aisr-link { border: 0; background: none; padding: 2px 0; color: var(--ai-600); font: 600 13px/1.2 var(--font); cursor: pointer; white-space: nowrap; }
+.aisr-link:hover { text-decoration: underline; }
+.aisr-link[aria-expanded="true"] { color: var(--text-2); }
+.aisr-link:focus-visible { outline: 2px solid var(--ai-500); outline-offset: 2px; border-radius: 4px; }
 
-.aisr__empty { color: var(--text-3); font-size: 12.5px; padding: 6px 0; }
-.aisr__field { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px dashed var(--border); }
-.aisr__field:last-of-type { border-bottom: 0; }
-.aisr__field-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
-.aisr__field-value { font-weight: 600; font-size: 13px; min-width: 0; }
-.aisr__field-alt { display: block; font-weight: 400; font-size: 11.5px; color: var(--text-3); }
-.aisr__field--applied .aisr__field-value::after { content: " ✓"; color: var(--ok); }
+/* Alternative trigger: a button, for placements such as a card header */
+.aisr-trigger { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--ai-500) 45%, transparent); background: var(--ai-50); color: var(--ai-600); font: 600 13px/1 var(--font); cursor: pointer; white-space: nowrap; }
+.aisr-trigger:hover { background: var(--ai-100); }
+.aisr-trigger[aria-expanded="true"] { background: var(--ai-500); border-color: var(--ai-500); color: #fff; }
 
-.aisr__conf { display: flex; align-items: center; gap: 6px; }
-.aisr__bar { width: 46px; height: 5px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.aisr { margin: 0 0 10px; border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: 10px; background: var(--ai-50); overflow: hidden; }
+.aisr__top { padding: 12px 12px 10px; }
+.aisr__label { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.aisr__label small { font-size: 11px; font-weight: 600; color: var(--ai-600); }
+.aisr__input { width: 100%; min-height: 76px; resize: vertical; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); font: 14px/1.45 var(--font); color: var(--text); }
+.aisr__input:focus { outline: 2px solid color-mix(in srgb, var(--ai-500) 30%, transparent); border-color: var(--ai-500); }
+.aisr__hint { margin: 6px 0 0; font-size: 12px; color: var(--text-2); }
+.aisr__examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.aisr__example { border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 3px 10px; font: 12px var(--font); color: var(--text-2); cursor: pointer; }
+.aisr__example:hover { border-color: var(--ai-500); color: var(--ai-600); }
+
+.aisr__result { border-top: 1px solid var(--border); background: var(--surface); padding: 12px; }
+.aisr__result:empty { display: none; }
+.aisr__row { display: grid; grid-template-columns: 96px minmax(0, 1fr) 54px; gap: 8px; align-items: center; padding: 6px 0; font-size: 13px; }
+.aisr__row + .aisr__row { border-top: 1px dashed var(--border); }
+.aisr__key { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--text-3); }
+.aisr__val { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.aisr__val--applied::after { content: " ✓"; color: var(--ok); }
+.aisr__bar { height: 5px; border-radius: 99px; background: var(--border); overflow: hidden; }
 .aisr__bar > i { display: block; height: 100%; background: var(--ok); }
 .aisr__bar--mid > i { background: var(--warn); }
-.aisr__bar--low > i { background: var(--bad); }
 
-.aisr__why { margin: 10px 0 0; padding: 10px 12px; background: var(--surface-2); border-radius: var(--radius); font-size: 12px; color: var(--text-2); }
-.aisr__why b { color: var(--text); }
-.aisr__why ul { margin: 4px 0 0; padding-left: 16px; }
-
-.aisr__similar { margin-top: 10px; }
-.aisr__similar h5 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
-.aisr__sim { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; padding: 5px 0; color: var(--text-2); }
-.aisr__sim span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.aisr__dup { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--warn-bg); color: var(--text); font-size: 12px; }
-
-.aisr__actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
-.aisr__mode { font-size: 11px; color: var(--text-3); margin-left: auto; align-self: center; }
+.aisr__dup { margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: var(--warn-bg); font-size: 12.5px; }
+.aisr__why { margin-top: 10px; font-size: 12px; color: var(--text-2); }
+.aisr__why summary { cursor: pointer; font-weight: 600; color: var(--text); }
+.aisr__why ul { margin: 6px 0 0; padding-left: 16px; }
+.aisr__actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+.aisr__model { margin-left: auto; font: 11px var(--mono); color: var(--text-3); }
+.aisr__applied { font-size: 12.5px; color: var(--ok); font-weight: 600; }
+/* Examples are only a starting point, so they're hidden once the officer has typed something. */
+.aisr--typed .aisr__examples { display: none; }

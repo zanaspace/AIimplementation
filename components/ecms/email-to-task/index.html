@@ -35,7 +35,7 @@
     <div>
       <span class="ai-badge">ECMS · E-S1 · Priority 1</span>
       <h1>CICOD-AI Email-to-Task</h1>
-      <p>Reads every email that arrives on a mailbox connected in <b>Email Integration</b>. It classifies each one as <b>task, FYI, spam or duplicate</b> and extracts the requester, subject and a short request summary. It reads attachments with OCR, matches the sender to an ECMS <b>contact</b>, and suggests the <b>queue and priority</b>. The officer checks the card and clicks <b>Create task</b> or <b>Discard</b>. Nothing is created without that click.</p>
+      <p>Reads incoming emails and categorizes them (task, spam, or duplicate). It extracts key details and reads attachments automatically. You can review the suggestions and click <b>Create task</b> or <b>Discard</b>.</p>
       <div class="doc__meta"><span class="g-chip">Screen: ECMS → Settings → Email Integration</span><span class="g-chip">Component: &lt;ai-email-triage&gt;</span><span class="g-chip">Endpoint: /ecms/email-triage</span></div>
     </div>
     <div class="doc__toolbar">
@@ -47,16 +47,24 @@
   <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
     <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of ECMS <b>Settings → Email Integration</b> (Add Account, Custom View, the connected mailboxes) with a new <b>Triage inbox</b> tab under it. The live tenant showed no mailboxes, so the three accounts and six emails are realistic examples. Read how each email was classified, change a queue, then click <b>Create task</b> and watch the mailbox's "Tasks Created" count go up. Then paste your own email into the box, for example <i>"From: Prince Zana / Subject: Scanner in Registry not working / Attachment: scanner_error.jpg"</i> and a line of text, and see it analysed live.</p>
+    <p class="doc__lede">Click the <b>✦ Triage Inbox</b> button in the toolbar to open the AI assistant. It reads the emails, classifies them, and suggests the next action. Review the emails, click <b>Create task</b>, and watch the "Tasks Created" count go up.</p>
     <div id="screen" class="shell" data-app="ecms" data-active="Email Integration">
       <div class="shell__content">
         <div class="ei-head">
           <div><div class="ei-crumb">Settings › <b>Email Integration</b></div><h2>Email Integration</h2></div>
           <button class="g-btn g-btn--primary g-btn--sm" type="button">+ Add Account</button>
         </div>
-        <div class="ei-tabs"><span class="is-on">Accounts</span><span>Triage inbox <span class="g-chip g-chip--ai">CICOD-AI</span></span></div>
+        <div class="ei-tabs"><span class="is-on">Accounts</span></div>
         <div class="g-card ei-card">
-          <div class="ei-tools"><input class="g-input" placeholder="Search..."><span class="ei-tools__spacer"></span><button class="g-btn g-btn--sm" type="button">Custom View</button><button class="g-btn g-btn--sm" type="button" disabled>Syncing...</button></div>
+          <div class="ei-tools">
+            <input class="g-input" placeholder="Search...">
+            <span class="ei-tools__spacer"></span>
+            <div data-ai-spot="CICOD-AI · Triage inbox modal" style="display:inline-flex;">
+              <ai-email-triage inbox="#inbox-data" mailbox="registry@cicod.example"></ai-email-triage>
+            </div>
+            <button class="g-btn g-btn--sm" type="button">Custom View</button>
+            <button class="g-btn g-btn--sm" type="button" disabled>Syncing...</button>
+          </div>
           <div class="g-table-wrap">
             <table class="g-table ei-table">
               <thead><tr><th>Email Account</th><th>Provider</th><th>Default Queue</th><th>CICOD-AI Triage</th><th>Status</th><th>Last Synced</th><th>Tasks Created</th></tr></thead>
@@ -69,9 +77,7 @@
           </div>
         </div>
 
-        <div data-ai-spot="CICOD-AI · Triage inbox (new tab under Email Integration)">
-          <ai-email-triage inbox="#inbox-data" mailbox="registry@cicod.example"></ai-email-triage>
-        </div>
+
         <div class="ei-created" id="created"></div>
       </div>
     </div>

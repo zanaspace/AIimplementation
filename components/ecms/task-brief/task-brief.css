@@ -44,3 +44,7 @@ ai-task-brief { display: block; }
   .aitb__tone { margin-left: 0; }
   .aitb__mode { margin-left: 0; }
 }
+
+/* Preview variant: popover from the All Tasks row */
+.aitb--preview { box-shadow: var(--shadow-lg); }
+.aitb--preview .aitb__lines { font-size: 12.5px; }

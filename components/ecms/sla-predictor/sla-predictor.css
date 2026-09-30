@@ -2,7 +2,7 @@
    All classes are prefixed `aisl-` so the component can be dropped into any ECMS list page. */
 ai-sla-risk { display: block; }
 
-.aisl__bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; background: var(--ai-50); border: 1px solid color-mix(in srgb, var(--ai-500) 30%, var(--border)); border-radius: var(--radius); font-size: 12.5px; color: var(--text-2); }
+.aisl__bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-2); }
 .aisl__sum { flex: 1; min-width: 0; }
 .aisl__sum b { color: var(--text); }
 .aisl__sum .ai-confidence { margin-left: 6px; }
@@ -35,3 +35,12 @@ button.aisl__badge:hover { border-color: currentColor; }
 .aisl__opt:has(input:checked) { border-color: var(--ai-500); background: var(--ai-50); }
 .aisl__note { min-height: 170px; font-size: 12.5px; margin-bottom: 6px; }
 .aisl__actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 14px; border-top: 1px solid var(--border); background: var(--surface-2); }
+
+/* Hide SLA column and safe rows when not in risk view */
+.at-table:not(.show-risks) .at-risk-h,
+.at-table:not(.show-risks) [data-sla-slot] {
+  display: none;
+}
+.at-table.show-risks tr.is-safe {
+  display: none;
+}

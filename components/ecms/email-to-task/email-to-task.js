@@ -92,22 +92,34 @@
       const src = document.querySelector(this.getAttribute('inbox'));
       this.emails = src ? JSON.parse(src.textContent) : [];
       this.results = {}; this.filter = 'all';
-      this.innerHTML = `<section class="aiet">
-        <div class="aiet__head"><span class="aiet__title"><span class="ai-badge">CICOD-AI</span> Triage inbox</span><span class="ai-confidence" data-model>classifying…</span></div>
-        <div class="aiet__paste">
-          <label class="g-label" for="aiet-paste">Try it: paste a sample email (From: / Subject: / Attachment: lines are optional)</label>
-          <textarea class="g-textarea" id="aiet-paste" data-paste placeholder="From: Faith Egbe&#10;Subject: Scanner in Registry not working&#10;Attachment: scanner_error.jpg&#10;&#10;Good morning, the scanner in Registry stopped working today and we have 40 files to digitise urgently…"></textarea>
-          <div class="aiet__paste-actions"><button class="g-btn g-btn--ai g-btn--sm" data-analyse type="button">✦ Analyse email</button><span class="aiet__hint">Analyses as you type, too</span></div>
-        </div>
-        <div class="aiet__filters" data-filters></div>
-        <div class="aiet__list" data-list></div>
-      </section>`;
-      const paste = this.querySelector('[data-paste]');
-      let t;
-      paste.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => this.analysePaste(), 900); });
-      this.querySelector('[data-analyse]').addEventListener('click', () => { clearTimeout(t); this.analysePaste(true); });
+      this.innerHTML = `
+        <button class="g-btn g-btn--sm" type="button" data-open-modal style="color: var(--ai-600); border-color: var(--ai-200); background: var(--ai-50);">✦ Triage Inbox</button>
+        <div class="aiet-modal" style="display: none;">
+          <div class="aiet-modal__box">
+            <section class="aiet" style="max-height: none;">
+              <div class="aiet__head" style="display:flex; justify-content:space-between; align-items:center;">
+                <div><span class="aiet__title"><span class="ai-badge">CICOD-AI</span> Triage inbox</span><span class="ai-confidence" data-model>classifying…</span></div>
+                <button type="button" class="aiet-modal__close" data-close-modal title="Close">✕</button>
+              </div>
+              <div class="aiet__filters" data-filters></div>
+              <div class="aiet__list" data-list></div>
+            </section>
+          </div>
+        </div>`;
+      
+      const modal = this.querySelector('.aiet-modal');
+      this.querySelector('[data-open-modal]').addEventListener('click', () => {
+        modal.style.display = 'flex';
+        if (!this.hasClassified) {
+          this.hasClassified = true;
+          this.classifyAll();
+        }
+      });
+      this.querySelector('[data-close-modal]').addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+
       this.renderList();
-      this.classifyAll();
     }
 
     async classifyAll() {

@@ -9,27 +9,84 @@
 <link rel="stylesheet" href="../../../shared/doc.css">
 <link rel="stylesheet" href="setup-wizard-mapper.css">
 <style>
-  /* Page-only layout for the mock "Setup Wizard" screen */
-  .sw__crumb { font-size: 13px; color: var(--text-3); }
-  .sw__crumb b { color: var(--text); }
-  .sw__h { margin: 4px 0 12px; font-size: 16px; }
-  .sw__card { padding: 28px 18px; text-align: center; }
-  .sw__icon { width: 52px; height: 52px; margin: 0 auto 10px; border-radius: 12px; background: var(--gov-green-100); color: var(--gov-green-600); display: grid; place-items: center; font-size: 22px; }
-  .sw__card h3 { margin: 0; font-size: 22px; }
-  .sw__card > p { margin: 6px auto 18px; max-width: 380px; color: var(--text-2); font-size: 13px; }
-  .sw__steps { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .sw__step { position: relative; width: 126px; padding: 16px 8px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface); font-size: 13px; font-weight: 500; }
-  .sw__step i { position: absolute; top: 6px; right: 36px; width: 18px; height: 18px; border-radius: 50%; background: var(--gov-green-600); color: #fff; font-size: 10px; font-style: normal; display: grid; place-items: center; }
-  .sw__step span { display: block; width: 36px; height: 36px; margin: 0 auto 6px; border-radius: 50%; background: var(--surface-2); border: 1px solid var(--border); }
-  .sw__step small { display: block; font-size: 11px; color: var(--text-3); font-weight: 400; margin-top: 2px; }
-  .sw__step--done { border-color: var(--gov-green-600); background: var(--gov-green-50); }
-  .sw__step--done span { background: var(--gov-green-600); }
-  .sw__btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
-  .sw__btns div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--text-2); }
-  .sw__ai { margin: 22px auto 0; max-width: 1080px; }
-  .sw__done { margin: 14px auto 0; max-width: 700px; padding: 10px 14px; border-radius: var(--radius); background: var(--ok-bg); font-size: 13px; text-align: left; }
-  .sw__flash { animation: sw-flash 1.4s ease; }
-  @keyframes sw-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); } 100% { box-shadow: none; } }
+  /* Copy of the live ECMS Settings → Setup Wizard (govtest, 29 Sep 2026). Classes prefixed sw-. */
+  .sw { --sw-line: #e4e4e7; --sw-muted: #71717a; --sw-green: #1c6b45; --sw-green-bg: #e3ede7; --sw-card: #fcfcfc; --sw-soft: #f4f4f5; }
+  :root[data-theme="dark"] .sw { --sw-line: #283045; --sw-muted: #9aa3b5; --sw-card: #151b29; --sw-soft: #1a2131; --sw-green-bg: #16392a; --sw-green: #2e8b5e; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sw { --sw-line: #283045; --sw-muted: #9aa3b5; --sw-card: #151b29; --sw-soft: #1a2131; --sw-green-bg: #16392a; --sw-green: #2e8b5e; } }
+  .sw [hidden] { display: none !important; }
+  .sw-crumb { font-size: 13px; color: var(--sw-muted); }
+  .sw-crumb b { color: var(--text); }
+  .sw-h { margin: 6px 0 10px; font-size: 16px; font-weight: 600; }
+  .sw-card { background: var(--sw-card); border: 1px solid var(--sw-line); border-radius: 12px; min-height: 560px; display: flex; flex-direction: column; }
+  .sw-green { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--sw-green); color: #fff; font: 600 13.5px var(--font); cursor: pointer; }
+  .sw-out { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 1px solid var(--sw-line); border-radius: 8px; background: var(--sw-card); color: var(--text); font: 500 13px var(--font); cursor: pointer; }
+  .sw-out--green { color: var(--sw-green); border-color: var(--sw-green); }
+  /* landing */
+  .sw-home { flex: 1; display: grid; place-content: center; text-align: center; padding: 40px 16px; }
+  .sw-home__ic { width: 52px; height: 52px; margin: 0 auto 12px; border-radius: 12px; background: var(--sw-green-bg); color: var(--sw-green); display: grid; place-items: center; font-size: 22px; }
+  .sw-home h3 { margin: 0; font-size: 22px; }
+  .sw-home p { margin: 6px auto 20px; max-width: 380px; color: var(--sw-muted); font-size: 13px; }
+  .sw-tiles { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .sw-tile { position: relative; width: 126px; padding: 18px 8px 12px; border: 1px solid var(--sw-line); border-radius: 10px; background: var(--sw-card); font-size: 13px; font-weight: 500; }
+  .sw-tile i { position: absolute; top: 8px; left: 72px; width: 18px; height: 18px; border-radius: 50%; background: var(--sw-green); color: #fff; font-size: 10px; font-style: normal; display: grid; place-items: center; }
+  .sw-tile span { display: grid; place-items: center; width: 40px; height: 40px; margin: 0 auto 8px; border-radius: 50%; background: var(--sw-soft); font-size: 16px; }
+  .sw-tile small { display: block; font-size: 11px; color: var(--sw-muted); font-weight: 400; margin-top: 3px; }
+  .sw-tile--done { border-color: var(--sw-green); background: var(--sw-green-bg); }
+  .sw-home__btns { display: flex; gap: 10px; justify-content: center; margin-top: 22px; flex-wrap: wrap; }
+  .sw-home__btns div { display: grid; justify-items: center; gap: 6px; font-size: 11.5px; color: var(--sw-muted); }
+  /* wizard */
+  .sw-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--sw-line); margin: 14px 14px 0; }
+  .sw-tabs span { padding: 8px 8px; font-size: 13px; color: var(--sw-muted); border-bottom: 2px solid transparent; }
+  .sw-tabs .on { color: var(--sw-green); border-color: var(--sw-green); font-weight: 500; }
+  .sw-tabs .done::before { content: "✓"; display: inline-grid; place-items: center; width: 14px; height: 14px; margin-right: 5px; border-radius: 50%; background: var(--sw-green); color: #fff; font-size: 9px; }
+  .sw-body { flex: 1; padding: 16px 14px; display: grid; gap: 14px; align-content: start; }
+  .sw-banner { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 16px; border: 1px dashed color-mix(in srgb, var(--sw-green) 45%, var(--sw-line)); border-radius: 10px; background: color-mix(in srgb, var(--sw-green-bg) 55%, var(--sw-card)); }
+  .sw-banner b { display: block; font-weight: 500; font-size: 13.5px; }
+  .sw-banner small { color: var(--sw-muted); font-size: 12px; }
+  .sw-banner--ai { border-color: color-mix(in srgb, var(--ai-500) 45%, transparent); background: var(--ai-50); }
+  .sw-drop { display: grid; place-items: center; gap: 6px; min-height: 200px; padding: 20px; border: 2px dashed var(--sw-line); border-radius: 10px; text-align: center; font-size: 13.5px; cursor: pointer; }
+  .sw-drop small { color: var(--sw-muted); font-size: 11.5px; }
+  .sw-file { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 16px; border: 1px solid var(--sw-line); border-radius: 10px; }
+  .sw-file b { font-weight: 500; }
+  .sw-file small { display: block; color: var(--sw-muted); font-size: 12px; }
+  .sw-choose { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sw-opt { display: flex; gap: 12px; align-items: center; padding: 16px; border: 1px solid var(--sw-line); border-radius: 10px; background: var(--sw-card); text-align: left; cursor: pointer; font: 13.5px var(--font); color: var(--text); }
+  .sw-opt span.ic { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; background: var(--sw-soft); flex-shrink: 0; }
+  .sw-opt small { display: block; color: var(--sw-muted); font-size: 12px; }
+  .sw-opt em { display: block; font-style: normal; font-size: 11.5px; color: var(--ai-600); margin-top: 2px; }
+  .sw-opt[aria-pressed="true"] { border-color: var(--sw-green); background: color-mix(in srgb, var(--sw-green-bg) 50%, var(--sw-card)); }
+  .sw-opt[aria-pressed="true"] span.ic { background: var(--sw-green); color: #fff; }
+  .sw-opt[aria-pressed="true"] b::after { content: " ✓"; color: var(--sw-green); }
+  .sw-foot { display: flex; justify-content: space-between; padding: 12px 14px; border-top: 1px solid var(--sw-line); background: var(--sw-soft); border-radius: 0 0 12px 12px; }
+  .sw-sheet { border: 1px solid var(--sw-line); border-radius: 10px; overflow: hidden; }
+  .sw-sheet__tabs { display: flex; gap: 2px; background: var(--sw-soft); padding: 4px 4px 0; overflow-x: auto; }
+  .sw-sheet__tabs button { border: 0; background: none; padding: 6px 12px; font: 12px var(--font); color: var(--sw-muted); cursor: pointer; border-radius: 6px 6px 0 0; white-space: nowrap; }
+  .sw-sheet__tabs button.on { background: var(--sw-card); color: var(--text); font-weight: 600; }
+  .sw-sheet table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .sw-sheet th, .sw-sheet td { border: 1px solid var(--sw-line); padding: 5px 8px; text-align: left; white-space: nowrap; }
+  .sw-sheet th { background: var(--sw-soft); font-weight: 600; font-size: 11px; }
+  .sw-result { display: grid; gap: 8px; }
+  .sw-result div { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--sw-line); border-radius: 8px; font-size: 13px; }
+  .sw-result i { font-style: normal; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--sw-green-bg); color: var(--sw-green); flex-shrink: 0; }
+  .sw-note { font-size: 12px; color: var(--sw-muted); }
+  .sw-toasts { position: fixed; top: 16px; right: 16px; z-index: 200; display: grid; gap: 8px; }
+  .sw-toast { max-width: 360px; padding: 10px 14px; border-radius: 10px; background: var(--sw-card); color: var(--text); border: 1px solid var(--sw-line); border-left: 4px solid var(--sw-green); box-shadow: var(--shadow-lg); font-size: 13px; }
+  .sw-toast--bad { border-left-color: #dc2626; }
+  .sw-modal { border: 0; padding: 0; border-radius: 12px; background: var(--sw-card, #fff); color: var(--text); box-shadow: var(--shadow-lg); }
+  .sw-modal::backdrop { background: rgba(15, 20, 32, .45); backdrop-filter: blur(3px); }
+  .sw-confirm { width: min(420px, calc(100vw - 32px)); }
+  .sw-confirm__body { padding: 16px 20px 10px; font-size: 13.5px; }
+  .sw-confirm__body h4 { margin: 0 0 4px; font-size: 15px; font-weight: 500; }
+  .sw-confirm__body p { margin: 0; color: var(--sw-muted); }
+  .sw-check { margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: var(--ai-50); font-size: 12.5px; }
+  .sw-check ul { margin: 6px 0 0; padding-left: 18px; }
+  .sw-confirm__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--sw-line); background: var(--sw-soft); border-radius: 0 0 12px 12px; }
+  .sw-ai { width: min(1120px, calc(100vw - 32px)); max-height: calc(100vh - 40px); overflow: auto; }
+  .sw-ai__head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--sw-line); position: sticky; top: 0; background: var(--sw-card, #fff); z-index: 2; font-size: 13px; color: var(--sw-muted); }
+  .sw-ai ai-org-mapper { display: block; padding: 12px; }
+  .show-spots .sw [data-ai-spot] { outline: 2px dashed var(--ai-500); outline-offset: 3px; border-radius: 10px; position: relative; }
+  .show-spots .sw [data-ai-spot]::after { content: attr(data-ai-spot); position: absolute; top: -11px; right: 8px; background: var(--ai-500); color: #fff; font: 700 10px var(--font); padding: 2px 8px; border-radius: 999px; z-index: 5; white-space: nowrap; pointer-events: none; }
+  @media (max-width: 700px) { .sw-choose { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -38,8 +95,8 @@
   <header class="doc__hero">
     <div>
       <span class="ai-badge">ECMS · E-W5 · Priority 2</span>
-      <h1>Setup Wizard CICOD-AI Mapper</h1>
-      <p>Setting up a new organization in CICOD usually requires manually typing in every department, job role, employee, and manager from a messy spreadsheet. The Setup Wizard Mapper automates this process. It reads <b>any</b> staff list spreadsheet, automatically matches the columns, fixes inconsistent spellings (like "Fin &amp; Accts" to "Finance"), merges duplicate roles, and figures out who reports to whom. The administrator simply reviews the suggestions and clicks import to instantly build the organization's structure.</p>
+      <h1>Setup Wizard Mapper</h1>
+      <p>The Setup Wizard only accepts the official 1Gov configuration sheet, filled in exactly. CICOD-AI fills it for you from any staff list. It fixes spellings, reuses existing departments and roles, and works out line managers. You check it, then import as usual.</p>
       <div class="doc__meta"><span class="g-chip">Screen: ECMS → Settings → Setup Wizard</span><span class="g-chip">Component: &lt;ai-org-mapper&gt;</span><span class="g-chip">Endpoint: /ecms/setup/map-org</span></div>
     </div>
     <div class="doc__toolbar">
@@ -48,98 +105,119 @@
     </div>
   </header>
 
-  <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
-    <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a demo of the <b>Setup Wizard</b> screen. To see it in action, click <i>Use sample staff list</i> to load a messy example file. You can check how the CICOD-AI automatically maps columns and groups similar departments and roles. Try clicking <i>Fix</i> on a highlighted row to correct it, then click <i>Save</i>. Finally, click <i>Import</i> to see how the system uses this data to automatically set up the organization.</p>
+    <h2>1. Try it</h2>
+    <p class="doc__lede">Same steps as live ECMS: <b>Get Started</b> → upload the sheet → choose what to import → <b>Next</b> → confirm. In the upload step, click <b>✦ Build it with CICOD-AI</b> and use the sample staff list.</p>
     <div id="screen" class="shell" data-app="ecms" data-active="Setup Wizard">
-      <div class="shell__content">
-        <div class="sw__crumb">Settings › <b>Setup Wizard</b></div>
-        <h2 class="sw__h">Setup Wizard</h2>
-        <div class="g-card sw__card">
-          <div class="sw__icon">✧</div>
-          <h3>Ready for a seamless setup?</h3>
-          <p>Let's get started by importing your data for these four key functionalities</p>
-          <div class="sw__steps" id="sw-steps">
-            <div class="sw__step" data-step="dept"><i>1</i><span></span>Departments<small></small></div>
-            <div class="sw__step" data-step="roles"><i>2</i><span></span>Roles<small>192 in tenant</small></div>
-            <div class="sw__step" data-step="users"><i>3</i><span></span>Users<small>100 in tenant</small></div>
-            <div class="sw__step" data-step="wf"><i>4</i><span></span>Workflows<small></small></div>
+      <div class="shell__content sw">
+        <div class="sw-crumb">Settings › <b>Setup Wizard</b></div>
+        <h2 class="sw-h">Setup Wizard</h2>
+        <div class="sw-card">
+          <!-- Landing (live) -->
+          <div class="sw-home" data-view="home">
+            <div class="sw-home__ic">✧</div>
+            <h3>Ready for a seamless setup?</h3>
+            <p>Let's get started by importing your data for these four key functionalities</p>
+            <div class="sw-tiles">
+              <div class="sw-tile" data-tile="Departments"><i>1</i><span>▦</span>Departments<small>106 today</small></div>
+              <div class="sw-tile" data-tile="Roles"><i>2</i><span>⛉</span>Roles<small>195 today</small></div>
+              <div class="sw-tile" data-tile="Users"><i>3</i><span>☺</span>Users<small></small></div>
+              <div class="sw-tile" data-tile="Workflows"><i>4</i><span>⎇</span>Workflows<small></small></div>
+            </div>
+            <div class="sw-home__btns">
+              <div><button class="sw-green" data-go="upload" type="button">Get Started</button>Import data from a config sheet</div>
+              <div><button class="sw-out" data-go="roles" type="button">Map Roles</button>Assign menu &amp; workflow access</div>
+            </div>
           </div>
-          <div class="sw__btns">
-            <div><button class="g-btn g-btn--primary" type="button">Get Started</button>Import data from a config sheet</div>
-            <div><button class="g-btn" type="button">Map Roles</button>Assign menu &amp; workflow access</div>
+
+          <!-- Get Started wizard (live) -->
+          <div data-view="wizard" hidden style="display:flex;flex-direction:column;flex:1">
+            <div class="sw-tabs"><span data-t="upload">Upload Files</span><span data-t="choose">Choose Functionality</span><span data-t="configure">Configure</span></div>
+            <div class="sw-body" data-step="upload">
+              <div class="sw-banner"><div><b>Need a template?</b><small>Download the workflow configuration sheet, fill it in, then upload it below.</small></div><button class="sw-out sw-out--green" id="dl" type="button">⤓ Download</button></div>
+              <div class="sw-banner sw-banner--ai" data-ai-spot="CICOD-AI · fills the sheet for you"><div><b>✦ Only have a staff list?</b><small>CICOD-AI turns any nominal roll or staff list into this sheet.</small></div><button class="g-btn g-btn--ai g-btn--sm" id="ai-open" type="button">✦ Build it with CICOD-AI</button></div>
+              <label class="sw-drop" id="drop"><input type="file" accept=".xlsx,.xls" id="file" hidden>▤<br>Upload workflow configuration sheet<small>.xlsx, .xls</small></label>
+              <div class="sw-file" id="file-tile" hidden></div>
+              <div class="sw-sheet" id="sheet" hidden></div>
+            </div>
+            <div class="sw-body" data-step="choose" hidden>
+              <p class="sw-note" style="margin:0">Select the specific key functionality, or all, for import</p>
+              <div class="sw-choose" id="choose"></div>
+            </div>
+            <div class="sw-body" data-step="configure" hidden><div id="configure"></div></div>
+            <div class="sw-foot"><button class="sw-out" id="back" type="button">Back</button><button class="sw-green" id="next" type="button">Next</button></div>
           </div>
-          <div id="sw-done"></div>
-          <div class="sw__ai" data-ai-spot="CICOD-AI · Import with CICOD-AI mapper">
-            <ai-org-mapper tenant-roles="192"></ai-org-mapper>
+
+          <!-- Map Roles (live) -->
+          <div data-view="roles" hidden style="display:flex;flex-direction:column;flex:1">
+            <div class="sw-tabs"><span class="on">Setup Role Mapping</span><span>Configure</span></div>
+            <div class="sw-body">
+              <div class="sw-choose">
+                <button class="sw-opt" aria-pressed="true" data-map type="button"><span class="ic">☰</span><span><b>Roles to Menu</b><small>Restrict which sidebar items each role can see</small></span></button>
+                <button class="sw-opt" aria-pressed="false" data-map type="button"><span class="ic">⎇</span><span><b>Roles to Workflow</b><small>Grant create/view/update/suspend access per status</small></span></button>
+              </div>
+              <div class="sw-banner"><div><b>Need a starting point?</b><small>Generate a roles-to-menu sheet pre-filled with your current roles, fill it in, then upload it below.</small></div><button class="sw-out sw-out--green" id="gen" type="button">⤓ Generate</button></div>
+              <label class="sw-drop"><input type="file" accept=".xlsx,.xls" hidden>▤<br>Upload role mapping configuration sheet<small>.xlsx, .xls</small></label>
+            </div>
+            <div class="sw-foot"><button class="sw-out" data-go="home" type="button">Back</button><button class="sw-green" id="role-upload" type="button">Upload</button></div>
           </div>
         </div>
+
+        <div class="sw-toasts" id="toasts" aria-live="polite"></div>
+        <dialog class="sw-modal sw-confirm" id="confirm"><div class="sw-confirm__body"><h4>Action Confirmation</h4><p>The import action is irreversible. Proceed to begin import?</p><div class="sw-check" id="precheck" hidden></div></div>
+          <div class="sw-confirm__foot"><button class="sw-out" id="c-cancel" type="button">Cancel</button><button class="sw-green" id="c-ok" type="button">Confirm</button></div></dialog>
+        <dialog class="sw-modal sw-ai" id="ai"><div class="sw-ai__head"><span><span class="ai-badge">CICOD-AI</span> Build the configuration sheet from a staff list</span><button class="sw-out" id="ai-close" type="button" aria-label="Close">✕</button></div><ai-org-mapper tenant-roles="195" tenant-departments="106"></ai-org-mapper></dialog>
       </div>
     </div>
+    <p class="doc__lede" style="margin-top:10px;font-size:12.5px">Recorded on govtest. The screens, the template tabs and columns, and the counts (106 departments, 195 roles) are real. The screen after <b>Confirm</b> wasn't opened, because a live import can't be undone. The Configure result here is a stand-in.</p>
     <div class="doc__where" style="margin-top:12px">
-      <div class="doc__where-item"><b>Primary placement</b>Inside the Setup Wizard card on <code>/ecms/settings/setup-wizard</code>, under "Get Started / Map Roles"</div>
-      <div class="doc__where-item"><b>Also appears in</b>Users → Roles (a "Find duplicate roles" action, E-U2) and Users → Import</div>
-      <div class="doc__where-item"><b>Trigger</b>A file dropped on the wizard, or the sample button in this demo</div>
-      <div class="doc__where-item"><b>Who sees it</b>Tenant administrators (SUPER ADMIN) only. Phone and email columns are masked before the model sees them</div>
+      <div class="doc__where-item"><b>Where</b>A <b>✦ Build it with CICOD-AI</b> button on the Upload Files step, under "Need a template?".</div>
+      <div class="doc__where-item"><b>What it gives</b>The official sheet, filled in: Departments, Roles and Users tabs, using the template's exact columns.</div>
+      <div class="doc__where-item"><b>Then</b>Choose Functionality is pre-selected. The confirmation shows a short check before the irreversible import.</div>
+      <div class="doc__where-item"><b>Who</b>Tenant administrators only. Nothing is imported until you click Confirm.</div>
     </div>
     <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
   </section>
 
-  <!-- 2. HOW IT WORKS -->
   <section class="doc__section">
     <h2>2. How it works</h2>
-    <p class="doc__lede">Rules and fuzzy matching do most of the work. An LLM only handles titles the rules can't place, and every row gets a confidence score.</p>
     <div class="doc__flow">
-      <div class="doc__step"><h4>Capture</h4><p>The uploaded Excel, CSV or PDF is converted to rows (PDF tables via document intelligence). The header row and the tenant's existing roles and departments are sent to <code>/ecms/setup/map-org</code>.</p></div>
-      <div class="doc__step"><h4>Protect</h4><p>Phone, email and NIN columns are detected and masked before any model call. The file stays in the tenant's Drive, and the sovereign model is used.</p></div>
-      <div class="doc__step"><h4>Map &amp; normalise</h4><p>Column headers are matched to CICOD fields. executive abbreviations are expanded ("Asst. Dir." → Assistant Director), and department spellings are grouped.</p></div>
-      <div class="doc__step"><h4>Deduplicate roles</h4><p>Token similarity with a rank guard ("Chief" ≠ "Assistant Chief") clusters titles from the file with the tenant's 192 roles. The admin ticks which merges to apply.</p></div>
-      <div class="doc__step"><h4>Infer line managers</h4><p>A "Reports To" column is used when present. Otherwise the next grade up in the same department is proposed. Ties and department heads below GL 15 are flagged.</p></div>
-      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Rows under 80% are held back until fixed. Column changes, merge choices and row fixes go to <code>/feedback</code> and extend the tenant's abbreviation list.</p></div>
+      <div class="doc__step"><h4>1. Read</h4><p>Upload any staff list (Excel, CSV or PDF). Columns are matched to the template, whatever their names.</p></div>
+      <div class="doc__step"><h4>2. Clean</h4><p>Spellings are fixed ("Fin &amp; Accts" → Finance &amp; Accounts) and duplicate roles are merged.</p></div>
+      <div class="doc__step"><h4>3. Match</h4><p>Departments and roles that already exist are reused, so there are no duplicates. Line managers are worked out from grade.</p></div>
+      <div class="doc__step"><h4>4. Check</h4><p>Rows with problems (missing email, repeated IPPIS) stay out until fixed.</p></div>
     </div>
   </section>
 
-  <!-- 3. BENEFITS -->
   <section class="doc__section">
-    <h2>3. Benefits to this feature</h2>
-    <p class="doc__lede">Baselines from the cicod tenant (ECMS → Roles, Users), 27 Sep 2026. Other figures are targets.</p>
+    <h2>3. Benefits</h2>
     <div class="doc__benefits">
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Weeks → hours</div><h4>Onboarding a new MDA</h4><p>Target: departments, roles and users from a raw nominal roll in one sitting, not weeks of spreadsheet clean-up.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">192 roles</div><h4>A cleaner role catalogue</h4><p>The tenant has 192 roles (190 active), with variants such as three "Assistant Director … Technical Support" roles. Merges are proposed before more variants are created.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Line managers set</div><h4>Approvals route correctly</h4><p>Escalation and "Through" chains need line managers. They're inferred for every row instead of being left blank.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Errors caught early</div><h4>Data quality at import</h4><p>Duplicate IPPIS numbers, missing departments and uncertain matches are held back instead of being imported.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Weeks → hours</div><h4>Faster onboarding</h4><p>A new MDA is set up from its staff list in one sitting.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">195 roles</div><h4>No duplicates</h4><p>New titles are matched to existing roles, e.g. three "Assistant Director … Technical Support" roles become one.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Safe import</div><h4>Checked first</h4><p>Problems are caught before an import that can't be undone.</p></div>
     </div>
   </section>
 
-  <!-- 4. INTEGRATION -->
   <section class="doc__section">
-    <h2>4. How to implement it in ECMS</h2>
+    <h2>4. How to build it</h2>
     <div class="doc__cols">
       <div>
-        <div class="doc__panel"><h4>Mount (Setup Wizard page)</h4>
-<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/setup-wizard-mapper.css"&gt;
-&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
-&lt;script src="/ai/components/setup-wizard-mapper.js"&gt;&lt;/script&gt;
-
-&lt;ai-org-mapper tenant-roles="192"&gt;&lt;/ai-org-mapper&gt;
+        <div class="doc__panel"><h4>Mount (Upload Files step)</h4>
+<pre class="doc__code">&lt;script src="/ai/components/setup-wizard-mapper.js"&gt;&lt;/script&gt;
+&lt;ai-org-mapper tenant-roles="195" tenant-departments="106"&gt;&lt;/ai-org-mapper&gt;
 
 &lt;script&gt;
-document.addEventListener('ai-org-import', async e =&gt; {
-  const d = e.detail;        // the host performs the import
-  await api.departments.upsert(d.departments);
-  await api.roles.merge(d.merges);
-  await api.users.bulkCreate(d.users);
-  wizard.markDone(['departments', 'roles', 'users']);
+document.addEventListener('ai-org-import', e =&gt; {
+  // e.detail.sheet = { Departments, Roles, Users } in template columns
+  wizard.setUploadedFile(toXlsx(e.detail.sheet));   // same path as a manual upload
+  wizard.preselect(['Departments', 'Roles', 'Users']);
 });
 &lt;/script&gt;</pre></div>
         <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
           <ol class="doc__list">
-            <li>Build the abbreviation and rank dictionary with HR (Asst., Dir., Prog., GL, CSO…).</li>
-            <li>Expose <code>/ecms/setup/map-org</code>: file-to-rows, column mapping, normalisation, clustering, line-manager inference.</li>
-            <li>Add a "merge roles" API that moves users and permissions to the canonical role and suspends the old ones.</li>
-            <li>Mount the component in the Setup Wizard and wire <code>ai-org-import</code> to the bulk APIs.</li>
-            <li>Run it on cicod's own 192 roles first; review the proposed merges with the admin team.</li>
+            <li>Add <code>/ecms/setup/map-org</code> to the CICOD-AI Gateway.</li>
+            <li>Write the result into 1Gov_ECMS_WORKFLOW_PLANNING_TEMPLATE.xlsx and hand it to the upload step.</li>
+            <li>Show the pre-import check in the confirmation dialog.</li>
           </ol></div>
       </div>
       <div>
@@ -147,30 +225,21 @@ document.addEventListener('ai-org-import', async e =&gt; {
 <pre class="doc__code">POST /ai/ecms/setup/map-org
 { "fileName": "Nominal_Roll_Sept2026.xlsx",
   "rows": [["S/N","Staff Name","IPPIS","Desig.", …], …],
-  "tenant": { "roles": 192 } }
+  "tenant": { "roles": 195, "departments": 106 } }
 → 200
-{ "model": "cicod-orgmap-v1",
-  "columns": [{ "source": "Desig.", "field": "Role",
-                "confidence": 0.9 }],
-  "departments": [{ "name": "Finance &amp; Accounts",
-    "variants": ["Fin &amp; Accts", "FINANCE AND ACCOUNTS"],
-    "existing": true }],
-  "clusters": [{ "canonical": "Assistant Director Accounts Admin",
-    "members": [{ "name": "Asst. Dir. Accounts (Admin)",
-                  "source": "roll" }, …] }],
-  "users": [{ "name": "Adaeze N. Okonkwo", "ippis": "218734",
-    "department": "Finance &amp; Accounts",
-    "role": "Assistant Director Accounts Admin", "gl": 15,
-    "manager": "Emeka Nwosu",
-    "managerSource": "inferred: next grade up",
-    "confidence": 0.84 }],
-  "counts": { "deptBefore": 12, "deptAfter": 4, … } }</pre></div>
+{ "sheet": {
+    "Departments": [[1, "Finance &amp; Accounts"]],
+    "Roles": [[1, "Program Analyst"]],
+    "Users": [[1, "Adaeze N.", "Okonkwo", "adaeze@…", "",
+               "Finance &amp; Accounts",
+               "Assistant Director Accounts Admin",
+               "Emeka Nwosu", "218734", "Abuja HQ"]] },
+  "heldBack": [{ "row": 6, "reason": "Email needed" }] }</pre></div>
         <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
           <ul class="doc__list">
-            <li>Feature flag <code>ai.ecms.setupWizardMapper</code> in ECMS Settings, on/off per tenant.</li>
-            <li>Import threshold: rows under 80% confidence are held back until an admin fixes them.</li>
-            <li>Every import, merge and row fix is written to the ECMS Audit Log (feature: <i>CICOD-AI Setup</i>) and can be undone per batch.</li>
-            <li>Only SUPER ADMIN users see the mapper; role merges never grant more permissions than the canonical role has.</li>
+            <li>On/off per tenant: <code>ai.ecms.setupWizardMapper</code>.</li>
+            <li>Phone and email are masked before any model call. The file stays in-country.</li>
+            <li>Nothing is imported until the admin confirms. Each import is logged in the Audit Log.</li>
           </ul></div>
       </div>
     </div>
@@ -182,17 +251,82 @@ document.addEventListener('ai-org-import', async e =&gt; {
 <script src="../../../shared/doc.js"></script>
 <script src="setup-wizard-mapper.js"></script>
 <script>
-  // Host-page wiring: the Setup Wizard performs the import and marks its steps done.
-  const esc = window.AIGateway.esc;
+  // Host page: behaves like the live Setup Wizard. The mapper only produces the sheet; the wizard imports it.
+  const $ = id => document.getElementById(id), esc = AIGateway.esc;
+  const TEMPLATE_COLS = { Departments: ['SN', 'DEPARTMENTS'], Roles: ['SN', 'ROLE'], Users: ['SN', 'FIRST NAME', 'LAST NAME', 'EMAIL', 'PHONE NUMBER', 'DEPARTMENT MAPPING', 'ROLE MAPPING', 'LINE MANAGER', 'STAFF ID', 'REGION'] };
+  const OPTS = [['Departments', '▦', 'Create department records'], ['Roles', '⛉', 'Create role records'], ['Users', '☺', 'Create user accounts'], ['Workflows', '⎇', 'Configure queues, statuses & escalations']];
+  let step = 'upload', file = null, ai = null, chosen = new Set();
+  const toast = (m, bad) => { const t = document.createElement('div'); t.className = 'sw-toast' + (bad ? ' sw-toast--bad' : ''); t.textContent = m; $('toasts').appendChild(t); setTimeout(() => t.remove(), 3800); };
+  const view = v => document.querySelectorAll('[data-view]').forEach(x => { x.hidden = x.dataset.view !== v; });
+  document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { if (b.dataset.go === 'upload') { view('wizard'); show('upload'); } else view(b.dataset.go); }));
+
+  function show(s) {
+    step = s;
+    document.querySelectorAll('[data-step]').forEach(x => { x.hidden = x.dataset.step !== s; });
+    const order = ['upload', 'choose', 'configure'];
+    document.querySelectorAll('[data-t]').forEach(t => { t.className = t.dataset.t === s ? 'on' : order.indexOf(t.dataset.t) < order.indexOf(s) ? 'done' : ''; });
+    $('next').hidden = s === 'configure'; $('back').textContent = s === 'configure' ? 'Done' : 'Back';
+    if (s === 'choose') renderChoose();
+  }
+  $('back').addEventListener('click', () => { if (step === 'upload' || step === 'configure') view('home'); else show('upload'); });
+
+  /* ---------- Upload Files ---------- */
+  $('dl').addEventListener('click', () => toast('Downloads 1Gov_ECMS_WORKFLOW_PLANNING_TEMPLATE.xlsx (Glossary, Guidelines, Departments, Roles, Users, Workflow).'));
+  $('file').addEventListener('change', e => { const f = e.target.files[0]; if (!f) return; file = { name: f.name, size: (f.size / 1024).toFixed(1) + ' KB' }; ai = null; renderFile(); });
+  function renderFile() {
+    $('drop').hidden = !!file; $('file-tile').hidden = !file;
+    if (!file) { $('sheet').hidden = true; return; }
+    $('file-tile').innerHTML = `<div><b>${esc(file.name)}</b><small>${file.size}${ai ? ' · generated by CICOD-AI · ' + ai.sheet.Users.length + ' users, ' + ai.sheet.Departments.length + ' new departments, ' + ai.sheet.Roles.length + ' new roles' : ''}</small></div>
+      <span>${ai ? '<button class="sw-out" id="view-sheet" type="button">View sheet</button> ' : ''}<button class="sw-out" id="rm" type="button">Remove</button></span>`;
+    $('rm').addEventListener('click', () => { file = null; ai = null; $('file').value = ''; renderFile(); });
+    $('view-sheet')?.addEventListener('click', () => { $('sheet').hidden = !$('sheet').hidden; if (!$('sheet').hidden) sheetTab('Users'); });
+  }
+  function sheetTab(tab) {
+    const rows = ai.sheet[tab];
+    $('sheet').innerHTML = `<div class="sw-sheet__tabs">${['Glossary', 'Guidelines', 'Departments', 'Roles', 'Users', 'Workflow'].map(t => `<button type="button" class="${t === tab ? 'on' : ''}" data-tab="${t}"${ai.sheet[t] ? '' : ' disabled title="Left as in the template"'}>${t}${ai.sheet[t] ? ` (${ai.sheet[t].length})` : ''}</button>`).join('')}</div>
+      <div style="overflow-x:auto"><table><thead><tr>${TEMPLATE_COLS[tab].map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody>${rows.length ? rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${TEMPLATE_COLS[tab].length}" class="sw-note">Nothing new: all already exist in this tenant.</td></tr>`}</tbody></table></div>`;
+    $('sheet').querySelectorAll('[data-tab]:not([disabled])').forEach(b => b.addEventListener('click', () => sheetTab(b.dataset.tab)));
+  }
+  $('ai-open').addEventListener('click', () => $('ai').showModal());
+  $('ai-close').addEventListener('click', () => $('ai').close());
   document.addEventListener('ai-org-import', e => {
-    const c = e.detail.counts;
-    const set = (step, text) => { const el = document.querySelector(`[data-step="${step}"]`); el.classList.add('sw__step--done'); el.querySelector('small').textContent = text; el.classList.remove('sw__flash'); void el.offsetWidth; el.classList.add('sw__flash'); };
-    set('dept', `${c.departments} mapped · ${c.newDepartments} new`);
-    set('roles', `${c.rolesBefore} → ${c.rolesAfter} (${c.merges} merges)`);
-    set('users', `+${c.users} imported`);
-    document.getElementById('sw-done').innerHTML = `<div class="sw__done"><b>Import complete (demo).</b> ${esc(c.users)} users added across ${esc(c.departments)} departments; ${esc(c.merges)} role clusters confirmed (${esc(c.rolesBefore)} → ${esc(c.rolesAfter)} roles). ${c.heldBack ? `${esc(c.heldBack)} rows held back for fixing.` : 'No rows held back.'} Next: Workflows.</div>`;
-    document.getElementById('sw-steps').scrollIntoView({ block: 'center', behavior: 'smooth' });
+    ai = e.detail;
+    file = { name: '1Gov_ECMS_WORKFLOW_PLANNING_TEMPLATE (CICOD-AI).xlsx', size: (8 + ai.sheet.Users.length * 0.4).toFixed(1) + ' KB' };
+    chosen = new Set(['Departments', 'Roles', 'Users'].filter(k => ai.sheet[k].length || k === 'Users'));
+    renderFile(); setTimeout(() => { $('ai').close(); $('sheet').hidden = false; sheetTab('Users'); }, 500);
+    toast('Configuration sheet ready. Check it, then click Next.');
   });
+
+  /* ---------- Choose Functionality ---------- */
+  function renderChoose() {
+    const n = ai ? { Departments: `${ai.sheet.Departments.length} new · ${ai.counts.departments - ai.sheet.Departments.length} already exist`, Roles: `${ai.sheet.Roles.length} new · ${ai.counts.merges} duplicate groups merged`, Users: `${ai.sheet.Users.length} accounts${ai.counts.heldBack ? ` · ${ai.counts.heldBack} held back` : ''}`, Workflows: 'Not in this sheet' } : {};
+    $('choose').innerHTML = OPTS.map(([k, ic, d]) => `<button class="sw-opt" type="button" aria-pressed="${chosen.has(k)}" data-opt="${k}"><span class="ic">${ic}</span><span><b>${k}</b><small>${d}</small>${n[k] ? `<em>✦ ${esc(n[k])}</em>` : ''}</span></button>`).join('');
+    $('choose').querySelectorAll('[data-opt]').forEach(b => b.addEventListener('click', () => { const k = b.dataset.opt; chosen.has(k) ? chosen.delete(k) : chosen.add(k); b.setAttribute('aria-pressed', chosen.has(k)); }));
+  }
+
+  /* ---------- Next → the live irreversible-import confirmation ---------- */
+  $('next').addEventListener('click', () => {
+    if (step === 'upload') { if (!file) return toast('Kindly upload a workflow configuration sheet', true); return show('choose'); }
+    if (step === 'choose') {
+      if (!chosen.size) return toast('Select at least one functionality to import.', true);
+      const pc = $('precheck'); pc.hidden = !ai;
+      if (ai) pc.innerHTML = `<b>✦ CICOD-AI check before import</b><ul>${[...chosen].map(k => `<li>${k}: ${k === 'Departments' ? `${ai.sheet.Departments.length} new (${ai.counts.departments - ai.sheet.Departments.length} matched to existing)` : k === 'Roles' ? `${ai.sheet.Roles.length} new (duplicates reused from the 195 roles)` : k === 'Users' ? `${ai.sheet.Users.length} accounts with line managers` : 'no rows'}</li>`).join('')}${ai.counts.heldBack ? `<li>${ai.counts.heldBack} staff held back (fix them in the sheet first)</li>` : ''}</ul>`;
+      $('confirm').showModal();
+    }
+  });
+  $('c-cancel').addEventListener('click', () => $('confirm').close());
+  $('c-ok').addEventListener('click', () => {
+    $('confirm').close(); show('configure');
+    const rows = [...chosen].map(k => { const c = ai ? (ai.sheet[k] || []).length : 0; return [k, ai ? (k === 'Workflows' ? 'No workflow rows in the sheet' : `${c} ${k === 'Users' ? 'user accounts created' : k.toLowerCase() + ' created'}`) : 'Imported from your sheet']; });
+    $('configure').innerHTML = `<div class="sw-result">${rows.map(([k, t]) => `<div><i>✓</i><b style="font-weight:500">${k}</b><span class="sw-note">${esc(t)}</span></div>`).join('')}</div><p class="sw-note">Stand-in result: the live screen after Confirm wasn't opened.</p>`;
+    [...chosen].forEach(k => { const t = document.querySelector(`[data-tile="${k}"]`); t.classList.add('sw-tile--done'); if (ai && ai.sheet[k]) t.querySelector('small').textContent = k === 'Departments' ? `${106 + ai.sheet.Departments.length} now` : k === 'Roles' ? `${195 + ai.sheet.Roles.length} now` : `+${ai.sheet.Users.length} added`; });
+    if (ai) AIGateway.feedback('setup-' + Date.now(), 'ecms.setup-wizard-mapper', 'imported', { users: ai.sheet.Users.length });
+  });
+
+  /* ---------- Map Roles ---------- */
+  document.querySelectorAll('[data-map]').forEach(b => b.addEventListener('click', () => document.querySelectorAll('[data-map]').forEach(x => x.setAttribute('aria-pressed', x === b))));
+  $('gen').addEventListener('click', () => toast('Generates a roles-to-menu sheet pre-filled with your 195 roles.'));
+  $('role-upload').addEventListener('click', () => toast('Upload a filled role mapping sheet first.', true));
 </script>
 </body>
 </html>

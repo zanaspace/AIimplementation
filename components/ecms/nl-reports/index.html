@@ -9,20 +9,57 @@
 <link rel="stylesheet" href="../../../shared/doc.css">
 <link rel="stylesheet" href="nl-reports.css">
 <style>
-  /* Page-only layout for the mock "Reports" screen */
-  .rp__bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .rp__bar .shell__title { margin: 0; }
-  .rp__active { display: none; font-size: 12px; color: var(--text-2); }
-  .rp__active--on { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
-  .rp__empty { padding: 40px 16px; text-align: center; margin-top: 14px; }
-  .rp__empty h3 { margin: 0 0 4px; font-size: 15px; }
-  .rp__empty p { margin: 0 0 14px; font-size: 12.5px; color: var(--text-2); }
-  .rp__saved { margin-top: 14px; padding: 14px 16px; display: none; }
-  .rp__saved--on { display: block; }
-  .rp__saved h3 { margin: 0 0 8px; font-size: 14px; }
-  .rp__item { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 0; border-top: 1px solid var(--border); font-size: 13px; }
-  .rp__flash { animation: rp-flash 1.2s ease; }
-  @keyframes rp-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+  /* Copy of the live ECMS Reports → Reports (govtest, 29 Sep 2026). Classes prefixed rp-. */
+  .rp { --rp-line: #e4e4e7; --rp-muted: #71717a; --rp-card: #fcfcfc; --rp-green: #1c6b45; --rp-soft: #f4f4f5; }
+  :root[data-theme="dark"] .rp { --rp-line: #283045; --rp-muted: #9aa3b5; --rp-card: #151b29; --rp-soft: #1a2131; --rp-green: #2e8b5e; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rp { --rp-line: #283045; --rp-muted: #9aa3b5; --rp-card: #151b29; --rp-soft: #1a2131; --rp-green: #2e8b5e; } }
+  .rp [hidden] { display: none !important; }
+  .rp-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .rp-head h2 { margin: 0; font-size: 16px; font-weight: 600; }
+  .rp-green { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--rp-green); color: #fff; font: 600 13px var(--font); cursor: pointer; }
+  .rp-out { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 1px solid var(--rp-line); border-radius: 8px; background: var(--rp-card); color: var(--text); font: 500 13px var(--font); cursor: pointer; }
+  .rp-out--green { color: var(--rp-green); border-color: var(--rp-green); }
+  .rp-card { background: var(--rp-card); border: 1px solid var(--rp-line); border-radius: 12px; min-height: 480px; }
+  .rp-empty { display: grid; place-content: center; text-align: center; min-height: 480px; padding: 20px; }
+  .rp-empty h3 { margin: 0; font-size: 16px; font-weight: 500; }
+  .rp-empty p { margin: 6px 0 16px; color: var(--rp-muted); font-size: 13px; }
+  .rp-empty__or { margin-top: 12px; font-size: 12.5px; color: var(--rp-muted); }
+  .rp-tasks__head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; padding: 14px 16px; }
+  .rp-tasks__head h3 { margin: 0; font-size: 15px; font-weight: 500; }
+  .rp-tasks__tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .rp-active { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 16px 10px; }
+  .rp-active span { font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--rp-soft); }
+  .rp-table-wrap { overflow-x: auto; }
+  .rp-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .rp-table th { text-align: left; font-weight: 500; padding: 10px; border-bottom: 1px solid var(--rp-line); white-space: nowrap; }
+  .rp-table td { padding: 10px; border-bottom: 1px solid var(--rp-line); white-space: nowrap; vertical-align: middle; }
+  .rp-table tbody tr:nth-child(even) td { background: var(--rp-soft); }
+  .rp-id { color: var(--rp-green); }
+  .rp-title { display: flex; gap: 10px; align-items: center; }
+  .rp-av { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; color: var(--rp-muted); border: 1px solid var(--rp-line); background: var(--rp-card); flex-shrink: 0; }
+  .rp-title a { color: var(--rp-green); }
+  .rp-title small { display: block; color: var(--rp-muted); font-size: 12.5px; }
+  .rp-wf b { color: var(--rp-green); font-weight: 500; }
+  .rp-st { padding: 1px 8px; border-radius: 6px; font-size: 12px; background: #dcfce7; color: #15803d; }
+  .rp-st--resolved { background: #dbeafe; color: #1d4ed8; }
+  .rp-pager { display: flex; justify-content: center; gap: 6px; padding: 12px; font-size: 13px; }
+  .rp-note { padding: 8px 16px 14px; font-size: 12px; color: var(--rp-muted); }
+  .rp-modal { border: 0; padding: 0; border-radius: 14px; width: min(480px, calc(100vw - 24px)); max-height: calc(100vh - 32px); background: var(--rp-card, #fff); color: var(--text); box-shadow: var(--shadow-lg); }
+  .rp-modal::backdrop { background: rgba(15, 20, 32, .45); backdrop-filter: blur(3px); }
+  .rp-modal__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 16px 16px 4px; }
+  .rp-modal__head h3 { margin: 0; font-size: 15px; font-weight: 500; }
+  .rp-modal__head p { margin: 4px 0 0; font-size: 12.5px; color: var(--rp-muted); }
+  .rp-modal__body { padding: 10px 16px 14px; display: grid; gap: 12px; max-height: 62vh; overflow: auto; }
+  .rp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .rp-f label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+  .rp-f label small { font-size: 11.5px; color: var(--text); }
+  .rp-f select, .rp-f input { width: 100%; min-height: 32px; border: 1px solid var(--rp-line); border-radius: 8px; padding: 0 8px; background: var(--rp-card); color: var(--text); font: 13px var(--font); }
+  .rp-f select:disabled, .rp-f input:disabled { color: var(--rp-muted); }
+  .rp-f--ai select, .rp-f--ai input { border-color: var(--ai-500); box-shadow: 0 0 0 2px var(--ai-100); }
+  .rp-modal__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--rp-line); background: var(--rp-soft); border-radius: 0 0 14px 14px; }
+  .show-spots .rp [data-ai-spot], .show-spots .rp-modal [data-ai-spot] { outline: 2px dashed var(--ai-500); outline-offset: 3px; border-radius: 10px; position: relative; }
+  .show-spots .rp [data-ai-spot]::after, .show-spots .rp-modal [data-ai-spot]::after { content: attr(data-ai-spot); position: absolute; top: -11px; right: 8px; background: var(--ai-500); color: #fff; font: 700 10px var(--font); padding: 2px 8px; border-radius: 999px; z-index: 5; white-space: nowrap; pointer-events: none; }
+  @media (max-width: 560px) { .rp-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -30,10 +67,10 @@
   <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / ECMS / Reports</div>
   <header class="doc__hero">
     <div>
-      <span class="ai-badge">ECMS · E-D5 · Priority 1</span>
+      <span class="ai-badge">ECMS · E-R1 · Priority 1</span>
       <h1>Ask for a Report</h1>
-      <p>The Reports page today starts empty: <i>"No filters set. Click the button to set filters and view your reports."</i> With this component the officer types the report they need in plain English. The CICOD-AI shows <b>what it understood as editable filter chips</b>, then draws a chart and a table and writes a one-paragraph summary. The report can be exported, saved or scheduled weekly.</p>
-      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Reports → Reports</span><span class="g-chip">Component: &lt;ai-report-builder&gt;</span><span class="g-chip">Endpoint: /ecms/reports/nl-query</span></div>
+      <p>A report in ECMS needs up to ten filters. With CICOD-AI you describe the report in one sentence and it fills the filters for you. After it runs, <b>✦ Summarise</b> tells you what the rows show.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Reports → Reports</span><span class="g-chip">Components: &lt;ai-report-ask&gt; · &lt;ai-report-summary&gt;</span><span class="g-chip">Endpoints: /ecms/reports/nl-filters · /summarise</span></div>
     </div>
     <div class="doc__toolbar">
       <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
@@ -41,120 +78,119 @@
     </div>
   </header>
 
-  <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
-    <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of the ECMS <b>Reports</b> screen. Click an example chip, or type your own request such as <i>"Top 3 queues by open tasks all time"</i> and press <b>Build report</b>. Then change a chip (for example Period or Group by) to re-run it, and click <b>Save report</b> or <b>Schedule weekly</b> to see it appear in the page's saved reports.</p>
+    <h2>1. Try it</h2>
+    <p class="doc__lede">Same steps as live ECMS: <b>Set Filters</b> → fill the Generate Report dialog → <b>Apply</b>. Try the example <i>"Open billing complaints this month"</i> at the top of the dialog. Then click <b>✦ Summarise</b> on the results.</p>
     <div id="screen" class="shell" data-app="ecms" data-active="Reports">
-      <div class="shell__content">
-        <div class="rp__bar">
-          <h2 class="shell__title">Reports</h2>
-          <button class="g-btn" type="button">Set Filters</button>
+      <div class="shell__content rp">
+        <div class="rp-head"><h2>Reports</h2><button class="rp-green" data-open type="button">⏷ Set Filters</button></div>
+        <div class="rp-card">
+          <div class="rp-empty" id="empty">
+            <h3>Not filters set</h3>
+            <p>Click the button to set filters and view your reports</p>
+            <div><button class="rp-green" data-open type="button">⏷ Set Filters</button></div>
+            <div class="rp-empty__or" data-ai-spot="CICOD-AI · shortcut">or <button class="airp__link" data-open data-ai type="button">✦ describe it to CICOD-AI</button></div>
+          </div>
+          <div id="tasks" hidden>
+            <div class="rp-tasks__head"><h3>Tasks</h3>
+              <div class="rp-tasks__tools"><span data-ai-spot="✦ Summarise"><ai-report-summary source="#rows"></ai-report-summary></span><button class="rp-out rp-out--green" id="dl" type="button">⤓ Download</button><button class="rp-out" type="button">⚙ Bulk Actions</button><button class="rp-out" type="button">▦ Custom View</button></div></div>
+            <div class="rp-active" id="active"></div>
+            <div class="rp-table-wrap"><table class="rp-table"><thead><tr><th><input type="checkbox" aria-label="Select all"></th><th>Task ID</th><th>Title</th><th>Workflow</th><th>Date Created</th><th>Created by</th><th>Date Assigned</th><th>Assigned by</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div>
+            <div class="rp-pager" id="pager"></div>
+            <div class="rp-note" id="note"></div>
+          </div>
         </div>
-        <div class="rp__active" id="rp-active"><b>Filters:</b></div>
-        <div data-ai-spot="CICOD-AI · Ask for a report" style="margin-top:8px">
-          <ai-report-builder examples="Turnaround time by department for Q3|Open complaints by queue type this month|Top 5 assignees by closed tasks"></ai-report-builder>
-        </div>
-        <div class="g-card rp__empty" id="rp-empty">
-          <h3>No filters set</h3>
-          <p>Click the button to set filters and view your reports</p>
-          <button class="g-btn g-btn--primary" type="button">Set Filters</button>
-        </div>
-        <div class="g-card rp__saved" id="rp-saved"><h3>Saved reports</h3><div id="rp-saved-list"></div></div>
+
+        <dialog class="rp-modal" id="dlg">
+          <div class="rp-modal__head"><div><h3>Generate Report</h3><p>Generate and download reports for all activities within your workflows and carry out bult operations on tasks</p></div><button class="rp-out" style="border:0" data-close type="button" aria-label="Close">✕</button></div>
+          <div class="rp-modal__body">
+            <div data-ai-spot="CICOD-AI · fills the filters"><ai-report-ask id="ask"></ai-report-ask></div>
+            <div class="rp-grid">
+              <div class="rp-f" data-k="queue"><label for="f-queue">Queue</label><select id="f-queue"></select></div>
+              <div class="rp-f" data-k="queueType"><label for="f-qt">Queue Type</label><select id="f-qt" disabled><option value="">No queue types available</option></select></div>
+              <div class="rp-f" data-k="status"><label for="f-st">Status</label><select id="f-st" disabled><option value="">No statuses available</option></select></div>
+              <div class="rp-f" data-k="priority"><label for="f-pr">Priority</label><select id="f-pr"><option value="">Select priority</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+              <div class="rp-f" data-k="taskState"><label for="f-ts">Task State</label><select id="f-ts"><option value="">Select task state</option><option>Active</option><option>Inactive</option><option>Suspended</option></select></div>
+              <div class="rp-f" data-k="date"><label for="f-dr">Date Range</label><input id="f-dr" placeholder="dd/mm/yyyy - dd/mm/yyyy"></div>
+            </div>
+            <div class="rp-f" data-k="createdBy"><label for="f-cb">Created By <small>Filter by department</small></label><select id="f-cb" data-users></select></div>
+            <div class="rp-f" data-k="assignedBy"><label for="f-ab">Assigned By <small>Filter by department</small></label><select id="f-ab" data-users></select></div>
+            <div class="rp-f" data-k="assignedTo"><label for="f-at">Assigned To <small>Filter by department</small></label><select id="f-at" data-users></select></div>
+          </div>
+          <div class="rp-modal__foot"><button class="rp-out" id="reset" type="button">↶ Reset</button><button class="rp-green" id="apply" type="button">✓ Apply</button></div>
+        </dialog>
       </div>
     </div>
+    <p class="doc__lede" style="margin-top:10px;font-size:12.5px">Recorded on govtest: the dialog fields and options, and the Complaints report rows. Only the Complaints report was captured, so other queues return no rows here.</p>
     <div class="doc__where" style="margin-top:12px">
-      <div class="doc__where-item"><b>Primary placement</b>Top of <code>/ecms/reports</code>, above the "Set Filters" empty state</div>
-      <div class="doc__where-item"><b>Also appears in</b>Dashboard → Resource Utilization ("Ask about this data"), Asset Mgmt reports, and the Workspace search bar ("report: …")</div>
-      <div class="doc__where-item"><b>Trigger</b>The user presses Build report or clicks an example. Editing a chip re-runs the query</div>
-      <div class="doc__where-item"><b>Who sees it</b>Anyone with Reports access. Results only include tasks, queues and departments the user can already see</div>
+      <div class="doc__where-item"><b>✦ Describe the report</b>At the top of the Generate Report dialog. It fills the dialog's own filters, and you still click Apply.</div>
+      <div class="doc__where-item"><b>✦ Summarise</b>Next to Download on the results. It opens a small popover; the table doesn't move.</div>
+      <div class="doc__where-item"><b>Shortcut</b>"or ✦ describe it to CICOD-AI" in the empty state opens the same dialog.</div>
+      <div class="doc__where-item"><b>Who</b>Anyone with Reports access. Results only include tasks the user can already see.</div>
     </div>
     <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
   </section>
 
-  <!-- 2. HOW IT WORKS -->
   <section class="doc__section">
     <h2>2. How it works</h2>
-    <p class="doc__lede">The model writes a structured query against an allow-listed reporting schema, never raw SQL. The chips are that query, so the user can see and correct exactly what will run.</p>
     <div class="doc__flow">
-      <div class="doc__step"><h4>Capture</h4><p>The prompt and any chip edits are sent to <code>/ecms/reports/nl-query</code> with the user's role, so the query can be permission-trimmed.</p></div>
-      <div class="doc__step"><h4>Protect</h4><p>The gateway redacts personal data in the prompt and applies classification routing. Only the schema and prompt go to the sovereign model; task rows never leave ECMS.</p></div>
-      <div class="doc__step"><h4>Text to query</h4><p>An LLM maps the prompt onto a fixed query shape: measure, group-by, period, filters and limit. A validator rejects unknown fields and caps row counts.</p></div>
-      <div class="doc__step"><h4>Run &amp; chart</h4><p>ECMS runs the query on its own reporting store with the user's permissions. The component picks a bar chart and table, and the LLM writes a short summary from the result rows only.</p></div>
-      <div class="doc__step"><h4>Output</h4><p>Editable chips, chart, table, narrative, and Export CSV, Save report and Schedule weekly actions.</p></div>
-      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Chip edits, saves, exports and "Not what I meant" all go to <code>/feedback</code>. Chip corrections become training pairs for the text-to-query model.</p></div>
+      <div class="doc__step"><h4>1. Understand</h4><p>The sentence is turned into the dialog's fields: queue, queue type, status, priority, dates and people.</p></div>
+      <div class="doc__step"><h4>2. Check</h4><p>Only values that exist in the tenant are used. Anything unclear is left for you.</p></div>
+      <div class="doc__step"><h4>3. Run</h4><p>You click Apply. ECMS runs the report as usual, with your permissions.</p></div>
+      <div class="doc__step"><h4>4. Summarise</h4><p>A short summary is written from the rows shown: status, type and unassigned work.</p></div>
     </div>
   </section>
 
-  <!-- 3. BENEFITS -->
   <section class="doc__section">
-    <h2>3. Benefits to this feature</h2>
-    <p class="doc__lede">Baseline: the Reports page on cicod shows no reports until filters are set by hand. Figures are targets.</p>
+    <h2>3. Benefits</h2>
     <div class="doc__benefits">
-      <div class="doc__benefit"><div class="doc__benefit-kpi">0 → 1 click</div><h4>From empty page to a report</h4><p>An example chip produces a chart and table straight away, instead of an empty "No filters set" state.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">−90%</div><h4>Report creation time</h4><p>Target: from a request to an analyst (often days) to under a minute for standard questions.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">&gt; 85%</div><h4>Queries run without chip edits</h4><p>Target accuracy of the interpreted query, measured from chip edits and "Not what I meant".</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Weekly</div><h4>Reports that keep coming</h4><p>Schedule weekly turns a one-off question into a standing report for the management meeting.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">10 fields → 1 line</div><h4>Faster reports</h4><p>One sentence instead of setting up to ten filters by hand.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">184 queues</div><h4>No hunting</h4><p>No scrolling through 184 queues and all users to find the right ones.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">At a glance</div><h4>Read results faster</h4><p>The summary points out unassigned tasks and the main types.</p></div>
     </div>
   </section>
 
-  <!-- 4. INTEGRATION -->
   <section class="doc__section">
-    <h2>4. How to implement it in ECMS</h2>
+    <h2>4. How to build it</h2>
     <div class="doc__cols">
       <div>
-        <div class="doc__panel"><h4>Mount (Reports page)</h4>
-<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/nl-reports.css"&gt;
-&lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
-&lt;script src="/ai/components/nl-reports.js"&gt;&lt;/script&gt;
+        <div class="doc__panel"><h4>Mount</h4>
+<pre class="doc__code">&lt;!-- top of the Generate Report dialog --&gt;
+&lt;ai-report-ask queues="{{queues|join:'|'}}"
+    users="{{users|join:'|'}}"&gt;&lt;/ai-report-ask&gt;
 
-&lt;ai-report-builder examples="Turnaround time by
-  department for Q3|Top 5 assignees by closed
-  tasks"&gt;&lt;/ai-report-builder&gt;
+&lt;!-- next to Download on the Tasks card --&gt;
+&lt;ai-report-summary source="#report-rows"&gt;&lt;/ai-report-summary&gt;
 
 &lt;script&gt;
-document.addEventListener('ai-report-save', e =&gt;
-  reports.save(e.detail.title, e.detail.query));
-document.addEventListener('ai-report-schedule', e =&gt;
-  reports.schedule(e.detail.query, 'weekly'));
+document.addEventListener('ai-report-filters', e =&gt;
+  reportFilters.set(e.detail.filters));   // officer still clicks Apply
 &lt;/script&gt;</pre></div>
         <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
           <ol class="doc__list">
-            <li>Define the reporting schema: measures (count, open, closed, turnaround), dimensions (department, queue, queue type, assignee, priority) and periods.</li>
-            <li>Expose a query endpoint in ECMS that accepts that shape and applies the user's permissions.</li>
-            <li>Add <code>/ecms/reports/nl-query</code> to the CICOD-AI Gateway: prompt to query, validate, run, then summarise.</li>
-            <li>Mount the component above the Set Filters state and wire save and schedule to the existing report store.</li>
-            <li>Collect 200 real prompts from pilot users and tune until 85% run without chip edits.</li>
+            <li>Add <code>/ecms/reports/nl-filters</code> and <code>/summarise</code> to the CICOD-AI Gateway.</li>
+            <li>Put the bar at the top of Generate Report and fill the existing filter fields from its result.</li>
+            <li>Add Summarise next to Download. It reads only the rows the user sees.</li>
           </ol></div>
       </div>
       <div>
         <div class="doc__panel"><h4>API contract</h4>
-<pre class="doc__code">POST /ai/ecms/reports/nl-query
-{
-  "prompt": "Open complaints by queue type this month",
-  "overrides": { "period": "Q3 2026" }   // chip edits
-}
-→ 200
-{
-  "model": "cicod-text2query-v1",
-  "confidence": 0.89,
-  "title": "Open tasks by queue type, September 2026",
-  "query": {
-    "metric": "open", "dimension": "queueType",
-    "period": "September 2026",
-    "filters": [{ "key": "queue", "value": "Complaints" }],
-    "limit": null
-  },
-  "chips": [{ "key": "period", "value": "…", "options": […] }],
-  "rows": [{ "label": "Delivery", "value": 214, "share": 31 }],
-  "narrative": "Delivery leads with 214 tasks…"
-}</pre></div>
+<pre class="doc__code">POST /ai/ecms/reports/nl-filters
+{ "prompt": "open billing complaints this month",
+  "options": { "queues": ["Complaints", …], "users": […] } }
+→ { "filters": { "queue": "Complaints",
+      "queueType": "Billing Issue", "status": "open",
+      "from": "01/09/2026", "to": "29/09/2026" },
+    "understood": ["Queue: Complaints", "…"] }
+
+POST /ai/ecms/reports/summarise
+{ "rows": [{ "status": "open", "type": "Billing Issue", … }] }
+→ { "narrative": "20 tasks shown: 15 open…", "facts": ["…"] }</pre></div>
         <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
           <ul class="doc__list">
-            <li>Feature flag <code>ai.ecms.nlReports</code> in ECMS Settings, on/off per tenant.</li>
-            <li>Only allow-listed measures and dimensions can be queried; results are capped at 5,000 rows.</li>
-            <li>Every prompt, interpreted query and export is written to the ECMS Audit Log (feature: <i>CICOD-AI Reports</i>).</li>
-            <li>Queries run with the requesting user's permissions, so users only see departments and queues they already have access to.</li>
+            <li>On/off per tenant: <code>ai.ecms.nlReports</code>.</li>
+            <li>The AI only fills filters. ECMS runs the report with the user's own permissions.</li>
+            <li>Prompts and filled filters are logged in the Audit Log.</li>
           </ul></div>
       </div>
     </div>
@@ -166,26 +202,70 @@ document.addEventListener('ai-report-schedule', e =&gt;
 <script src="../../../shared/doc.js"></script>
 <script src="nl-reports.js"></script>
 <script>
-  // Host-page wiring: the page shows the applied filters and owns the saved-report list.
-  const active = document.getElementById('rp-active');
-  document.addEventListener('ai-report-result', e => {
-    document.getElementById('rp-empty').style.display = 'none';
-    active.classList.add('rp__active--on');
-    active.innerHTML = '<b>Filters:</b>';
-    e.detail.chips.forEach(c => { const s = document.createElement('span'); s.className = 'g-chip'; s.textContent = `${c.label}: ${c.options.find(o => o.v === c.value)?.t || c.value}`; active.appendChild(s); });
-  });
-  function addSaved(title, tag) {
-    const box = document.getElementById('rp-saved'); box.classList.add('rp__saved--on');
-    const list = document.getElementById('rp-saved-list');
-    let row = [...list.children].find(r => r.dataset.title === title);
-    if (!row) { row = document.createElement('div'); row.className = 'rp__item'; row.dataset.title = title; row.innerHTML = '<span></span><span class="tags"></span>'; row.firstChild.textContent = title; list.prepend(row); }
-    const chip = document.createElement('span'); chip.className = 'g-chip ' + (tag === 'Weekly · Mon 08:00' ? 'g-chip--info' : 'g-chip--ok'); chip.textContent = tag;
-    row.querySelector('.tags').appendChild(chip);
-    row.classList.remove('rp__flash'); void row.offsetWidth; row.classList.add('rp__flash');
+  // Host page: behaves like the live Reports screen. The AI only fills the dialog's filters.
+  const $ = id => document.getElementById(id), esc = AIGateway.esc;
+  // Live options (govtest): first 70 of 184 queues, Complaints queue types, users from the pickers.
+  const QUEUES = ['1Gov test', 'ACTIVITIES', 'ADMIN', 'admin portal', 'Adult Care', 'AI IMPLEMENTATION', 'approval work', 'Assign User', 'AUTO MOBILE REPAIR', 'Bid Submission', 'Business Intelligence', 'Case management', 'Child Care', 'Civil Service Inspectorate', 'Civil Service Transformation', 'Complaints', 'Construction', 'Content Operations', 'convergence', 'Correspondence', 'Correspondence Management', 'CRITICAL UPDATE', 'Customer service', 'Customer Success', 'Daily update', 'Democratic systems of government', 'Department', 'didi test', 'Digital Innovation', 'Document Approval', 'Edo', 'Education', 'Engineering', 'Enterprise', 'Escalation', 'Exception Queue', 'FARUD AND RISK MANAGEMENT', 'Federal Integrated Staff Housing', 'Final workflow', 'Finance', 'finance department', 'Finance Test', 'For testing', 'Fraud', 'Fraud and Risk Management', 'Fraud Detection', 'fundraising', 'General request', 'General Services', 'Government Power', 'Grace Workflow', 'Household', 'HR', 'HR Test', 'Human Resources', 'Human Resources Management', 'ICT', 'Information Communication Technology', 'Infrastructure Management', 'Insurance Administration', 'Integrated Personnel Payroll Information System', 'Internal Audit', 'Internet logs', 'INVENTORY', 'INVENTORY REQUEST', 'IT Support', 'Order Fulfilment', 'Product development', 'TEST AUTOMATION'];
+  const QTYPES = { Complaints: ['Account set up complaints', 'Application issue', 'Billing Issue', 'complaint', 'Delivery Complaint', 'Game', 'Link Complaint', 'Main', 'Mobile App', 'NBILLING', 'Order complaints', 'Personnel Complaint', 'Product and Service Complaint', 'Seizures Complaints', 'TAX REVIEW', 'TESTING'] };
+  const USERS = ['Abbas Lawal', 'Adeola Adeola', 'Alero Boyo', 'Alexander Attoh', 'Aliyu Aliyu', 'Ann Nya', 'api support', 'Ayodeji Bakare', 'Ayomide Olusanya', 'Babatunde Adenrele', 'Blessing Igwe', 'Blessing Orewa', 'Catherine Opara', 'Chinwuba Okafor', 'Destiny Hope', 'Elvis Akpe', 'Faith Egbe', 'Favour Ifeanacho', 'Joshua Ebhoria', 'Judtih Judtih', 'Mercy Mercy', 'Oladeji Toriola', 'system'];
+  // Complaints report, page 1, as returned by govtest. [id, title, creator, type, created, assignedOn, assignedBy, status, attach]
+  const ROWS = [['17529', 'TEST', 'api support', 'Account set up complaints', '22/09/2026 - 01:18 pm', '22/09/2026 - 01:18 pm', 'api support', 'open'], ['17520', '12345', 'Chinwuba Okafor', 'Billing Issue', '22/09/2026 - 03:59 am', 'N/A', 'N/A', 'resolved', 1],
+    ['17500', 'doc test', 'Chinwuba Okafor', 'Billing Issue', '13/09/2026 - 06:16 pm', 'N/A', 'N/A', 'resolved', 1], ['17499', 'TEST DOCUMENT CLASS', 'Judtih Judtih', 'Billing Issue', '13/09/2026 - 06:08 pm', '13/09/2026 - 06:12 pm', 'Judtih Judtih', 'resolved', 1],
+    ['17498', 'Laptops', 'Mercy Mercy', 'Billing Issue', '13/09/2026 - 04:03 pm', 'N/A', 'N/A', 'open'], ['17496', 'DISASTER RECOVERY', 'Chinwuba Okafor', 'Billing Issue', '13/09/2026 - 03:50 pm', 'N/A', 'N/A', 'open', 1],
+    ['17495', 'TEST 1 GOV MOBILE DRIVE', 'Chinwuba Okafor', 'Billing Issue', '13/09/2026 - 03:37 pm', 'N/A', 'N/A', 'open', 1], ['17494', 'Testing with Classified file fro Gov dri...', 'Oladeji Toriola', 'Billing Issue', '12/09/2026 - 09:10 pm', 'N/A', 'N/A', 'open'],
+    ['17492', 'desk', 'Judtih Judtih', 'Billing Issue', '12/09/2026 - 08:55 pm', 'N/A', 'N/A', 'open', 1], ['17491', 'TEST AUTOMATION', 'Chinwuba Okafor', 'Billing Issue', '12/09/2026 - 08:24 pm', 'N/A', 'N/A', 'resolved', 1],
+    ['17488', 'Test govmail 6', 'Joshua Ebhoria', 'complaint', '11/09/2026 - 09:29 pm', 'N/A', 'N/A', 'open'], ['17487', 'Test govmail3', 'Joshua Ebhoria', 'complaint', '11/09/2026 - 09:11 pm', '11/09/2026 - 09:11 pm', 'Joshua Ebhoria', 'open'],
+    ['17486', 'Test govmail', 'Joshua Ebhoria', 'complaint', '11/09/2026 - 09:03 pm', '11/09/2026 - 09:03 pm', 'Joshua Ebhoria', 'open'], ['17485', 'Test govmail', 'Joshua Ebhoria', 'complaint', '11/09/2026 - 08:55 pm', '11/09/2026 - 08:55 pm', 'Joshua Ebhoria', 'open'],
+    ['17483', 'DOCUMENT CLASSIFICATION TEST 1', 'Chinwuba Okafor', 'Billing Issue', '11/09/2026 - 06:40 pm', 'N/A', 'N/A', 'open'], ['17478', 'Testing Task creation - New ECMS', 'Ann Nya', 'Application issue', '11/09/2026 - 01:16 pm', '11/09/2026 - 01:44 pm', 'Chinwuba Okafor', 'open'],
+    ['17477', 'Test Trigger Form', '', 'complaint', '10/09/2026 - 09:00 pm', '10/09/2026 - 09:00 pm', 'system', 'open'], ['17476', 'Test Trigger Form', '', 'complaint', '10/09/2026 - 08:10 pm', '10/09/2026 - 08:10 pm', 'system', 'open'],
+    ['17475', 'Test Trigger Form', '', 'complaint', '10/09/2026 - 07:55 pm', '10/09/2026 - 07:55 pm', 'system', 'open'], ['17474', 'Test Trigger Form', '', 'complaint', '10/09/2026 - 07:39 pm', '10/09/2026 - 07:39 pm', 'system', 'open']]
+    .map(r => ({ id: r[0], title: r[1], by: r[2], type: r[3], created: r[4], assignedOn: r[5], assignedBy: r[6], status: r[7], attach: !!r[8] }));
+
+  $('ask').setAttribute('queues', QUEUES.join('|')); $('ask').setAttribute('users', USERS.join('|'));
+  $('f-queue').innerHTML = '<option value="">Select queue</option>' + QUEUES.map(q => `<option>${esc(q)}</option>`).join('');
+  document.querySelectorAll('[data-users]').forEach(s => { s.innerHTML = '<option value="">Select users</option>' + USERS.map(u => `<option>${esc(u)}</option>`).join(''); });
+  function loadTypes(queue) {
+    const t = QTYPES[queue] || [];
+    $('f-qt').disabled = !t.length; $('f-qt').innerHTML = `<option value="">${t.length ? 'Select queue type' : 'No queue types available'}</option>` + t.map(x => `<option>${esc(x)}</option>`).join('');
+    $('f-st').disabled = !t.length; $('f-st').innerHTML = `<option value="">${t.length ? 'Select status' : 'No statuses available'}</option>` + (t.length ? ['open', 'resolved'].map(x => `<option>${x}</option>`).join('') : '');
   }
-  document.addEventListener('ai-report-save', e => addSaved(e.detail.title, 'Saved'));
-  document.addEventListener('ai-report-schedule', e => addSaved(e.detail.title, 'Weekly · Mon 08:00'));
-  document.addEventListener('ai-report-export', e => addSaved(e.detail.title, 'Exported CSV'));
+  $('f-queue').addEventListener('change', e => loadTypes(e.target.value));
+  document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => { $('dlg').showModal(); if (b.dataset.ai !== undefined) setTimeout(() => $('ask').focus(), 50); }));
+  document.querySelector('#dlg [data-close]').addEventListener('click', () => $('dlg').close());
+  $('reset').addEventListener('click', () => { document.querySelectorAll('#dlg select').forEach(s => { s.value = ''; }); $('f-dr').value = ''; loadTypes(''); document.querySelectorAll('.rp-f--ai').forEach(x => x.classList.remove('rp-f--ai')); });
+
+  // CICOD-AI fills the same fields a person would
+  document.addEventListener('ai-report-filters', e => {
+    const f = e.detail.filters, mark = k => document.querySelector(`.rp-f[data-k="${k}"]`).classList.add('rp-f--ai');
+    document.querySelectorAll('.rp-f--ai').forEach(x => x.classList.remove('rp-f--ai'));
+    if (f.queue) { $('f-queue').value = f.queue; loadTypes(f.queue); mark('queue'); }
+    if (f.queueType) { $('f-qt').value = f.queueType; mark('queueType'); }
+    if (f.status) { $('f-st').value = f.status; mark('status'); }
+    if (f.priority) { $('f-pr').value = f.priority; mark('priority'); }
+    if (f.taskState) { $('f-ts').value = f.taskState; mark('taskState'); }
+    if (f.from) { $('f-dr').value = `${f.from} - ${f.to}`; mark('date'); }
+    [['createdBy', 'f-cb'], ['assignedBy', 'f-ab'], ['assignedTo', 'f-at']].forEach(([k, id]) => { if (f[k]) { $(id).value = f[k]; mark(k); } });
+  });
+
+  // Apply: filter the captured report rows the way ECMS would
+  const toDate = s => { const m = String(s).match(/(\d{2})\/(\d{2})\/(\d{4})/); return m ? new Date(+m[3], m[2] - 1, +m[1]) : null; };
+  $('apply').addEventListener('click', () => {
+    const q = $('f-queue').value, qt = $('f-qt').value, st = $('f-st').value, cb = $('f-cb').value, ab = $('f-ab').value;
+    const [from, to] = $('f-dr').value.split(' - ').map(toDate);
+    const rows = !q || q === 'Complaints' ? ROWS.filter(r => (!qt || r.type === qt) && (!st || r.status === st) && (!cb || r.by === cb) && (!ab || r.assignedBy === ab)
+      && (!from || toDate(r.created) >= from) && (!to || toDate(r.created) <= to)) : [];
+    $('dlg').close(); $('empty').hidden = true; $('tasks').hidden = false;
+    $('active').innerHTML = [['Queue', q], ['Queue Type', qt], ['Status', st], ['Priority', $('f-pr').value], ['Task State', $('f-ts').value], ['Date', $('f-dr').value], ['Created By', cb], ['Assigned By', ab], ['Assigned To', $('f-at').value]].filter(x => x[1]).map(([k, v]) => `<span>${k}: ${esc(v)}</span>`).join('');
+    $('rows').innerHTML = rows.length ? rows.map(r => `<tr data-row data-status="${r.status}" data-type="${esc(r.type)}" data-created-by="${esc(r.by || 'N/A')}" data-assigned="${r.assignedOn === 'N/A' ? 'no' : 'yes'}">
+      <td><input type="checkbox" aria-label="Select ${r.id}"></td><td><span class="rp-id">${r.id}</span> ⧉</td>
+      <td><div class="rp-title"><span class="rp-av">${r.by ? r.by.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?'}</span><div><a>${esc(r.title)}</a>${r.attach ? ' 📎' : ''}${r.by ? `<small>${esc(r.by)}</small>` : ''}</div></div></td>
+      <td class="rp-wf"><b>Complaints</b> | ${esc(r.type)}</td><td>${r.created}</td><td>${esc(r.by || 'N/A')}</td><td>${r.assignedOn}</td><td>${esc(r.assignedBy)}</td><td><span class="rp-st rp-st--${r.status}">${r.status}</span></td></tr>`).join('')
+      : `<tr><td colspan="9" style="text-align:center;color:var(--rp-muted);padding:30px">No tasks found for these filters.</td></tr>`;
+    $('pager').textContent = rows.length === ROWS.length && !qt && !st && !cb && !ab && !from ? '1  2  3  … More pages' : '';
+    const ignored = [$('f-pr').value && 'Priority', $('f-ts').value && 'Task State', $('f-at').value && 'Assigned To'].filter(Boolean);
+    $('note').textContent = (q && q !== 'Complaints' ? 'Only the Complaints report was captured from govtest. ' : '') + (ignored.length ? `${ignored.join(', ')} can't be checked from the captured columns, so they're not applied here.` : '');
+  });
+  $('dl').addEventListener('click', () => { const rows = [...document.querySelectorAll('#rows [data-row]')].map(tr => [...tr.children].slice(1).map(td => `"${td.innerText.replace(/\s+/g, ' ').replace(/"/g, '""').trim()}"`).join(',')); const csv = ['Task ID,Title,Workflow,Date Created,Created by,Date Assigned,Assigned by,Status', ...rows].join('\n'); try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'report.csv'; a.click(); } catch (e) { /* download blocked */ } });
 </script>
 </body>
 </html>

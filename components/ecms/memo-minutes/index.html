@@ -5,31 +5,116 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Minute Summary</title>
 <link rel="stylesheet" href="../../../shared/tokens.css">
-<link rel="stylesheet" href="../../../shared/shell.css">
 <link rel="stylesheet" href="../../../shared/doc.css">
 <link rel="stylesheet" href="memo-minutes.css">
 <style>
-  /* Page-only layout for the mock memo view with its minute chain */
-  .mm__tabs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
-  .mm__tab { padding: 5px 12px; border-radius: 8px; font-size: 13px; color: var(--text-2); border: 1px solid transparent; }
-  .mm__tab--on { background: var(--gov-green-100); color: var(--gov-green-600); font-weight: 600; }
-  .mm__search { margin-left: auto; width: 260px; max-width: 100%; }
-  .mm__memo { padding: 16px; margin-top: 12px; }
-  .mm__memo h3 { margin: 0 0 4px; font-size: 15px; }
-  .mm__meta { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); margin-bottom: 10px; }
-  .mm__memo p { margin: 0 0 8px; font-size: 13px; }
-  .mm__minutes { list-style: none; margin: 12px 0 0; padding: 0; }
-  .mm__min { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
-  .mm__av { width: 34px; height: 34px; border-radius: 50%; background: var(--gov-green-100); color: var(--gov-green-600); display: grid; place-items: center; font-size: 11px; font-weight: 700; }
-  .mm__who { font-size: 12px; color: var(--text-2); }
-  .mm__who b { color: var(--text); }
-  .mm__txt { font-size: 13px; margin-top: 2px; overflow-wrap: anywhere; }
-  .mm__add { display: grid; grid-template-columns: 180px 180px minmax(0, 1fr) auto; gap: 8px; margin-top: 12px; align-items: end; }
-  .mm__tasks { margin-top: 12px; padding: 14px 16px; }
-  .mm__tasks h4 { margin: 0 0 8px; font-size: 13px; }
+  /* Copy of the live ECMS "Memos → Memos & Drafts" screen (govtest, 28 Sep 2026). Classes are prefixed `lv-`. */
+  .lv { --lv-bg: #fafafa; --lv-card: #fcfcfc; --lv-line: #e4e4e7; --lv-muted: #71717a; --lv-text: #18181b; --lv-green: #1c6b45; --lv-green-bg: #e3ede7; --lv-row: #f4f4f5; --lv-rail: #f4f4f5;
+    display: grid; grid-template-columns: 62px 230px minmax(0, 1fr); min-height: 780px; background: var(--lv-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; color: var(--lv-text); font-size: 14px; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lv { --lv-bg: #0f1420; --lv-card: #151b29; --lv-line: #283045; --lv-muted: #9aa3b5; --lv-text: #f2f4f7; --lv-green: #2e8b5e; --lv-green-bg: #16392a; --lv-row: #1a2131; --lv-rail: #121826; } }
+  :root[data-theme="dark"] .lv { --lv-bg: #0f1420; --lv-card: #151b29; --lv-line: #283045; --lv-muted: #9aa3b5; --lv-text: #f2f4f7; --lv-green: #2e8b5e; --lv-green-bg: #16392a; --lv-row: #1a2131; --lv-rail: #121826; }
+
+  .lv svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .lv-rail { background: var(--lv-rail); border-right: 1px solid var(--lv-line); display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 14px 4px; font-size: 10px; color: var(--lv-muted); text-align: center; }
+  .lv-rail span { display: grid; justify-items: center; gap: 4px; }
+  .lv-rail i { width: 24px; height: 24px; border-radius: 6px; background: var(--lv-green-bg); border: 1px solid color-mix(in srgb, var(--lv-green) 30%, transparent); }
+  .lv-side { border-right: 1px solid var(--lv-line); padding: 12px 10px; display: flex; flex-direction: column; gap: 1px; }
+  .lv-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; letter-spacing: .03em; color: #52525b; padding: 0 0 14px 4px; }
+  .lv-logo { width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 40% 30%, #4ade80, #166534); }
+  .lv-nav { display: flex; align-items: center; gap: 8px; padding: 7px 6px; border-radius: 8px; }
+  .lv-nav span { flex: 1; }
+  .lv-nav--open { color: var(--lv-green); }
+  .lv-sub { margin: 1px 0 3px 14px; padding-left: 10px; border-left: 1px solid var(--lv-line); display: grid; gap: 1px; }
+  .lv-sub div { padding: 7px 12px; border-radius: 8px; }
+  .lv-sub .lv-active { background: var(--lv-green-bg); color: var(--lv-green); }
+  .lv-link { cursor: pointer; }
+
+  .lv-main { display: flex; flex-direction: column; min-width: 0; position: relative; }
+  .lv-top { height: 48px; display: flex; align-items: center; gap: 8px; padding: 0 14px 0 18px; border-bottom: 1px solid var(--lv-line); }
+  .lv-btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px; border: 1px solid var(--lv-line); border-radius: 8px; background: var(--lv-card); color: var(--lv-text); font: 500 13.5px var(--font); white-space: nowrap; }
+  .lv-icon { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--lv-line); border-radius: 8px; background: var(--lv-card); position: relative; }
+  .lv-badge { position: absolute; top: -7px; right: -6px; background: var(--lv-green); color: #fff; font-size: 9.5px; font-weight: 700; border-radius: 99px; padding: 1px 5px; }
+  .lv-avatar { height: 30px; padding: 0 6px 0 3px; border-radius: 99px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--lv-line); background: var(--lv-card); font-size: 11px; font-weight: 600; color: var(--lv-muted); }
+  .lv-avatar b { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--lv-row); }
+  .lv-spacer { flex: 1; }
+  .lv-body { padding: 16px 16px 20px 20px; flex: 1; min-width: 0; }
+  .lv-view[hidden] { display: none; }
+  .lv-page-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .lv-page-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+  .lv-primary { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--lv-green); color: #fff; font: 600 14px var(--font); white-space: nowrap; cursor: pointer; }
+  .lv-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--lv-line); overflow-x: auto; margin-bottom: 18px; }
+  .lv-tabs button { border: 0; background: none; font: 14.5px var(--font); color: var(--lv-muted); padding: 8px 10px; border-bottom: 2px solid transparent; white-space: nowrap; }
+  .lv-tabs [aria-selected="true"] { color: var(--lv-green); border-color: var(--lv-green); font-weight: 500; }
+  .lv-panel { background: var(--lv-card); border: 1px solid var(--lv-line); border-radius: 12px; padding: 18px 18px 8px; min-width: 0; }
+  .lv-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .lv-search { flex: 1 1 260px; max-width: 520px; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 10px; border: 1px solid var(--lv-line); border-radius: 8px; background: var(--lv-card); color: var(--lv-muted); min-width: 180px; }
+  .lv-search input { border: 0; background: transparent; outline: 0; flex: 1; font: inherit; color: var(--lv-text); min-width: 0; }
+  .lv-toolbar .lv-btn { height: 38px; }
+  .lv-toolbar .lv-icon { width: 38px; height: 38px; }
+  .lv-table-wrap { overflow-x: auto; }
+  .lv-table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  .lv-table th { text-align: left; font-weight: 500; padding: 12px 10px; border-bottom: 1px solid var(--lv-line); white-space: nowrap; }
+  .lv-sort { display: inline-block; margin-left: 6px; color: var(--lv-muted); font-size: 9px; line-height: 7px; vertical-align: middle; }
+  .lv-table td { padding: 10px; border-bottom: 1px solid var(--lv-line); white-space: nowrap; vertical-align: middle; }
+  .lv-name { display: flex; align-items: center; gap: 10px; }
+  .lv-doc { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--lv-row); border: 1px solid var(--lv-line); color: var(--lv-muted); flex-shrink: 0; }
+  .lv-name a { color: var(--lv-green); cursor: pointer; text-decoration: none; }
+  .lv-name a:hover { text-decoration: underline; }
+  .lv-name small { display: block; color: var(--lv-muted); font-size: 12px; }
+  .lv-st { display: inline-block; padding: 1px 10px; border-radius: 6px; font-size: 13px; background: var(--lv-green-bg); color: var(--lv-green); }
+
+  /* CICOD-AI addition on the list */
+  .lv-ai-ic { width: 26px; height: 26px; display: inline-grid; place-items: center; border-radius: 7px; border: 1px solid color-mix(in srgb, var(--ai-500) 45%, transparent); background: var(--ai-50); color: var(--ai-600); font-size: 13px; font-weight: 700; cursor: pointer; padding: 0; flex-shrink: 0; }
+  .lv-ai-ic:hover, .lv-ai-ic[aria-expanded="true"] { background: var(--ai-500); color: #fff; }
+  .lv-pop { position: absolute; z-index: 30; width: min(520px, calc(100% - 24px)); }
+  .lv-pop[hidden] { display: none; }
+
+  /* Memo view */
+  .lv-crumbs { display: flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--lv-muted); margin-bottom: 8px; }
+  .lv-crumbs a { color: var(--lv-muted); cursor: pointer; }
+  .lv-crumbs b { color: var(--lv-text); font-weight: 600; }
+  .mv-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .mv-chip { display: inline-flex; padding: 2px 8px; border-radius: 6px; font-size: 12px; background: var(--lv-green-bg); color: var(--lv-green); }
+  .mv-chip--grey { background: var(--lv-row); color: var(--lv-text); }
+  .mv-title { margin: 0 0 14px; font-size: 19px; font-weight: 600; }
+  .mv-stack { display: grid; gap: 14px; min-width: 0; }
+  .mv-card { background: var(--lv-card); border: 1px solid var(--lv-line); border-radius: 12px; padding: 18px 20px; min-width: 0; }
+  .mv-letter { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px dashed var(--lv-line); }
+  .mv-letter span { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+  .mv-letter i { width: 38px; height: 38px; border-radius: 8px; background: var(--lv-green); }
+  .mv-meta { display: flex; gap: 6px 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--lv-muted); margin-bottom: 10px; }
+  .mv-card p { margin: 0 0 8px; }
+  .mv-card h3 { margin: 0 0 4px; font-size: 14.5px; font-weight: 600; }
+  .mm__minutes { list-style: none; margin: 8px 0 0; padding: 0; }
+  .mm__min { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 10px; padding: 11px 0; border-top: 1px solid var(--lv-line); }
+  .mm__av { width: 36px; height: 36px; border-radius: 50%; background: var(--lv-green-bg); color: var(--lv-green); display: grid; place-items: center; font-size: 11.5px; font-weight: 700; }
+  .mm__who { font-size: 12.5px; color: var(--lv-muted); }
+  .mm__who b { color: var(--lv-text); }
+  .mm__txt { font-size: 14px; margin-top: 2px; overflow-wrap: anywhere; }
+  .mm__add { display: grid; grid-template-columns: 190px 190px minmax(0, 1fr) auto; gap: 8px; margin-top: 12px; align-items: end; }
+  .mm__add label { display: block; font-size: 12.5px; margin-bottom: 4px; color: var(--lv-muted); }
+  .mm__add select, .mm__add input { width: 100%; height: 36px; padding: 0 10px; border: 1px solid var(--lv-line); border-radius: 8px; background: var(--lv-card); color: var(--lv-text); font: 13.5px var(--font); }
+  .mv-empty { color: var(--lv-muted); font-style: italic; }
+  .mv-files { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .mv-files th, .mv-files td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--lv-line); white-space: nowrap; }
+  .mv-files th { font-weight: 500; color: var(--lv-muted); }
   .mm__flash { animation: mm-flash 1.4s ease; }
   @keyframes mm-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
-  @media (max-width: 900px) { .mm__add { grid-template-columns: 1fr 1fr; } .mm__add > :nth-child(3), .mm__add > :nth-child(4) { grid-column: 1 / -1; } .mm__search { margin-left: 0; width: 100%; } }
+  .lv-toast { position: fixed; top: 16px; right: 16px; z-index: 100; max-width: 380px; padding: 12px 14px; border-radius: 10px; background: var(--lv-card); color: var(--lv-text); border: 1px solid var(--lv-line); border-left: 4px solid var(--lv-green); box-shadow: var(--shadow-lg); font-size: 13.5px; }
+  .lv-toast[hidden] { display: none; }
+
+  /* Placement callouts (shown with the toggle) */
+  .show-spots [data-ai-spot] { outline: 2px dashed var(--ai-500); outline-offset: 3px; border-radius: 10px; position: relative; }
+  .show-spots [data-ai-spot]::after { content: attr(data-ai-spot); position: absolute; top: -11px; right: 8px; background: var(--ai-500); color: #fff; font: 700 10px var(--font); padding: 2px 8px; border-radius: 999px; z-index: 5; white-space: nowrap; pointer-events: none; }
+  .show-spots .lv-ai-ic[data-ai-spot]::after { top: -20px; right: auto; left: -4px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 0 0 12px; }
+  .steps div { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; font-size: 12.5px; color: var(--text-2); }
+  .steps b { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--ai-500); color: #fff; font-size: 11px; margin-right: 6px; }
+  .note { font-size: 12.5px; color: var(--text-3); margin: 8px 0 0; }
+
+  @media (max-width: 1200px) { .lv { grid-template-columns: 62px minmax(0, 1fr); } .lv-side { display: none; } }
+  @media (max-width: 800px) { .mm__add { grid-template-columns: 1fr 1fr; } .mm__add > :nth-child(3), .mm__add > :nth-child(4) { grid-column: 1 / -1; } }
+  @media (max-width: 700px) { .lv { grid-template-columns: 1fr; } .lv-rail { display: none; } .lv-top .lv-hide-sm { display: none; } .lv-body { padding: 12px; } .lv-panel { padding: 12px; } }
 </style>
 </head>
 <body>
@@ -39,8 +124,8 @@
     <div>
       <span class="ai-badge">ECMS · E-M3 · E-M4 · Priority 1</span>
       <h1>Minute Summary &amp; Action Items</h1>
-      <p>A memo file can carry a long chain of minutes: "pls treat", queries, clarifications, "approved subject to availability of funds". This card reads the whole chain and tells a senior officer <b>where the file stands</b>: status, decisions, open queries and who is holding it. It also turns instructions such as <i>"for your action by Friday"</i> into <b>action items</b> with an assignee and due date, each one a click away from becoming a tracked ECMS task.</p>
-      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Memos → Memo view / Draft Reviews</span><span class="g-chip">Component: &lt;ai-minute-summary&gt;</span><span class="g-chip">Endpoint: /ecms/memo/summarise-minutes</span></div>
+      <p>Get an instant overview of any memo file. The AI reads the entire chain of minutes to tell you who is holding the file, its current status, and any open queries. It automatically converts written instructions into trackable ECMS tasks with owners and due dates. You can preview this summary directly from the Memos list using the <b>✦</b> icon, or view the full summary inside the memo.</p>
+      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Memos → Memos &amp; Drafts → memo</span><span class="g-chip">Component: &lt;ai-minute-summary&gt;</span><span class="g-chip">Endpoint: /ecms/memo/summarise-minutes</span></div>
     </div>
     <div class="doc__toolbar">
       <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
@@ -48,115 +133,143 @@
     </div>
   </header>
 
-  <!-- 1. LIVE PLACEMENT -->
-  <section class="doc__section">
-    <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a memo opened from <b>Memos &amp; Drafts</b> with eight minutes on it. The summary card at the top is generated from those minutes. Click <i>Create ECMS task</i> on an action item (change the assignee or due date first if you like) and it appears under <b>Tasks from this file</b>. Then add your own minute at the bottom, e.g. <i>"Head Works: pls submit completion certificate by Friday"</i>, and click <i>Re-summarise</i>.</p>
-    <div id="screen" class="shell" data-app="ecms" data-active="Memos &amp; Drafts">
-      <div class="shell__content">
-        <div class="mm__tabs"><span class="mm__tab mm__tab--on">All Memos</span><span class="mm__tab">My Drafts</span><span class="mm__tab">Draft Reviews</span><span class="mm__tab">Custom View</span><input class="g-input mm__search" placeholder="Search by name or author..." aria-label="Search memos"></div>
+  <section class="doc__section" style="margin-top:8px">
+    <h2>Live screen with CICOD-AI in place</h2>
+    <div class="steps">
+      <div><b>1</b>On Memos &amp; Drafts, click the <b style="all:unset;font-weight:700;color:var(--ai-600)">✦</b> next to <b style="all:unset;font-weight:700">Renovation of Kano Store warehouse roof</b>. The preview shows who holds the file and how many actions are open.</div>
+      <div><b>2</b>Click <b style="all:unset;font-weight:700;color:var(--ai-600)">✦ Open with full summary</b>. The memo opens with the <b style="all:unset;font-weight:700">File summary</b> expanded above the memo and its 8 minutes.</div>
+      <div><b>3</b>On an action item, click <b style="all:unset;font-weight:700;color:var(--ai-600)">Create ECMS task</b>. Or add a minute at the bottom, then click <b style="all:unset;font-weight:700">Re-summarise</b>.</div>
+    </div>
 
-        <div data-ai-spot="CICOD-AI · File summary + action items">
-          <ai-minute-summary source="#minutes" subject="Renovation of Kano Store warehouse roof" ref="CICOD/WKS/MEM/2026/118"></ai-minute-summary>
+    <div id="screen" class="lv">
+      <nav class="lv-rail" aria-label="1Gov apps"><span><i></i>Gov D...</span><span><i></i>Gov In...</span><span><i></i>Confe...</span><span><i></i>Asset ...</span><span><i></i>Gov L...</span><span><i></i>1Gov Admin</span></nav>
+      <aside class="lv-side" aria-label="ECMS navigation">
+        <div class="lv-brand"><span class="lv-logo"></span>GOVTEST</div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Overview</span></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17V9M13 17V5M18 17v-6"/></svg><span>Dashboard</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h13"/></svg><span>Requests</span></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><circle cx="12" cy="15" r="2"/></svg><span>Tasks</span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+        <div class="lv-sub"><div>Create Task</div><div>All Tasks</div><div>Task Approvals</div></div>
+        <div class="lv-nav lv-nav--open"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>Memos</span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+        <div class="lv-sub"><div>Create Memo</div><div class="lv-active lv-link" id="nav-memos">Memos &amp; Drafts</div></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="15" width="6" height="6" rx="1"/><path d="M6 9v3a3 3 0 0 0 3 3h6"/></svg><span>Workflows</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 4a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6"/></svg><span>Workgroups</span></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h13"/></svg><span>Forms</span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+        <div class="lv-sub"><div>Create Form</div><div>All Forms</div><div>Form Analytics</div></div>
+      </aside>
+
+      <div class="lv-main" id="lv-main">
+        <div class="lv-top">
+          <span class="lv-btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Quick Actions</span>
+          <span class="lv-spacer"></span>
+          <span class="lv-btn lv-hide-sm">Paperless Service Portal</span>
+          <span class="lv-icon lv-hide-sm" style="color:#16a34a"><svg viewBox="0 0 24 24"><path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/></svg></span>
+          <span class="lv-icon lv-hide-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
+          <span class="lv-icon"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><i class="lv-badge">94</i></span>
+          <span class="lv-icon lv-hide-sm"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+          <span class="lv-avatar"><b>AN</b><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span>
         </div>
 
-        <div class="g-card mm__memo">
-          <h3>REQUEST FOR APPROVAL: RENOVATION OF KANO STORE WAREHOUSE ROOF</h3>
-          <div class="mm__meta"><span>Ref No: CICOD/WKS/MEM/2026/118</span><span>Date: 08/09/2026</span><span>From: Head, Works &amp; Maintenance</span><span class="g-chip g-chip--ok">Official</span><span class="g-chip g-chip--info">Published</span></div>
-          <p>1. The roof of the Kano store warehouse leaks badly and stock was damaged during the August rains. A Bill of Quantities is attached.</p>
-          <p>2. Recommendation: the Permanent Secretary may wish to kindly approve the renovation at ₦3,850,000.00.</p>
-          <h4 style="margin:14px 0 0;font-size:13px">Minutes (8)</h4>
-          <ol class="mm__minutes" id="minutes">
-            <li class="mm__min" data-minute data-by="Head, Works & Maintenance" data-name="Engr. T. Bello" data-to="Director, General Services" data-date="08/09/2026"><span class="mm__av">HW</span><div><div class="mm__who"><b>Head, Works &amp; Maintenance</b> (Engr. T. Bello) → Director, General Services · 08/09/2026 10:14</div><div class="mm__txt" data-minute-text>Director, the attached memo on the leaking roof of the Kano store warehouse is for your consideration. BoQ attached at ₦3,850,000.</div></div></li>
-            <li class="mm__min" data-minute data-by="Director, General Services" data-name="Mrs A. Okeke" data-to="Director, Finance & Accounts" data-date="09/09/2026"><span class="mm__av">DG</span><div><div class="mm__who"><b>Director, General Services</b> (Mrs A. Okeke) → DFA · 09/09/2026 09:02</div><div class="mm__txt" data-minute-text>DFA: pls treat. Kindly confirm availability of funds under the 2026 capital vote.</div></div></li>
-            <li class="mm__min" data-minute data-by="Director, Finance & Accounts" data-name="Mr S. Danjuma" data-to="Director, General Services" data-date="11/09/2026"><span class="mm__av">DF</span><div><div class="mm__who"><b>Director, Finance &amp; Accounts</b> (Mr S. Danjuma) → Director, General Services · 11/09/2026 15:40</div><div class="mm__txt" data-minute-text>The amount appears high compared with the ₦2.1m paid for the Central Store roof in 2025. Please clarify the difference and provide 3 quotations.</div></div></li>
-            <li class="mm__min" data-minute data-by="Head, Works & Maintenance" data-name="Engr. T. Bello" data-to="Director, Finance & Accounts" data-date="15/09/2026"><span class="mm__av">HW</span><div><div class="mm__who"><b>Head, Works &amp; Maintenance</b> → DFA · 15/09/2026 11:05</div><div class="mm__txt" data-minute-text>Clarification: the Kano store roof is 1.8 times larger than Central Store and includes gutter replacement. 3 quotations attached; the lowest is ₦3,620,000.</div></div></li>
-            <li class="mm__min" data-minute data-by="Director, Finance & Accounts" data-name="Mr S. Danjuma" data-to="Permanent Secretary" data-date="16/09/2026"><span class="mm__av">DF</span><div><div class="mm__who"><b>Director, Finance &amp; Accounts</b> → Permanent Secretary · 16/09/2026 14:20</div><div class="mm__txt" data-minute-text>Funds are available under capital vote 23020118 for ₦3,620,000. Recommended for approval.</div></div></li>
-            <li class="mm__min" data-minute data-by="Permanent Secretary" data-name="" data-to="Director, General Services" data-date="18/09/2026"><span class="mm__av">PS</span><div><div class="mm__who"><b>Permanent Secretary</b> → Director, General Services · 18/09/2026 10:00</div><div class="mm__txt" data-minute-text>Approved subject to availability of funds. Director GS to ensure the work is completed before the rainy season ends.</div></div></li>
-            <li class="mm__min" data-minute data-by="Director, General Services" data-name="Mrs A. Okeke" data-to="Head, Procurement" data-date="21/09/2026"><span class="mm__av">DG</span><div><div class="mm__who"><b>Director, General Services</b> → Head, Procurement · 21/09/2026 12:30</div><div class="mm__txt" data-minute-text>Head Procurement: for your action by Friday. Issue the LPO to the lowest responsive bidder.</div></div></li>
-            <li class="mm__min" data-minute data-by="Head, Procurement" data-name="Mr K. Musa" data-to="Head, Works & Maintenance" data-date="22/09/2026"><span class="mm__av">HP</span><div><div class="mm__who"><b>Head, Procurement</b> (Mr K. Musa) → Head, Works &amp; Maintenance · 22/09/2026 16:45</div><div class="mm__txt" data-minute-text>Noted. Please submit the revised BoQ with the vendor's name within 48 hours so that the LPO can be raised.</div></div></li>
-          </ol>
-          <div class="mm__add">
-            <div><label class="g-label" for="mm-by">Minute as</label><select class="g-select" id="mm-by"><option>Head, Works &amp; Maintenance</option><option>Director, General Services</option><option>Director, Finance &amp; Accounts</option><option>Head, Procurement</option><option>Permanent Secretary</option></select></div>
-            <div><label class="g-label" for="mm-to">Minute to</label><select class="g-select" id="mm-to"><option>Head, Procurement</option><option>Director, General Services</option><option>Director, Finance &amp; Accounts</option><option>Head, Works &amp; Maintenance</option><option>Permanent Secretary</option></select></div>
-            <div><label class="g-label" for="mm-text">Minute</label><input class="g-input" id="mm-text" placeholder="e.g. Head Works: pls submit completion certificate by Friday"></div>
-            <button class="g-btn g-btn--primary" id="mm-add" type="button">Minute</button>
+        <div class="lv-body">
+          <!-- MEMOS & DRAFTS: live layout; the only addition is the ✦ next to a memo name -->
+          <div class="lv-view" id="view-list">
+            <div class="lv-page-head"><h2>Memos</h2><span class="lv-primary"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Create</span></div>
+            <div class="lv-tabs" role="tablist"><button role="tab" type="button" aria-selected="true">All Memos</button><button role="tab" type="button" aria-selected="false" data-na>My Drafts</button><button role="tab" type="button" aria-selected="false" data-na>Draft Reviews</button></div>
+            <div class="lv-panel">
+              <div class="lv-toolbar">
+                <label class="lv-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="lv-q" placeholder="Search by name or author..." aria-label="Search memos"></label>
+                <span class="lv-spacer"></span>
+                <span class="lv-btn"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10M15 10v10"/></svg>Custom View</span>
+                <span class="lv-icon"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.6-4.5L4 8M4 13a8 8 0 0 0 14.6 4.5L20 16"/><path d="M4 4v4h4M20 20v-4h-4"/></svg></span>
+              </div>
+              <div class="lv-table-wrap" id="table-wrap">
+                <table class="lv-table">
+                  <thead><tr><th>Name<span class="lv-sort">▲<br>▼</span></th><th>Status</th><th>Date Created<span class="lv-sort">▲<br>▼</span></th></tr></thead>
+                  <tbody id="rows"></tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="g-card mm__tasks" data-ai-spot="CICOD-AI · Tasks created from minutes">
-          <h4>Tasks from this file (<span id="mm-count">0</span>)</h4>
-          <div class="g-table-wrap"><table class="g-table"><thead><tr><th>Task ID</th><th>Title</th><th>Queue</th><th>Assignee</th><th>Due date</th><th>Status</th></tr></thead>
-            <tbody id="mm-tasks"><tr id="mm-empty"><td colspan="6" style="color:var(--text-3)">No tasks yet. Use "Create ECMS task" on an action item above.</td></tr></tbody></table></div>
+          <!-- MEMO VIEW: File summary above the memo body and minutes -->
+          <div class="lv-view" id="view-memo" hidden></div>
         </div>
+        <div class="lv-pop" id="pop" hidden></div>
+        <div class="lv-toast" id="toast" role="status" hidden></div>
       </div>
     </div>
-    <div class="doc__where" style="margin-top:12px">
-      <div class="doc__where-item"><b>Primary placement</b>Top of the memo view opened from <code>/ecms/memos?tab=all</code>, above the memo body and minutes</div>
-      <div class="doc__where-item"><b>Also appears in</b>Draft Reviews (summary before reviewing), the Home Daily Brief ("memo X was minuted to you"), and on publish of a new minute</div>
-      <div class="doc__where-item"><b>Trigger</b>Opening a memo with 3 or more minutes; re-run when a new minute is added</div>
-      <div class="doc__where-item"><b>Who sees it</b>Anyone who can open the memo. The summary only uses minutes the viewer is allowed to read</div>
-    </div>
+    <p class="note">The Memos &amp; Drafts screen and its memo rows (names, status and dates) are copied from govtest (28 Sep 2026). The layout of an opened memo and the contents of the govtest memos weren't captured. <b>Renovation of Kano Store warehouse roof</b> is a sample memo with a full chain of 8 minutes, added to show the summary. The govtest memos open with their content marked as not captured, so they have no summary (the card needs at least 3 minutes).</p>
     <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
   </section>
 
-  <!-- 2. HOW IT WORKS -->
   <section class="doc__section">
-    <h2>2. How it works</h2>
-    <p class="doc__lede">An LLM reads the minute chain in order. Rules pick out executive shorthand, dates and amounts, and ECMS task routing proposes the queue.</p>
+    <h2>Exactly where it goes</h2>
+    <div class="doc__where">
+      <div class="doc__where-item"><b>① File summary (main)</b>At the top of an opened memo, above the memo body and its minutes. It opens with <b>✦ Summarize File</b>, or already expanded when you arrive from the list preview. It rebuilds when a new minute is added.</div>
+      <div class="doc__where-item"><b>② ✦ on Memos &amp; Drafts</b>Next to the memo name, only on memos with 3 or more minutes. The preview shows the status, who holds the file and open actions, with <b>Open with full summary</b> or <b>Open memo</b>.</div>
+      <div class="doc__where-item"><b>③ Action items → Tasks</b><b>Create ECMS task</b> on each action item sends the task to Tasks with the memo Ref. The new task shows under "Tasks from this file".</div>
+      <div class="doc__where-item"><b>Unchanged</b>The tabs (All Memos, My Drafts, Draft Reviews), search, Custom View, Create and Minute work as they do today. Summaries are only built when someone clicks.</div>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>How it works</h2>
+    <p class="doc__lede">The AI reads through the history of a memo to find key actions, dates, and decisions automatically.</p>
     <div class="doc__flow">
-      <div class="doc__step"><h4>Capture</h4><p>Each minute's author role, addressee role, date and text, plus the memo Ref No and subject, are sent to <code>/ecms/memo/summarise-minutes</code>.</p></div>
-      <div class="doc__step"><h4>Protect</h4><p>Only minutes the viewer can read are sent. The gateway redacts personal data and keeps Confidential or Secret files on the sovereign model.</p></div>
-      <div class="doc__step"><h4>Understand</h4><p>A shorthand dictionary maps "DFA", "Perm Sec", "pls treat", "KIV" and "for your action" to roles and intents. The LLM then writes the status, decisions and queries, and checks whether each query was answered by a later minute.</p></div>
-      <div class="doc__step"><h4>Extract actions</h4><p>Instructions become action items. The assignee is the addressee or the role named in the sentence ("Director GS to ensure…"). The due date comes from "by Friday" or "within 48 hours", or defaults to 3 working days.</p></div>
-      <div class="doc__step"><h4>Create tasks</h4><p>"Create ECMS task" sends the title, assignee, due date and memo Ref to Tasks, and Smart Routing picks the queue. The task links back to the memo.</p></div>
-      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Officers can change the assignee or date before creating. "Summary is right" or "Not accurate" and every edit go to <code>/feedback</code> and are used to tune the prompt and the shorthand list.</p></div>
+      <div class="doc__step"><h4>Capture</h4><p>The AI reviews the minute text, dates, and the people involved to build a complete picture of the memo's history.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>You only see summaries of minutes you are authorized to read. Highly sensitive memos are kept completely secure and private.</p></div>
+      <div class="doc__step"><h4>Understand</h4><p>The system understands government shorthand (like "pls treat", "KIV", "for your action") and figures out if questions raised in earlier minutes have been answered yet.</p></div>
+      <div class="doc__step"><h4>Extract Actions</h4><p>When someone writes an instruction, the AI turns it into an actionable item. It automatically figures out who should do the work and when it is due based on the text.</p></div>
+      <div class="doc__step"><h4>Create Tasks</h4><p>Clicking "Create ECMS task" instantly moves that instruction into your official Tasks list so it can be tracked until completion.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; Learn</h4><p>You always have the final say. You can change the assignee or due date before creating a task. Your feedback helps the system get even smarter.</p></div>
     </div>
   </section>
 
-  <!-- 3. BENEFITS -->
   <section class="doc__section">
-    <h2>3. Benefits to this feature</h2>
-    <p class="doc__lede">Targets from the CICOD-AI augmentation analysis and the CICOD business case ("decisions become tracked work").</p>
+    <h2>Benefits</h2>
+    <p class="doc__lede">Designed to save time and ensure no instruction slips through the cracks.</p>
     <div class="doc__benefits">
-      <div class="doc__benefit"><div class="doc__benefit-kpi">8 minutes → 1 card</div><h4>Senior officer read time</h4><p>Target: under 1 minute to know the state of a file, instead of reading every minute.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">0 → 100%</div><h4>Instructions tracked</h4><p>Today "pls treat" and "for your action" live only as text. Every instruction can now become a task with an owner and date.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Overdue flagged</div><h4>No silent delays</h4><p>Actions past their due date with no reply minute are flagged, e.g. the LPO action due Friday 25/09 above.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Who holds it</div><h4>File tracking</h4><p>Replaces "where is the file?" calls: the card shows the holder and how many days they have had it.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Instant</div><h4>Quick Read Time</h4><p>Get a complete understanding of where a file stands in under a minute, without needing to read through a long history of minutes.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Preview</div><h4>Triage Without Opening</h4><p>The list preview shows you exactly who is holding a file and what actions are overdue before you even open the memo.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Tracked</div><h4>Instructions Are Tracked</h4><p>Instead of "pls treat" getting lost in text, every instruction becomes an official, tracked task with an owner and a deadline.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Visible</div><h4>Clear File Tracking</h4><p>Stop asking "Where is the file?". The summary instantly tells you exactly who holds it and how long they have had it.</p></div>
     </div>
   </section>
 
-  <!-- 4. INTEGRATION -->
   <section class="doc__section">
-    <h2>4. How to implement it in ECMS</h2>
+    <h2>How to implement it in ECMS</h2>
     <div class="doc__cols">
       <div>
-        <div class="doc__panel"><h4>Mount (Memo view)</h4>
+        <div class="doc__panel"><h4>Two additions to existing screens</h4>
 <pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/memo-minutes.css"&gt;
 &lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
 &lt;script src="/ai/components/memo-minutes.js"&gt;&lt;/script&gt;
 
-&lt;ai-minute-summary source="#minutes"
-    subject="Renovation of Kano Store warehouse roof"
-    ref="CICOD/WKS/MEM/2026/118"&gt;&lt;/ai-minute-summary&gt;
-
-&lt;!-- each minute --&gt;
+&lt;!-- 1. Opened memo: above the memo body --&gt;
+&lt;ai-minute-summary source="#minutes" subject="{{memo.subject}}"
+    ref="{{memo.refNo}}"&gt;&lt;/ai-minute-summary&gt;
 &lt;li data-minute data-by="Permanent Secretary"
-    data-to="Director, General Services"
-    data-date="18/09/2026"&gt;…&lt;/li&gt;
+    data-to="Director, General Services" data-date="18/09/2026"&gt;…&lt;/li&gt;
+
+&lt;!-- 2. Memos &amp; Drafts: after the name, when minutes &gt;= 3 --&gt;
+&lt;button class="ai-memo-ic" data-memo="{{memo.id}}"&gt;✦&lt;/button&gt;
+&lt;!-- on click, mount in a popover: --&gt;
+&lt;ai-minute-summary variant="preview" source="#row-minutes"
+    ref="{{memo.refNo}}"&gt;&lt;/ai-minute-summary&gt;
 
 &lt;script&gt;
+on('ai-minute-open', e =&gt; router.push(memoUrl(e.detail.ref),
+  { summary: e.detail.summary }));   // renders &lt;ai-minute-summary open&gt;
 on('ai-minute-create-task', e =&gt; tasksApi.create({
-  ...e.detail, links: [{ type: 'memo', ref: e.detail.ref }]
-}));
+  ...e.detail, links: [{ type: 'memo', ref: e.detail.ref }] }));
 &lt;/script&gt;</pre></div>
         <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
           <ol class="doc__list">
             <li>Build the shorthand dictionary (DFA, Perm Sec, HOD, KIV, "pls treat") with Registry officers, per MDA.</li>
             <li>Expose <code>/ecms/memo/summarise-minutes</code> on the CICOD-AI Gateway, returning structured JSON only.</li>
             <li>Mark minutes in the memo view with <code>data-minute</code> attributes and mount the card above the memo.</li>
+            <li>Add the ✦ to Memos &amp; Drafts rows with 3 or more minutes, and cache each summary until the next minute.</li>
             <li>Wire <code>ai-minute-create-task</code> to the Tasks API with a back-link to the memo.</li>
-            <li>Pilot in one directorate; compare the CICOD-AI's action list with what officers actually did.</li>
           </ol></div>
       </div>
       <div>
@@ -179,50 +292,156 @@ on('ai-minute-create-task', e =&gt; tasksApi.create({
     "dueSource": "\"by Friday\"", "done": false }] }</pre></div>
         <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
           <ul class="doc__list">
-            <li>Feature flag <code>ai.ecms.memoMinutes</code> in ECMS Settings, on/off per tenant.</li>
-            <li>Minimum chain length before the card shows (default 3 minutes).</li>
+            <li>Feature flag <code>ai.ecms.memoMinutes</code> in ECMS Settings, on/off per tenant. The list ✦ can be switched off on its own.</li>
+            <li>Minimum chain length before the ✦ and the card show (default 3 minutes).</li>
             <li>Summaries and created tasks are written to the ECMS Audit Log (feature: <i>CICOD-AI Minutes</i>) with the memo Ref.</li>
-            <li>The card never shows minutes the viewer can't read; tasks can only be assigned to roles the creator may assign to.</li>
+            <li>The card never shows minutes the viewer can't read. Tasks can only be assigned to roles the creator may assign to.</li>
           </ul></div>
       </div>
     </div>
   </section>
 </main>
 
-<script src="../../../shared/shell.js"></script>
+<!-- Minute chain of the sample memo (the host page owns it; the component only reads it) -->
+<template id="kano-minutes">
+  <li class="mm__min" data-minute data-by="Head, Works & Maintenance" data-name="Engr. T. Bello" data-to="Director, General Services" data-date="08/09/2026"><span class="mm__av">HW</span><div><div class="mm__who"><b>Head, Works &amp; Maintenance</b> (Engr. T. Bello) → Director, General Services · 08/09/2026 10:14</div><div class="mm__txt" data-minute-text>Director, the attached memo on the leaking roof of the Kano store warehouse is for your consideration. BoQ attached at ₦3,850,000.</div></div></li>
+  <li class="mm__min" data-minute data-by="Director, General Services" data-name="Mrs A. Okeke" data-to="Director, Finance & Accounts" data-date="09/09/2026"><span class="mm__av">DG</span><div><div class="mm__who"><b>Director, General Services</b> (Mrs A. Okeke) → DFA · 09/09/2026 09:02</div><div class="mm__txt" data-minute-text>DFA: pls treat. Kindly confirm availability of funds under the 2026 capital vote.</div></div></li>
+  <li class="mm__min" data-minute data-by="Director, Finance & Accounts" data-name="Mr S. Danjuma" data-to="Director, General Services" data-date="11/09/2026"><span class="mm__av">DF</span><div><div class="mm__who"><b>Director, Finance &amp; Accounts</b> (Mr S. Danjuma) → Director, General Services · 11/09/2026 15:40</div><div class="mm__txt" data-minute-text>The amount appears high compared with the ₦2.1m paid for the Central Store roof in 2025. Please clarify the difference and provide 3 quotations.</div></div></li>
+  <li class="mm__min" data-minute data-by="Head, Works & Maintenance" data-name="Engr. T. Bello" data-to="Director, Finance & Accounts" data-date="15/09/2026"><span class="mm__av">HW</span><div><div class="mm__who"><b>Head, Works &amp; Maintenance</b> → DFA · 15/09/2026 11:05</div><div class="mm__txt" data-minute-text>Clarification: the Kano store roof is 1.8 times larger than Central Store and includes gutter replacement. 3 quotations attached; the lowest is ₦3,620,000.</div></div></li>
+  <li class="mm__min" data-minute data-by="Director, Finance & Accounts" data-name="Mr S. Danjuma" data-to="Permanent Secretary" data-date="16/09/2026"><span class="mm__av">DF</span><div><div class="mm__who"><b>Director, Finance &amp; Accounts</b> → Permanent Secretary · 16/09/2026 14:20</div><div class="mm__txt" data-minute-text>Funds are available under capital vote 23020118 for ₦3,620,000. Recommended for approval.</div></div></li>
+  <li class="mm__min" data-minute data-by="Permanent Secretary" data-name="" data-to="Director, General Services" data-date="18/09/2026"><span class="mm__av">PS</span><div><div class="mm__who"><b>Permanent Secretary</b> → Director, General Services · 18/09/2026 10:00</div><div class="mm__txt" data-minute-text>Approved subject to availability of funds. Director GS to ensure the work is completed before the rainy season ends.</div></div></li>
+  <li class="mm__min" data-minute data-by="Director, General Services" data-name="Mrs A. Okeke" data-to="Head, Procurement" data-date="21/09/2026"><span class="mm__av">DG</span><div><div class="mm__who"><b>Director, General Services</b> → Head, Procurement · 21/09/2026 12:30</div><div class="mm__txt" data-minute-text>Head Procurement: for your action by Friday. Issue the LPO to the lowest responsive bidder.</div></div></li>
+  <li class="mm__min" data-minute data-by="Head, Procurement" data-name="Mr K. Musa" data-to="Head, Works & Maintenance" data-date="22/09/2026"><span class="mm__av">HP</span><div><div class="mm__who"><b>Head, Procurement</b> (Mr K. Musa) → Head, Works &amp; Maintenance · 22/09/2026 16:45</div><div class="mm__txt" data-minute-text>Noted. Please submit the revised BoQ with the vendor's name within 48 hours so that the LPO can be raised.</div></div></li>
+</template>
+
 <script src="../../../shared/ai-gateway.js"></script>
 <script src="../../../shared/doc.js"></script>
 <script src="memo-minutes.js"></script>
 <script>
-  // Host-page wiring: the page owns the minute chain and the task list.
-  const tbody = document.getElementById('mm-tasks');
-  let nextId = 17601, count = 0;
-  const td = t => { const c = document.createElement('td'); c.textContent = t; return c; };
-  const fmt = iso => iso ? iso.split('-').reverse().join('/') : '';
-  document.addEventListener('ai-minute-create-task', e => {
-    const d = e.detail;
-    document.getElementById('mm-empty')?.remove();
-    const tr = document.createElement('tr');
-    [`#${nextId++}`, d.title, `${d.queue} · ${d.queueType}`, d.assignee, fmt(d.due)].forEach(v => tr.appendChild(td(v)));
-    const st = document.createElement('td'); st.innerHTML = '<span class="g-chip g-chip--info">OPEN</span>'; tr.appendChild(st);
-    tbody.appendChild(tr);
-    document.getElementById('mm-count').textContent = ++count;
-    tr.classList.add('mm__flash');
+  // Host page: behaves like live ECMS Memos & Drafts and owns the memos; <ai-minute-summary> only reads minutes.
+  const esc = AIGateway.esc;
+  // All Memos, as on govtest (28/09/2026), newest first; the sample memo is slotted in by its date.
+  const MEMOS = [
+    { id: 'm1', name: 'Memo with Reviewer', status: 'Published', created: '12/09/2026 - 09:39 pm' },
+    { id: 'kano', name: 'Renovation of Kano Store warehouse roof', status: 'Published', created: '08/09/2026 - 10:14 am', sample: true,
+      subject: 'Renovation of Kano Store warehouse roof', ref: 'CICOD/WKS/MEM/2026/118', from: 'Head, Works & Maintenance', date: '08/09/2026',
+      body: ['1. The roof of the Kano store warehouse leaks badly and stock was damaged during the August rains. A Bill of Quantities is attached.', '2. Recommendation: the Permanent Secretary may wish to kindly approve the renovation at ₦3,850,000.00.'] },
+    { id: 'm2', name: 'Testing Memo 3rd September', status: 'Published', created: '03/09/2026 - 12:21 pm' },
+    { id: 'm3', name: 'Test Memo', status: 'Published', created: '31/08/2026 - 04:22 pm' },
+    { id: 'm4', name: 'memo file8', status: 'Published', created: '15/04/2026 - 08:07 am' },
+    { id: 'm5', name: 'Tuesday', status: 'Published', created: '14/04/2026 - 10:13 am' },
+    { id: 'm6', name: 'Tuesday', status: 'Published', created: '14/04/2026 - 10:11 am' },
+    { id: 'm7', name: 'file20007', status: 'Published', created: '08/04/2026 - 12:20 pm' },
+  ];
+  const byId = id => MEMOS.find(m => m.id === id);
+  const hasMinutes = m => !!m.sample; // ✦ shows only where the minute chain is known (>= 3 minutes)
+  const main = document.getElementById('lv-main'), pop = document.getElementById('pop'), toast = document.getElementById('toast');
+  let toastT;
+  const say = msg => { toast.textContent = msg; toast.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { toast.hidden = true; }, 4200); };
+  const DOC = '<svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>';
+
+  /* ---------- Memos & Drafts ---------- */
+  function renderRows(q = '') {
+    q = q.trim().toLowerCase();
+    document.getElementById('rows').innerHTML = MEMOS.filter(m => !q || m.name.toLowerCase().includes(q)).map(m => `<tr>
+      <td><div class="lv-name"><span class="lv-doc">${DOC}</span><div><a data-open="${m.id}">${esc(m.name)}</a>${m.sample ? '<small>Sample memo, not on govtest</small>' : ''}</div>
+        ${hasMinutes(m) ? `<button class="lv-ai-ic" type="button" data-sum="${m.id}" aria-expanded="false" aria-label="CICOD-AI file summary for ${esc(m.name)}" title="CICOD-AI file summary" data-ai-spot="② ✦ File summary preview">✦</button>` : ''}</div></td>
+      <td><span class="lv-st">${m.status}</span></td><td>${m.created}</td></tr>`).join('');
+  }
+  document.getElementById('lv-q').addEventListener('input', e => { closePop(); renderRows(e.target.value); });
+  document.querySelectorAll('[data-na]').forEach(b => b.addEventListener('click', () => say(`${b.textContent} wasn't captured from govtest. In ECMS it lists the same memos filtered to your drafts or reviews, with the same ✦.`)));
+
+  let popFor = null;
+  function closePop() { pop.hidden = true; pop.innerHTML = ''; document.querySelectorAll('.lv-ai-ic[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false')); popFor = null; }
+  function openPop(btn) {
+    const m = byId(btn.dataset.sum);
+    if (popFor === m.id) return closePop();
+    closePop(); popFor = m.id; btn.setAttribute('aria-expanded', 'true');
+    const r = btn.getBoundingClientRect(), box = main.getBoundingClientRect();
+    pop.style.top = (r.bottom - box.top + 8) + 'px';
+    pop.style.left = Math.max(12, Math.min(r.left - box.left - 200, box.width - Math.min(520, box.width - 24) - 12)) + 'px';
+    pop.hidden = false;
+    pop.innerHTML = `<ol id="pv-minutes" hidden>${document.getElementById(m.id + '-minutes-src')?.innerHTML || minutesHtml(m)}</ol>
+      <ai-minute-summary variant="preview" source="#pv-minutes" subject="${esc(m.subject)}" ref="${esc(m.ref)}"></ai-minute-summary>`;
+  }
+  main.addEventListener('click', e => {
+    const s = e.target.closest('[data-sum]'); if (s) return openPop(s);
+    const o = e.target.closest('[data-open]'); if (o) return openMemo(o.dataset.open);
+    if (!e.target.closest('#pop')) closePop();
   });
-  document.getElementById('mm-add').addEventListener('click', () => {
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePop(); });
+  document.addEventListener('ai-minute-open', e => openMemo(MEMOS.find(m => m.ref === e.detail.ref).id, e.detail.summary));
+
+  /* ---------- Memo view ---------- */
+  const added = {}; // minutes added in this session, per memo
+  const minutesHtml = m => document.getElementById('kano-minutes').innerHTML + (added[m.id] || []).join('');
+  let tasks = [], nextId = 17582;
+
+  function openMemo(id, summary) {
+    closePop();
+    const m = byId(id), v = document.getElementById('view-memo');
+    v.innerHTML = `<div class="lv-crumbs"><a data-back>Memos</a> <svg viewBox="0 0 24 24" style="width:14px;height:14px"><path d="m9 6 6 6-6 6"/></svg> <b>${esc(m.name)}</b></div>
+      <div class="mv-chips"><span class="mv-chip">${m.status}</span>${m.sample ? '<span class="mv-chip">Official</span><span class="mv-chip mv-chip--grey">Sample memo</span>' : ''}</div>
+      <h2 class="mv-title">${esc(m.sample ? 'REQUEST FOR APPROVAL: ' + m.subject.toUpperCase() : m.name)}</h2>
+      ${m.sample ? `<div class="mv-stack">
+        <div data-ai-spot="① CICOD-AI File summary (top of memo)"><ai-minute-summary id="sum" source="#minutes" subject="${esc(m.subject)}" ref="${esc(m.ref)}"${summary ? ' open' : ''}></ai-minute-summary></div>
+        <div class="mv-card">
+          <div class="mv-letter"><span><i></i>CICOD</span><span style="font-weight:400">${m.date}</span></div>
+          <div class="mv-meta"><span>Ref No: ${m.ref}</span><span>Date: ${m.date}</span><span>From: ${esc(m.from)}</span></div>
+          ${m.body.map(p => `<p>${esc(p)}</p>`).join('')}
+          <h3 style="margin-top:16px">Minutes (<span id="mm-n"></span>)</h3>
+          <ol class="mm__minutes" id="minutes">${minutesHtml(m)}</ol>
+          <div class="mm__add">
+            <div><label for="mm-by">Minute as</label><select id="mm-by"><option>Head, Works &amp; Maintenance</option><option>Director, General Services</option><option>Director, Finance &amp; Accounts</option><option>Head, Procurement</option><option>Permanent Secretary</option></select></div>
+            <div><label for="mm-to">Minute to</label><select id="mm-to"><option>Head, Procurement</option><option>Director, General Services</option><option>Director, Finance &amp; Accounts</option><option>Head, Works &amp; Maintenance</option><option>Permanent Secretary</option></select></div>
+            <div><label for="mm-text">Minute</label><input id="mm-text" placeholder="e.g. Head Works: pls submit completion certificate by Friday"></div>
+            <span class="lv-primary" role="button" tabindex="0" id="mm-add">Minute</span>
+          </div>
+        </div>
+        <div class="mv-card" data-ai-spot="③ CICOD-AI Tasks created from minutes">
+          <h3>Tasks from this file (<span id="mm-count">${tasks.length}</span>)</h3>
+          <div class="lv-table-wrap"><table class="mv-files"><thead><tr><th>Task ID</th><th>Title</th><th>Queue</th><th>Assignee</th><th>Due date</th><th>Status</th></tr></thead>
+            <tbody id="mm-tasks">${tasks.length ? tasks.join('') : '<tr><td colspan="6" class="mv-empty">No tasks yet. Use "Create ECMS task" on an action item in the File summary.</td></tr>'}</tbody></table></div>
+        </div></div>`
+      : `<div class="mv-card"><p class="mv-empty">This memo's content and minutes weren't captured from govtest. In ECMS the memo body and minute chain load here. When the memo has 3 or more minutes, the File summary sits above them.</p></div>`}`;
+    v.querySelector('[data-back]').addEventListener('click', showList);
+    if (m.sample) {
+      document.getElementById('mm-n').textContent = document.querySelectorAll('#minutes [data-minute]').length;
+      document.getElementById('mm-add').addEventListener('click', () => addMinute(m));
+    }
+    document.getElementById('view-list').hidden = true; v.hidden = false;
+    (summary && document.getElementById('sum') || main).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function showList() { document.getElementById('view-memo').hidden = true; document.getElementById('view-list').hidden = false; }
+  document.getElementById('nav-memos').addEventListener('click', showList);
+
+  function addMinute(m) {
     const text = document.getElementById('mm-text').value.trim();
-    if (!text) return;
+    if (!text) { document.getElementById('mm-text').focus(); return; }
     const by = document.getElementById('mm-by').value, to = document.getElementById('mm-to').value;
     const d = new Date(), date = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
     const li = document.createElement('li');
     li.className = 'mm__min mm__flash';
     Object.assign(li.dataset, { minute: '', by, to, date, name: '' });
-    li.innerHTML = '<span class="mm__av">YOU</span><div><div class="mm__who"></div><div class="mm__txt" data-minute-text></div></div>';
+    li.innerHTML = '<span class="mm__av">AN</span><div><div class="mm__who"></div><div class="mm__txt" data-minute-text></div></div>';
     li.querySelector('.mm__who').textContent = `${by} → ${to} · ${date}`;
     li.querySelector('[data-minute-text]').textContent = text;
+    (added[m.id] = added[m.id] || []).push(li.outerHTML.replace(' mm__flash', ''));
     document.getElementById('minutes').appendChild(li);
+    document.getElementById('mm-n').textContent = document.querySelectorAll('#minutes [data-minute]').length;
     document.getElementById('mm-text').value = '';
+  }
+
+  const fmt = iso => iso ? iso.split('-').reverse().join('/') : '';
+  document.addEventListener('ai-minute-create-task', e => {
+    const d = e.detail, cell = t => `<td>${esc(t)}</td>`;
+    tasks.push(`<tr class="mm__flash">${cell('#' + nextId++)}${cell(d.title)}${cell(`${d.queue} · ${d.queueType}`)}${cell(d.assignee)}${cell(fmt(d.due))}<td><span class="lv-st">OPEN</span></td></tr>`);
+    const tb = document.getElementById('mm-tasks');
+    if (tb) { tb.innerHTML = tasks.join(''); document.getElementById('mm-count').textContent = tasks.length; }
+    say(`Task #${nextId - 1} created in Tasks and linked to ${d.ref}.`);
   });
+
+  renderRows();
 </script>
 </body>
 </html>

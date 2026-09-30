@@ -184,21 +184,34 @@
     }
 
     render() {
-      this.innerHTML = `<section class="aimc" aria-live="polite">
-        <div class="aimc__head"><span class="aimc__title"><span class="ai-badge">CICOD-AI</span> Draft with CICOD-AI</span><span class="ai-confidence">Memo Copilot</span></div>
-        <div class="aimc__class" data-class><span class="aimc__muted">Classification: checking the memo…</span></div>
-        <div class="aimc__body">
-          <label class="g-label" for="aimc-bullets">Your points (To, Through, subject, key facts, amount)</label>
-          <textarea class="g-textarea aimc__bullets" id="aimc-bullets" rows="6" placeholder="To: Permanent Secretary&#10;Subject: …&#10;- 3 laptops for ICT, ₦450k, urgent"></textarea>
-          <div class="aimc__row"><button class="g-btn g-btn--ai g-btn--sm" data-draft type="button">✦ Draft memo</button><button class="g-btn g-btn--ghost g-btn--sm" data-example type="button">Use example</button></div>
-          <div data-out></div>
-        </div>
-        <div class="aimc__rw">
-          <b>Rewrite</b><span class="aimc__muted" data-rw-hint>Select text in the memo to rewrite it.</span>
-          <div class="aimc__rw-btns">${Object.entries(STYLE_LABEL).map(([k, v]) => `<button class="g-btn g-btn--sm" data-style="${k}" type="button" disabled>${v}</button>`).join('')}</div>
+      this.innerHTML = `
+        <button class="g-btn g-btn--sm" type="button" data-toggle style="color: var(--ai-600); border-color: var(--ai-200); background: var(--ai-50);">✦ Memo Copilot</button>
+        <div class="aimc-drawer">
+          <section class="aimc" aria-live="polite">
+            <div class="aimc__head">
+              <span class="aimc__title"><span class="ai-badge">CICOD-AI</span> Memo Copilot</span>
+              <button type="button" class="g-btn g-btn--ghost g-btn--sm" data-close title="Close" style="padding: 0 6px;">✕</button>
+            </div>
+            <div class="aimc__class" data-class><span class="aimc__muted">Classification: checking the memo…</span></div>
+            <div class="aimc__body">
+              <label class="g-label" for="aimc-bullets">Your points (To, Through, subject, key facts, amount)</label>
+              <textarea class="g-textarea aimc__bullets" id="aimc-bullets" rows="6" placeholder="To: Permanent Secretary&#10;Subject: …&#10;- 3 laptops for ICT, ₦450k, urgent"></textarea>
+              <div class="aimc__row"><button class="g-btn g-btn--ai g-btn--sm" data-draft type="button">✦ Draft memo</button><button class="g-btn g-btn--ghost g-btn--sm" data-example type="button">Use example</button></div>
+              <div data-out></div>
+            </div>
+            <div class="aimc__rw">
+              <b>Rewrite</b><span class="aimc__muted" data-rw-hint>Select text in the memo to rewrite it.</span>
+              <div class="aimc__rw-btns">${Object.entries(STYLE_LABEL).map(([k, v]) => `<button class="g-btn g-btn--sm" data-style="${k}" type="button" disabled>${v}</button>`).join('')}</div>
+            </div>
+          </section>
         </div>
         <div class="aimc__pop" data-pop hidden></div>
-      </section>`;
+      `;
+
+      const drawer = this.querySelector('.aimc-drawer');
+      this.querySelector('[data-toggle]').addEventListener('click', () => drawer.classList.add('is-open'));
+      this.querySelector('[data-close]').addEventListener('click', () => drawer.classList.remove('is-open'));
+
       this.querySelector('[data-example]').addEventListener('click', () => { this.querySelector('.aimc__bullets').value = EXAMPLE; });
       this.querySelector('[data-draft]').addEventListener('click', () => this.draft());
       this.querySelectorAll('[data-style]').forEach(b => {

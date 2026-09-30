@@ -64,80 +64,164 @@
 
     .im__bar {
       display: flex;
-      gap: 10px;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      margin: 12px 0 6px;
-      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      margin: 12px 0;
     }
 
     .im__bar-l {
       display: flex;
-      gap: 10px;
       align-items: center;
+      gap: 12px;
     }
 
-    .im__tabs {
+    .im__icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 8px;
+      place-items: center;
+      cursor: pointer;
+      color: var(--text-2);
+    }
+    .im__icon-btn:hover { background: var(--surface-2); }
+
+    .im__tabs {
+      display: flex;
+      align-items: center;
+      margin-left: 8px;
+      gap: 16px;
     }
 
     .im__tab {
-      text-align: center;
-      padding: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
       font-size: 14px;
       color: var(--text-2);
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
     }
 
     .im__tab--on {
-      color: var(--gov-green-600);
-      font-weight: 700;
-      border-bottom: 3px solid var(--gov-green-600);
+      background: #e8f5e9;
+      color: var(--gov-green-700);
     }
+    
+    .im__tab-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+    }
+
+    .im__pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: var(--text-2);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .im__pag-r {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .im__pag-r span { cursor: pointer; font-size: 16px; }
 
     .im__grid {
       display: grid;
-      grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
       gap: 14px;
       align-items: start;
     }
+    
+    @media (min-width: 900px) {
+      .im__grid { grid-template-columns: minmax(0, 480px) minmax(0, 1fr); }
+    }
 
     .im__list {
-      overflow: hidden;
+      background: var(--surface);
     }
 
     .im__row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       padding: 10px 12px;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
-      font-size: 12.5px;
-    }
-
-    .im__row:last-child {
-      border-bottom: 0;
+      font-size: 13px;
     }
 
     .im__row:hover,
     .im__row--on {
-      background: var(--gov-green-50);
+      background: var(--surface-2);
+      box-shadow: inset 2px 0 0 var(--gov-green-600);
     }
 
-    .im__row b {
+    .im__row-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-3);
+    }
+    
+    .im__row-icons input { margin: 0; }
+
+    .im__avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 600;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    
+    .bg-red { background: #d32f2f; }
+    .bg-blue { background: #3f51b5; }
+    .bg-green { background: #0f9d58; }
+
+    .im__sender {
+      width: 140px;
+      flex-shrink: 0;
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
+      color: var(--text);
     }
 
-    .im__row[data-unread="true"] b::before {
-      content: "● ";
-      color: var(--gov-green-600);
+    .im__subj-wrap {
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+
+    .im__subj { color: var(--text); }
+    .im__snip { color: var(--text-3); }
+    .im__row[data-unread="true"] .im__sender,
+    .im__row[data-unread="true"] .im__subj { font-weight: 700; }
+    
+    .im__date {
+      color: var(--text-2);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .im__menu-dot { color: var(--text-3); }
 
     .im__row small {
       color: var(--text-3);
@@ -300,8 +384,7 @@
           (departments and grade levels) and writes a plain-language summary. A <b>pre-send check</b> catches problems
           such as Secret content going to an external address.</p>
         <div class="doc__meta"><span class="g-chip">Screen: InMail → Compose / Inbox / Circular</span><span
-            class="g-chip">Component: &lt;ai-mail-assist&gt;</span><span class="g-chip">Endpoint: /inmail/summarise,
-            /inmail/draft, /inmail/presend-check</span></div>
+            class="g-chip">Component: &lt;ai-mail-assist&gt;</span></div>
       </div>
       <div class="doc__toolbar">
         <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
@@ -329,66 +412,90 @@
             </div>
           </div>
           <div class="im__bar">
-            <div class="im__bar-l"><input type="checkbox" aria-label="Select all"> <span>⟳</span> <b>PAGES</b> <span
-                class="g-chip">10</span> <span>1 of 1</span></div>
-            <div data-ai-spot="CICOD-AI · Summarise unread"><ai-mail-assist mode="inbox" source="#im-list"></ai-mail-assist>
+            <div class="im__bar-l">
+              <button class="im__icon-btn"><input type="checkbox" aria-label="Select all" style="margin:0"></button>
+              <button class="im__icon-btn">⟳</button>
+              <div class="im__tabs">
+                <span class="im__tab im__tab--on">✉ Primary</span>
+                <div class="im__tab-divider"></div>
+                <span class="im__tab">🔔 Notifications</span>
+              </div>
             </div>
           </div>
-          <div class="im__tabs"><span class="im__tab im__tab--on">Primary</span><span
-              class="im__tab">Notification</span></div>
+          
+          <div class="im__pagination">
+            <div>Inbox · 1-50 of 117</div>
+            <div class="im__pag-r">
+              <ai-mail-assist mode="inbox" source="#im-list"></ai-mail-assist>
+              <span>&lt;</span>
+              <span>&gt;</span>
+            </div>
+          </div>
+
           <div class="im__toast" id="im-toast" role="status"></div>
           <div class="im__grid">
-            <div class="g-card im__list" id="im-list">
-              <div class="im__row im__row--on" data-msg data-id="t1" data-unread="true" data-from="Zana"
-                data-subject="RE: Q3 Budget Performance Review, inputs needed by Friday"
-                data-snippet="Please send Administration's Q3 capital spend and a short note on the 29% unspent balance by Friday."
-                data-summary="Please send over the Administration's">
-                <b>Zana</b><small>09:15</small><span class="im__subj">RE: Q3 Budget Performance Review, inputs needed by
-                  Friday</span><span class="im__snip">Please send Administration's Q3 capital spend…</span>
+            <div class="im__list" id="im-list">
+              <div class="im__row im__row--on" data-msg data-id="t1" data-unread="true" data-from="Zana" data-subject="RE: Q3 Budget Performance Review, inputs needed by Friday" data-snippet="Please send Administration's Q3 capital spend and a short note on the 29% unspent balance by Friday." data-summary="Please send over the Administration's">
+                <div class="im__row-icons"><input type="checkbox"> <span>☆</span> <span>&gt;</span></div>
+                <div class="im__avatar bg-blue">ZA</div>
+                <div class="im__sender">Zana</div>
+                <div class="im__subj-wrap"><span class="im__subj">RE: Q3 Budget Performance Review, inputs needed by Friday</span> <span class="im__snip">- Please send Administration's Q3 capital spend…</span></div>
+                <div class="im__date">09:15</div>
+                <div class="im__menu-dot">⋮</div>
               </div>
-              <div class="im__row" data-msg data-id="t2" data-unread="true"
-                data-from="Office of the Permanent Secretary" data-subject="Circular: Resumption of 2026 APER exercise"
-                data-snippet="All officers must complete their 2026 APER forms on CICOD PMS by 31 October."
-                data-summary="APER forms are due on CICOD PMS by 31 October. Countersigning officers must sign off by 7 November.">
-                <b>Office of the Permanent Secretary</b><small>10:42</small><span class="im__subj">Circular: Resumption
-                  of 2026 APER exercise</span><span class="im__snip">All officers must complete their 2026 APER
-                  forms…</span>
+              <div class="im__row" data-msg data-id="t2" data-unread="true" data-from="Office of the Permanent Secretary" data-subject="Circular: Resumption of 2026 APER exercise" data-snippet="All officers must complete their 2026 APER forms on CICOD PMS by 31 October." data-summary="APER forms are due on CICOD PMS by 31 October. Countersigning officers must sign off by 7 November.">
+                <div class="im__row-icons"><input type="checkbox"> <span>☆</span> <span>&gt;</span></div>
+                <div class="im__avatar bg-green">OP</div>
+                <div class="im__sender">Office of the Permanent Secretary</div>
+                <div class="im__subj-wrap"><span class="im__subj">Circular: Resumption of 2026 APER exercise</span> <span class="im__snip">- All officers must complete their 2026 APER forms…</span></div>
+                <div class="im__date">10:42</div>
+                <div class="im__menu-dot">⋮</div>
               </div>
-              <div class="im__row" data-msg data-id="t3" data-unread="true" data-from="Zana"
-                data-subject="Operations Tour Costs: Lagos "
-                data-snippet="Your hardware replacement request  15:00 today so Finance can pay before Monday."
-                data-summary="Asks you to approve his ₦185,000 Kaduna expense request before 15:00 today.">
-                <b>Zana</b><small>08:02</small><span class="im__subj">Opex: Sale Invoice</span><span
-                  class="im__snip">Your hardware replacement request 15:00…</span>
+              <div class="im__row" data-msg data-id="t3" data-unread="true" data-from="Zana" data-subject="Opex: Sale Invoice" data-snippet="Your hardware replacement request 15:00 today so Finance can pay before Monday." data-summary="Asks you to approve his ₦185,000 Kaduna expense request before 15:00 today.">
+                <div class="im__row-icons"><input type="checkbox"> <span>☆</span> <span>&gt;</span></div>
+                <div class="im__avatar bg-blue">ZA</div>
+                <div class="im__sender">Zana</div>
+                <div class="im__subj-wrap"><span class="im__subj">Opex: Sale Invoice</span> <span class="im__snip">- Your hardware replacement request 15:00…</span></div>
+                <div class="im__date">08:02</div>
+                <div class="im__menu-dot">⋮</div>
               </div>
-              <div class="im__row" data-msg data-id="t4" data-unread="true" data-from="ICT Department"
-                data-subject="Scheduled downtime: CICOD Drive maintenance Saturday 02:00–04:00"
-                data-snippet="CICOD Drive will be unavailable on Saturday from 02:00 to 04:00 for maintenance."
-                data-summary="CICOD Drive is down Saturday 02:00–04:00. No action needed."><b>ICT
-                  Department</b><small>Yesterday</small><span class="im__subj">Scheduled downtime: CICOD Drive
-                  maintenance Saturday 02:00–04:00</span><span class="im__snip">CICOD Drive will be unavailable on
-                  Saturday…</span></div>
-              <div class="im__row" data-msg data-id="t5" data-unread="false" data-from="Superman"
-                data-subject="Printer on 2nd floor: replacement toner approved"
-                data-snippet="Toner has been issued from Central Store."><b>Eyitayo
-                  Abidogun</b><small>Yesterday</small><span class="im__subj">Printer on 2nd floor: replacement toner
-                  approved</span><span class="im__snip">Toner has been issued from Central Store.</span></div>
-              <div class="im__row" data-msg data-id="t6" data-unread="false" data-from="Faith Egbe"
-                data-subject="Leave handover notes" data-snippet="Attached are my handover notes for 1–7 October.">
-                <b>Faith Egbe</b><small>25 Sep</small><span class="im__subj">Leave handover notes</span><span
-                  class="im__snip">Attached are my handover notes for 1–7 October.</span>
+              <div class="im__row" data-msg data-id="t4" data-unread="true" data-from="ICT Department" data-subject="Scheduled downtime: CICOD Drive maintenance Saturday 02:00–04:00" data-snippet="CICOD Drive will be unavailable on Saturday from 02:00 to 04:00 for maintenance." data-summary="CICOD Drive is down Saturday 02:00–04:00. No action needed.">
+                <div class="im__row-icons"><input type="checkbox"> <span>☆</span> <span>&gt;</span></div>
+                <div class="im__avatar bg-red">IC</div>
+                <div class="im__sender">ICT Department</div>
+                <div class="im__subj-wrap"><span class="im__subj">Scheduled downtime: CICOD Drive maintenance</span> <span class="im__snip">- CICOD Drive will be unavailable on Saturday…</span></div>
+                <div class="im__date">Yesterday</div>
+                <div class="im__menu-dot">⋮</div>
               </div>
-              <div class="im__row" data-msg data-id="t7" data-unread="false" data-from="Ann Nya"
-                data-subject="Minutes: Management meeting 20 Sep"
-                data-snippet="Minutes are saved in General Documents / MINUTES_OF_MEETINGS."><b>Ann Nya</b><small>21
-                  Sep</small><span class="im__subj">Minutes: Management meeting 20 Sep</span><span
-                  class="im__snip">Minutes are saved in General Documents…</span></div>
+              <div class="im__row" data-msg data-id="t5" data-unread="false" data-from="Eyitayo Abidogun" data-subject="Printer on 2nd floor: replacement toner approved" data-snippet="Toner has been issued from Central Store.">
+                <div class="im__row-icons"><input type="checkbox"> <span>☆</span> <span>&gt;</span></div>
+                <div class="im__avatar bg-blue">EA</div>
+                <div class="im__sender">Eyitayo Abidogun</div>
+                <div class="im__subj-wrap"><span class="im__subj">Printer on 2nd floor: replacement toner approved</span> <span class="im__snip">- Toner has been issued from Central Store.</span></div>
+                <div class="im__date">Yesterday</div>
+                <div class="im__menu-dot">⋮</div>
+              </div>
+              <div class="im__row" data-msg data-id="t6" data-unread="false" data-from="Faith Egbe" data-subject="Leave handover notes" data-snippet="Attached are my handover notes for 1–7 October.">
+                <div class="im__row-icons"><input type="checkbox"> <span>☆</span> <span>&gt;</span></div>
+                <div class="im__avatar bg-green">FE</div>
+                <div class="im__sender">Faith Egbe</div>
+                <div class="im__subj-wrap"><span class="im__subj">Leave handover notes</span> <span class="im__snip">- Attached are my handover notes for 1–7 October.</span></div>
+                <div class="im__date">25 Sep</div>
+                <div class="im__menu-dot">⋮</div>
+              </div>
+              <div class="im__row" data-msg data-id="t7" data-unread="false" data-from="Ann Nya" data-subject="Minutes: Management meeting 20 Sep" data-snippet="Minutes are saved in General Documents / MINUTES_OF_MEETINGS.">
+                <div class="im__row-icons"><input type="checkbox"> <span>☆</span> <span>&gt;</span></div>
+                <div class="im__avatar bg-blue">AN</div>
+                <div class="im__sender">Ann Nya</div>
+                <div class="im__subj-wrap"><span class="im__subj">Minutes: Management meeting 20 Sep</span> <span class="im__snip">- Minutes are saved in General Documents…</span></div>
+                <div class="im__date">21 Sep</div>
+                <div class="im__menu-dot">⋮</div>
+              </div>
             </div>
             <div class="g-card im__read" id="im-thread">
               <div class="im__read-h">
                 <h3 data-thread-subject id="im-subject"></h3>
-                <div data-ai-spot="CICOD-AI · Thread TL;DR"><ai-mail-assist mode="thread" source="#im-thread"
-                    id="im-thread-ai"></ai-mail-assist></div>
+                <ai-mail-assist mode="thread" source="#im-thread" id="im-thread-ai"></ai-mail-assist>
               </div>
               <div id="im-msgs"></div>
             </div>
@@ -427,7 +534,7 @@
                     type="button" data-send>Send</button><button class="g-btn" type="button">Save draft</button><button
                     class="g-btn" type="button" data-attachments="0">+ Attach</button></div>
               </form>
-              <div data-ai-spot="CICOD-AI · Draft from notes + pre-send check"><ai-mail-assist mode="compose" form="#im-form"
+              <div><ai-mail-assist mode="compose" form="#im-form"
                   sender="Prince Ekpenyong" mda="CICOD" id="im-compose-ai"></ai-mail-assist></div>
             </div>
           </div>
@@ -451,33 +558,29 @@
     <!-- 2. HOW IT WORKS -->
     <section class="doc__section">
       <h2>2. How it works</h2>
-      <p class="doc__lede">A sovereign LLM with MDA letter and circular templates, the staff directory for audiences,
-        and a rules + classifier data-loss check before Send.</p>
+      <p class="doc__lede">A secure, in-country intelligence system with MDA letter templates, the staff directory for audiences,
+        and a data-loss check before Send.</p>
       <div class="doc__flow">
         <div class="doc__step">
           <h4>Capture</h4>
-          <p>Summaries send the visible messages (sender, date, body). Drafts send the notes, tone and message type. The
-            pre-send check sends recipients, classification, subject, body and attachment count.</p>
+          <p>Summaries digest the visible messages. Drafts take your notes and chosen tone to format a complete message. The pre-send check evaluates recipients, classification, subject, body and attachments.</p>
         </div>
         <div class="doc__step">
           <h4>Protect</h4>
-          <p>Mail is Restricted by default, so all three calls stay on the sovereign model. NIN and phone numbers are
-            masked before the prompt. Secret threads can be summarised but not sent to any external model.</p>
+          <p>Mail is Restricted by default, so everything stays secure. NIN and phone numbers are automatically masked before any processing. Highly sensitive threads can be summarized safely.</p>
         </div>
         <div class="doc__step">
           <h4>Draft</h4>
-          <p>The LLM fills the tenant's letter template (Ref, Date, Subject, body, sign-off "For: Permanent Secretary")
+          <p>The system intelligently fills the tenant's letter template (Ref, Date, Subject, body, sign-off)
             or the numbered circular template in the chosen tone.</p>
         </div>
         <div class="doc__step">
           <h4>Target</h4>
-          <p>For circulars, topic keywords are matched to the directory: APER goes to every department at GL 07–17,
-            budget notes to Finance, Audit and Planning. The LLM writes a plain-language summary.</p>
+          <p>For circulars, topic keywords are matched to the directory: e.g., APER goes to every department at GL 07–17. The system also writes a plain-language summary for the top of the circular.</p>
         </div>
         <div class="doc__step">
           <h4>Check</h4>
-          <p>Rules and a classifier flag Secret content with non-@cicod.com recipients (this blocks the send), a
-            mentioned but missing attachment, an empty subject, personal numbers and a circular with no audience.</p>
+          <p>Safety rules flag Secret content destined for external addresses (blocking the send), a mentioned but missing attachment, an empty subject, personal numbers, and a circular with no audience.</p>
         </div>
         <div class="doc__step">
           <h4>Confirm &amp; learn</h4>

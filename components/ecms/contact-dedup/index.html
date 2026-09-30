@@ -31,7 +31,7 @@
     <div>
       <span class="ai-badge">ECMS · E-C1 – E-C4 · Priority 1</span>
       <h1>Contact Dedup &amp; 360 Summary</h1>
-      <p>The cicod contact list has the same person on several records (<i>Eyitay Abidogun</i> #175, <i>Solomon</i> #165 and #168), junk entries such as <i>"ewdrftgyh drftgy"</i> #174, and Lifecycle Stage set to N/A almost everywhere. This component scans all contacts, proposes merges with the surviving values pre-selected, cleans junk, and gives a one-glance <b>contact 360</b> summary with an inferred lifecycle stage.</p>
+      <p>This component automatically scans the contact list to find duplicates and junk entries. It proposes merges with pre-selected surviving values, cleans up invalid records, and provides a quick <b>contact 360</b> summary with an inferred lifecycle stage.</p>
       <div class="doc__meta"><span class="g-chip">Screen: ECMS → Contacts</span><span class="g-chip">Component: &lt;ai-contact-insights&gt;</span><span class="g-chip">Endpoint: /ecms/contacts/quality · /summary</span></div>
     </div>
     <div class="doc__toolbar">
@@ -43,7 +43,7 @@
   <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
     <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of the ECMS <b>Contacts</b> list with the tenant's real names (emails and phone numbers are masked). Click <b>Review duplicates</b> in the banner, change a surviving value if you like, and press <b>Merge</b>: the extra rows disappear and the total drops. Then open <b>Junk &amp; invalid</b> and archive the junk records. Click any row, for example <i>Rebecca Saku</i>, to see its contact 360 card and apply the inferred stage.</p>
+    <p class="doc__lede">This demo uses real <b>Contacts</b> data. Click <b>Review duplicates</b> in the banner to merge duplicate records, or open <b>Junk &amp; invalid</b> to archive messy entries. Click any row (e.g., <i>Rebecca Saku</i>) to view its 360 summary card and update the lifecycle stage.</p>
     <div id="screen" class="shell" data-app="ecms" data-active="Contacts">
       <div class="shell__content">
         <div class="cn__bar">

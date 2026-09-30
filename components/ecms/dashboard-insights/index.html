@@ -9,38 +9,60 @@
 <link rel="stylesheet" href="../../../shared/doc.css">
 <link rel="stylesheet" href="dashboard-insights.css">
 <style>
-  /* Page-only layout for the mock "Workflow Dashboard" screen */
-  .wd__bar { display: flex; justify-content: flex-end; margin-bottom: 12px; }
-  .wd__card { padding: 14px 16px; margin-top: 14px; min-width: 0; }
-  .wd__card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .wd__card-head h3 { margin: 0; font-size: 15px; }
-  .wd__card-head p { margin: 0; font-size: 12px; color: var(--text-2); }
-  .wd__status { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
-  .wd__stat { border-radius: var(--radius); padding: 14px; color: #fff; min-height: 96px; }
-  .wd__stat b { display: block; font-size: 24px; }
-  .wd__stat span { font-size: 13px; opacity: .9; }
-  .wd__stat small { display: block; margin-top: 6px; font-weight: 600; font-size: 11.5px; }
-  .wd__stat--new { background: var(--ok); } .wd__stat--open { background: var(--info); } .wd__stat--prog { background: var(--warn); } .wd__stat--closed { background: var(--bad); }
-  .wd__grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 14px; }
-  .wd__chart { display: flex; align-items: flex-end; gap: 6px; height: 200px; margin-top: 14px; padding: 0 2px; border-bottom: 1px solid var(--border); }
-  .wd__col { flex: 1; display: flex; flex-direction: column-reverse; min-width: 0; height: 100%; }
-  .wd__col i { display: block; width: 100%; }
-  .wd__col .o { background: var(--gov-green-600); } .wd__col .c { background: var(--bad); } .wd__col .p { background: var(--warn); }
-  .wd__labels { display: flex; gap: 6px; font-size: 10px; color: var(--text-3); margin-top: 4px; }
-  .wd__labels span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; }
-  .wd__legend { display: flex; gap: 14px; justify-content: center; font-size: 11.5px; color: var(--text-2); margin-top: 8px; flex-wrap: wrap; }
-  .wd__legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
-  .wd__q { display: flex; justify-content: space-between; gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); margin-top: 8px; transition: box-shadow .3s, border-color .3s; }
-  .wd__q-name { font-size: 13px; }
-  .wd__q-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
-  .wd__q-total { text-align: right; font-weight: 700; font-size: 14px; }
-  .wd__q-total span { display: block; font-weight: 400; font-size: 11px; color: var(--text-3); }
-  .wd__q--hl { border-color: var(--ai-500); box-shadow: 0 0 0 3px var(--ai-100); background: var(--ai-50); }
-  .wd__pins { margin-top: 14px; display: none; }
-  .wd__pins--on { display: block; }
-  .wd__pin { font-size: 12.5px; padding: 8px 10px; border-left: 3px solid var(--ai-500); background: var(--surface-2); border-radius: 6px; margin-top: 6px; }
-  @media (max-width: 1100px) { .wd__grid { grid-template-columns: 1fr; } }
-  @media (max-width: 600px) { .wd__status { grid-template-columns: 1fr 1fr; } .wd__chart { height: 150px; gap: 3px; } .wd__labels { gap: 3px; } }
+  /* Copy of the live ECMS Dashboard → Workflow Dashboard (govtest, 29 Sep 2026). Classes prefixed wd-. */
+  .wd { --wd-line: #e4e4e7; --wd-muted: #71717a; --wd-card: #fcfcfc; --wd-green: #1c6b45; --wd-open: #1c6b45; --wd-closed: #e2566f; --wd-prog: #f0a020; }
+  :root[data-theme="dark"] .wd { --wd-line: #283045; --wd-muted: #9aa3b5; --wd-card: #151b29; --wd-open: #2e8b5e; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .wd { --wd-line: #283045; --wd-muted: #9aa3b5; --wd-card: #151b29; --wd-open: #2e8b5e; } }
+  .wd-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .wd-head h2 { margin: 0; font-size: 16px; font-weight: 600; }
+  .wd-tools { display: flex; gap: 8px; align-items: center; position: relative; }
+  .wd-out { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border: 1px solid var(--wd-line); border-radius: 8px; background: var(--wd-card); color: var(--text); font: 500 13px var(--font); cursor: pointer; }
+  .wd-filter { position: absolute; right: 0; top: calc(100% + 6px); z-index: 40; width: 260px; padding: 12px; border: 1px solid var(--wd-line); border-radius: 10px; background: var(--wd-card); box-shadow: var(--shadow-lg); font-size: 13px; }
+  .wd-filter[hidden] { display: none; }
+  .wd-filter select { width: 100%; margin-top: 8px; min-height: 32px; border: 1px solid var(--wd-line); border-radius: 8px; padding: 0 8px; background: var(--wd-card); color: var(--text); font: 13px var(--font); }
+  .wd-card { background: var(--wd-card); border: 1px solid var(--wd-line); border-radius: 12px; padding: 16px; margin-top: 14px; min-width: 0; }
+  .wd-card__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .wd-card__head h3 { margin: 0; font-size: 15px; font-weight: 500; }
+  .wd-card__head p { margin: 2px 0 0; font-size: 12.5px; color: var(--wd-muted); }
+  .wd-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+  .wd-tile { position: relative; overflow: hidden; border-radius: 10px; padding: 22px 16px; color: #fff; min-height: 116px; display: flex; gap: 14px; align-items: flex-start; }
+  .wd-tile::before { content: ""; position: absolute; width: 150px; height: 150px; right: -40px; top: -40px; border-radius: 50%; background: rgba(255,255,255,.14); }
+  .wd-tile i { font-style: normal; width: 42px; height: 42px; border-radius: 10px; background: rgba(255,255,255,.22); display: grid; place-items: center; flex-shrink: 0; position: relative; z-index: 1; }
+  .wd-tile b { display: block; font-size: 24px; position: relative; z-index: 1; }
+  .wd-tile span { font-size: 13px; opacity: .92; position: relative; z-index: 1; }
+  .wd-tile small { position: absolute; left: 16px; bottom: 12px; font-weight: 700; font-size: 11.5px; z-index: 1; }
+  .wd-tile--new { background: linear-gradient(90deg, #22b07d, #3fcf97); } .wd-tile--open { background: linear-gradient(90deg, #3fb0f3, #2f7be8); }
+  .wd-tile--prog { background: linear-gradient(90deg, #f59e0b, #f7b24a); } .wd-tile--closed { background: linear-gradient(90deg, #e8436a, #f06a8a); }
+  .wd-grid { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); gap: 14px; }
+  .wd-chart { position: relative; margin-top: 12px; }
+  .wd-chart svg { width: 100%; height: 360px; display: block; }
+  .wd-tip { position: absolute; z-index: 5; pointer-events: none; padding: 8px 10px; border: 1px solid var(--wd-line); border-radius: 8px; background: var(--wd-card); box-shadow: var(--shadow); font-size: 12px; min-width: 130px; }
+  .wd-tip[hidden] { display: none; }
+  .wd-tip div { display: flex; justify-content: space-between; gap: 12px; }
+  .wd-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; }
+  .wd-legend { display: flex; gap: 14px; justify-content: center; font-size: 12px; margin-top: 6px; }
+  .wd-q { display: flex; justify-content: space-between; gap: 8px; padding: 12px; border-bottom: 1px solid var(--wd-line); transition: background .3s, box-shadow .3s; }
+  .wd-q:last-child { border-bottom: 0; }
+  .wd-qbox { margin-top: 12px; border: 1px solid var(--wd-line); border-radius: 10px; }
+  .wd-q__name { font-size: 13.5px; }
+  .wd-q__tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .wd-tag { padding: 1px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 600; }
+  .wd-tag--o { background: #dcfce7; color: #15803d; } .wd-tag--p { background: #fef3c7; color: #d97706; } .wd-tag--c { background: #fee2e2; color: #dc2626; }
+  .wd-q__total { text-align: right; font-weight: 700; font-size: 14px; }
+  .wd-q__total span { display: block; font-weight: 400; font-size: 11px; color: var(--wd-muted); }
+  .wd-q--hl { background: var(--ai-50); box-shadow: inset 4px 0 0 var(--ai-500); }
+  .wd-sum { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 12px; }
+  .wd-sum label { font-size: 13px; display: block; margin-bottom: 6px; }
+  .wd-sum select { width: 100%; min-height: 34px; border: 1px solid var(--wd-line); border-radius: 8px; padding: 0 8px; background: var(--wd-card); color: var(--text); font: 13px var(--font); }
+  .wd-wf { display: flex; justify-content: space-between; padding: 8px 2px; border-bottom: 1px dashed var(--wd-line); font-size: 13px; }
+  .wd-wf b { min-width: 24px; text-align: center; padding: 0 6px; border-radius: 99px; background: var(--wd-green); color: #fff; font-size: 11.5px; line-height: 20px; }
+  .wd-qpanel { border: 1px solid var(--wd-line); border-radius: 10px; padding: 12px; }
+  .wd-qpanel__top { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-radius: 8px; background: color-mix(in srgb, var(--wd-green) 12%, var(--wd-card)); color: var(--wd-green); font-weight: 600; }
+  .wd-qpanel__top span { font-size: 11.5px; background: var(--wd-green); color: #fff; padding: 1px 8px; border-radius: 99px; }
+  .show-spots .wd [data-ai-spot] { outline: 2px dashed var(--ai-500); outline-offset: 3px; border-radius: 10px; position: relative; }
+  .show-spots .wd [data-ai-spot]::after { content: attr(data-ai-spot); position: absolute; top: -12px; right: 0; background: var(--ai-500); color: #fff; font: 700 10px var(--font); padding: 2px 8px; border-radius: 999px; z-index: 5; white-space: nowrap; pointer-events: none; }
+  @media (max-width: 1100px) { .wd-grid, .wd-sum { grid-template-columns: 1fr; } .wd-tiles { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px) { .wd-tiles { grid-template-columns: 1fr; } .wd-chart svg { height: 260px; } }
 </style>
 </head>
 <body>
@@ -50,7 +72,7 @@
     <div>
       <span class="ai-badge">ECMS · E-D1 · E-D2 · E-D4 · Priority 1</span>
       <h1>Dashboard Insights</h1>
-      <p>Turns the Workflow Dashboard's charts into plain-English findings. Each card and chart gets an <b>✦ Explain</b> button, an <b>Insights strip</b> at the top flags stalled queues and other anomalies, and admins see a <b>Data consistency</b> warning when the dashboard disagrees with other ECMS screens. Clicking an insight highlights the queue it refers to.</p>
+      <p>Explains the Workflow Dashboard in plain words and flags problems, such as a stalled queue or figures that don't match other screens. It stays out of the way: one <b>✦ Insights</b> button and a small <b>✦</b> on each card.</p>
       <div class="doc__meta"><span class="g-chip">Screen: ECMS → Dashboard → Workflow Dashboard</span><span class="g-chip">Component: &lt;ai-dashboard-insights&gt;</span><span class="g-chip">Endpoint: /ecms/dashboard/insights · /explain</span></div>
     </div>
     <div class="doc__toolbar">
@@ -59,109 +81,96 @@
     </div>
   </header>
 
-  <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
-    <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of the ECMS <b>Workflow Dashboard</b> with the tenant's real figures. The Insights strip loads on its own. Click an alert such as <i>"Order Fulfilment is stalled"</i> to highlight that queue, click <b>✦ Explain</b> on Task Status, Workflow Tasks Summary or Top Queues, then <b>Pin to dashboard</b>. You are viewing as an admin, so the Data consistency warning is shown.</p>
+    <h2>1. Try it</h2>
+    <p class="doc__lede">This is the live dashboard with today's govtest figures. Click <b>✦ Insights</b> next to General Filter, then click an alert to highlight its queue. Click a <b>✦</b> on any card for a short explanation.</p>
     <div id="screen" class="shell" data-app="ecms" data-active="Workflow Dashboard">
-      <div class="shell__content" id="wf-dashboard" data-ai-crosscheck='{"allTasksOpen":15395,"utilAvg":0,"utilAssigned":644,"utilOpened":15945}'>
-        <h2 class="shell__title">Workflow Dashboard</h2>
-        <div data-ai-spot="CICOD-AI · Insights strip + admin consistency warning">
-          <ai-dashboard-insights source="#wf-dashboard" viewer-role="admin"></ai-dashboard-insights>
-        </div>
-        <div class="wd__bar" style="margin-top:12px"><button class="g-btn" type="button">General Filter</button></div>
+      <div class="shell__content wd" id="wf-dashboard" data-ai-crosscheck='{"allTasksOpen":15399,"utilClosed":157,"utilOpened":15959,"utilAssigned":649,"range":"Month"}'>
+        <div class="wd-head"><h2>Workflow Dashboard</h2>
+          <div class="wd-tools">
+            <span data-ai-spot="CICOD-AI · one button"><ai-dashboard-insights source="#wf-dashboard" viewer-role="admin"></ai-dashboard-insights></span>
+            <button class="wd-out" id="gf" type="button">⏷ General Filter</button>
+            <div class="wd-filter" id="gf-pop" hidden>Dashboard date range<select id="gf-range"><option>Today</option><option>Week</option><option selected>Month</option></select></div>
+          </div></div>
 
-        <div class="g-card wd__card" data-ai-explain="status" data-ai-data='{"new":0,"total":16102,"open":161,"progress":26,"closed":14}'>
-          <div class="wd__card-head"><h3>Task Status</h3><span data-ai-spot="CICOD-AI · Explain" data-ai-explain-slot></span></div>
-          <div class="wd__status">
-            <div class="wd__stat wd__stat--new"><b>0</b><span>New tasks</span><small>Total tasks created: 16102</small></div>
-            <div class="wd__stat wd__stat--open"><b>161</b><span>Tasks open</span></div>
-            <div class="wd__stat wd__stat--prog"><b>26</b><span>Tasks in progress</span></div>
-            <div class="wd__stat wd__stat--closed"><b>14</b><span>Tasks closed</span></div>
-          </div>
-          <div data-ai-explain-out></div>
-        </div>
-
-        <div class="wd__grid">
-          <div class="g-card wd__card" data-ai-explain="summary" id="wd-summary">
-            <div class="wd__card-head"><h3>Workflow Tasks Summary</h3><span data-ai-spot="CICOD-AI · Explain" data-ai-explain-slot></span></div>
-            <div class="wd__chart" id="wd-chart" aria-label="Stacked bars of open, closed and in-progress tasks per workflow"></div>
-            <div class="wd__labels" id="wd-labels"></div>
-            <div class="wd__legend"><span><i style="background:var(--gov-green-600)"></i>Open</span><span><i style="background:var(--bad)"></i>Closed</span><span><i style="background:var(--warn)"></i>In progress</span></div>
-            <div data-ai-explain-out></div>
-          </div>
-          <div class="g-card wd__card" data-ai-explain="queues">
-            <div class="wd__card-head"><div><h3>Top Queues</h3><p>Queues with the most number of tasks</p></div><span data-ai-spot="CICOD-AI · Explain" data-ai-explain-slot></span></div>
-            <div id="wd-queues"></div>
-            <div data-ai-explain-out></div>
+        <div class="wd-card" data-ai-explain="status" data-ai-data='{"new":5,"total":16116,"open":166,"progress":24,"closed":14}'>
+          <div class="wd-card__head"><h3>Task Status</h3><span data-ai-explain-slot data-ai-spot="✦ Explain"></span></div>
+          <div class="wd-tiles">
+            <div class="wd-tile wd-tile--new"><i>⎇</i><div><b>5</b><span>New tasks</span></div><small>Total tasks created: 16116</small></div>
+            <div class="wd-tile wd-tile--open"><i>▭</i><div><b>166</b><span>Tasks open</span></div></div>
+            <div class="wd-tile wd-tile--prog"><i>◷</i><div><b>24</b><span>Tasks in progress</span></div></div>
+            <div class="wd-tile wd-tile--closed"><i>✕</i><div><b>14</b><span>Tasks closed</span></div></div>
           </div>
         </div>
 
-        <div class="g-card wd__card wd__pins" id="wd-pins"><div class="wd__card-head"><h3>Pinned insights</h3></div><div id="wd-pin-list"></div></div>
+        <div class="wd-grid">
+          <div class="wd-card" data-ai-explain="summary" id="wd-summary">
+            <div class="wd-card__head"><h3>Workflow Tasks Summary</h3><span data-ai-explain-slot></span></div>
+            <div class="wd-chart" id="chart"><svg id="chart-svg" role="img" aria-label="Stacked bars of open, closed and in-progress tasks per workflow"></svg><div class="wd-tip" id="tip" hidden></div></div>
+            <div class="wd-legend"><span><i class="wd-dot" style="background:var(--wd-open)"></i>Open</span><span><i class="wd-dot" style="background:var(--wd-closed)"></i>Closed</span><span><i class="wd-dot" style="background:var(--wd-prog)"></i>In progress</span></div>
+          </div>
+          <div class="wd-card" data-ai-explain="queues">
+            <div class="wd-card__head"><div><h3>Top Queues</h3><p>Queues with the most number of tasks</p></div><span data-ai-explain-slot></span></div>
+            <div class="wd-qbox" id="queues"></div>
+          </div>
+        </div>
 
-        <div class="g-card wd__card">
-          <div class="wd__card-head"><div><h3>Workflow Summary</h3><p>The various stages in the life-cyle of your queues</p></div></div>
-          <p style="font-size:12px;color:var(--text-2);margin:8px 0 0">CICOD test · Total tasks: 70 · regression test 4: 4 task(s)</p>
+        <div class="wd-card">
+          <div class="wd-card__head"><div><h3>Workflow Summary</h3><p>The various stages in the life-cyle of your queues</p></div></div>
+          <div class="wd-sum">
+            <div><label for="wd-queue">Queue</label><select id="wd-queue"><option>1Gov test</option></select>
+              <label style="margin-top:12px">Workflows</label><div id="wd-wfs"></div></div>
+            <div class="wd-qpanel"><div class="wd-qpanel__top">1Gov test <span>Total tasks: 73</span></div>
+              <div class="wd-wf" style="margin-top:8px">regression test <b>4</b></div>
+              <p style="font-size:12.5px;margin:10px 0 0">4 task(s) · <i class="wd-dot" style="background:var(--wd-open)"></i>Open <i class="wd-dot" style="background:var(--wd-prog)"></i>In progress <i class="wd-dot" style="background:var(--wd-closed)"></i>Closed</p></div>
+          </div>
         </div>
       </div>
     </div>
+    <p class="doc__lede" style="margin-top:10px;font-size:12.5px">Figures recorded on govtest, 29 Sep 2026: this dashboard, All Tasks (15,399 open) and Resource Utilization (157 closed, 649 assigned).</p>
     <div class="doc__where" style="margin-top:12px">
-      <div class="doc__where-item"><b>Primary placement</b>Top of <code>/ecms/dashboard/workflow</code> (strip), plus an Explain button in the header of each card and chart</div>
-      <div class="doc__where-item"><b>Also appears in</b>Status Dashboard and Resource Utilization (same Explain buttons), the Workspace Daily Brief, and an InMail alert for high-severity anomalies</div>
-      <div class="doc__where-item"><b>Trigger</b>Insights run when the dashboard loads or General Filter changes. Explain runs on click</div>
-      <div class="doc__where-item"><b>Who sees it</b>Anyone with dashboard access. Data consistency warnings are shown only to tenant admins</div>
+      <div class="doc__where-item"><b>✦ Insights</b>Next to General Filter. It opens a side panel with alerts, pinned notes and (for admins) data checks.</div>
+      <div class="doc__where-item"><b>✦ on each card</b>Opens a small popover with a plain-English explanation. The dashboard never moves.</div>
+      <div class="doc__where-item"><b>When</b>Insights refresh on load and when General Filter changes. Explanations run on click.</div>
+      <div class="doc__where-item"><b>Who</b>Anyone with dashboard access. Data checks are for admins only.</div>
     </div>
     <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
   </section>
 
-  <!-- 2. HOW IT WORKS -->
   <section class="doc__section">
     <h2>2. How it works</h2>
-    <p class="doc__lede">The numbers come from rules and statistics over the same aggregates the charts use. The LLM only writes the sentences, and every figure in a sentence is checked against the source.</p>
     <div class="doc__flow">
-      <div class="doc__step"><h4>Capture</h4><p>The dashboard's aggregates (status counts, per-workflow bars, top queues) plus the same counts from All Tasks and Resource Utilization go to <code>/ecms/dashboard/insights</code>.</p></div>
-      <div class="doc__step"><h4>Protect</h4><p>Only counts and queue names leave the page, with no task text or personal data. The gateway applies the tenant's classification policy and keeps the call on the sovereign model.</p></div>
-      <div class="doc__step"><h4>Detect</h4><p>Rules and a per-queue time-series model flag stalled queues (closure rate under 0.5%), work piling up in progress, 0-closure departments and sudden spikes. A reconciliation job compares each figure with its source screen.</p></div>
-      <div class="doc__step"><h4>Narrate</h4><p>An LLM turns the detected facts into two or three sentences. A checker rejects any sentence whose numbers don't match the facts list.</p></div>
-      <div class="doc__step"><h4>Output</h4><p>Alert cards linked to a queue, inline explanations with the facts behind them, and an admin-only list of consistency gaps with the screen each figure came from.</p></div>
-      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Users pin, edit or dismiss explanations, and admins mark gaps as known or open a reconciliation. Every decision goes to <code>/feedback</code> and tunes the alert thresholds.</p></div>
+      <div class="doc__step"><h4>1. Read</h4><p>Only the counts on the dashboard, with no task text or personal data.</p></div>
+      <div class="doc__step"><h4>2. Detect</h4><p>Rules find stalled queues, work piling up and numbers that disagree with All Tasks or Resource Utilization.</p></div>
+      <div class="doc__step"><h4>3. Explain</h4><p>An LLM writes two or three sentences. Every number is checked against the source.</p></div>
+      <div class="doc__step"><h4>4. Learn</h4><p>Pin, dismiss or mark a gap as known. This tunes the alerts.</p></div>
     </div>
   </section>
 
-  <!-- 3. BENEFITS -->
   <section class="doc__section">
-    <h2>3. Benefits to this feature</h2>
-    <p class="doc__lede">Baselines are from the cicod tenant, 27 Sep 2026. Improvement figures are targets.</p>
+    <h2>3. Benefits</h2>
     <div class="doc__benefits">
-      <div class="doc__benefit"><div class="doc__benefit-kpi">2 of 11,006</div><h4>Stalled queues surfaced</h4><p>Order Fulfilment has closed 2 of its 11,006 tasks. Today nothing on the dashboard says so; the strip shows it first.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">161 vs 15,395</div><h4>Trust in the numbers</h4><p>The open-task card disagrees with All Tasks by 95×, and utilisation shows 0% with 644 tasks assigned. Admins see both gaps immediately.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">&lt; 1 day</div><h4>Mean time to detect</h4><p>Target: anomalies such as a complaints spike are flagged within a day instead of at the next manual review.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">−70%</div><h4>Time to brief management</h4><p>Target: pinned explanations replace the weekly manual write-up of dashboard figures.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">2 of 11,006</div><h4>Stalls seen first</h4><p>Order Fulfilment has closed 2 of 11,006 tasks. Today nothing on the dashboard says so.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">166 vs 15,399</div><h4>Trust in numbers</h4><p>Admins see that the open count differs from All Tasks, and why.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−70%</div><h4>Faster briefings</h4><p>Target. Pinned explanations replace the weekly write-up.</p></div>
     </div>
   </section>
 
-  <!-- 4. INTEGRATION -->
   <section class="doc__section">
-    <h2>4. How to implement it in ECMS</h2>
+    <h2>4. How to build it</h2>
     <div class="doc__cols">
       <div>
         <div class="doc__panel"><h4>Mount (Workflow Dashboard)</h4>
-<pre class="doc__code">&lt;div id="wf-dashboard"
-     data-ai-crosscheck='{"allTasksOpen":15395,
-       "utilAvg":0,"utilAssigned":644}'&gt;
-  &lt;ai-dashboard-insights source="#wf-dashboard"
-      viewer-role="admin"&gt;&lt;/ai-dashboard-insights&gt;
+<pre class="doc__code">&lt;!-- next to General Filter --&gt;
+&lt;ai-dashboard-insights source="#wf-dashboard"
+    viewer-role="{{user.role}}"&gt;&lt;/ai-dashboard-insights&gt;
 
-  &lt;div data-ai-explain="status"
-       data-ai-data='{"open":161,"closed":14}'&gt;
-    &lt;h3&gt;Task Status&lt;/h3&gt;
-    &lt;span data-ai-explain-slot&gt;&lt;/span&gt;
-    …
-    &lt;div data-ai-explain-out&gt;&lt;/div&gt;
-  &lt;/div&gt;
-  &lt;div data-queue="Order Fulfilment" data-open="11003"
-       data-progress="1" data-closed="2"&gt;…&lt;/div&gt;
+&lt;!-- on each card --&gt;
+&lt;div data-ai-explain="status" data-ai-data='{"open":166,"closed":14}'&gt;
+  &lt;h3&gt;Task Status&lt;/h3&gt;&lt;span data-ai-explain-slot&gt;&lt;/span&gt; …
 &lt;/div&gt;
+&lt;div data-queue="Order Fulfilment" data-open="11003"
+     data-progress="1" data-closed="2"&gt;…&lt;/div&gt;
 
 &lt;script&gt;
 document.addEventListener('ai-insight-focus', e =&gt;
@@ -169,45 +178,32 @@ document.addEventListener('ai-insight-focus', e =&gt;
 &lt;/script&gt;</pre></div>
         <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
           <ol class="doc__list">
-            <li>Expose the dashboard aggregates (status, per-workflow, top queues) as one JSON the page already has.</li>
-            <li>Add <code>data-ai-explain</code>, <code>data-ai-explain-slot</code> and <code>data-ai-explain-out</code> to each card.</li>
-            <li>Build the reconciliation job that compares each dashboard figure with All Tasks and Resource Utilization every hour.</li>
-            <li>Train per-queue baselines on 90 days of daily open/close counts for spike and stall detection.</li>
-            <li>Add the narrative step with a numeric checker, and run it read-only for 2 weeks with admins.</li>
-            <li>Send high-severity anomalies to the Daily Brief and InMail once precision is above 80%.</li>
+            <li>Add <code>/ecms/dashboard/insights</code> and <code>/explain</code> to the CICOD-AI Gateway.</li>
+            <li>Mount the button next to General Filter, and add the slot to each card header.</li>
+            <li>Add an hourly job that compares dashboard figures with All Tasks and Resource Utilization.</li>
           </ol></div>
       </div>
       <div>
         <div class="doc__panel"><h4>API contract</h4>
 <pre class="doc__code">POST /ai/ecms/dashboard/insights
-{
-  "status": { "new": 0, "total": 16102, "open": 161,
-              "progress": 26, "closed": 14 },
+{ "status": { "new": 5, "total": 16116, "open": 166,
+              "progress": 24, "closed": 14 },
   "queues": [{ "name": "Order Fulfilment", "open": 11003,
                "progress": 1, "closed": 2 }, …],
-  "crosscheck": { "allTasksOpen": 15395, "utilAvg": 0,
-                  "utilAssigned": 644 },
-  "role": "admin"
-}
-→ 200
-{
-  "model": "cicod-insights-v1",
-  "anomalies": [{ "id": "stalled", "severity": "bad",
-     "queue": "Order Fulfilment", "title": "…", "detail": "…" }],
-  "consistency": [{ "id": "open-count",
-     "source": "Tasks → All Tasks", "title": "…" }]
-}
+  "crosscheck": { "allTasksOpen": 15399, "utilClosed": 157 },
+  "role": "admin" }
+→ { "anomalies": [{ "severity": "bad",
+      "queue": "Order Fulfilment", "title": "…" }],
+    "consistency": [{ "source": "Tasks → All Tasks", "title": "…" }] }
 
 POST /ai/ecms/dashboard/explain
-{ "metric": "queues", "data": {…}, "queues": […] }
-→ { "narrative": "…", "facts": ["…"],
-    "confidence": 0.88, "queue": "Order Fulfilment" }</pre></div>
+{ "metric": "queues", "data": {…} }
+→ { "narrative": "…", "facts": ["…"], "queue": "Order Fulfilment" }</pre></div>
         <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
           <ul class="doc__list">
-            <li>Feature flag <code>ai.ecms.dashboardInsights</code> in ECMS Settings, on/off per tenant.</li>
-            <li>Alert thresholds (stall below 0.5% closure, in-progress above 3× closed) are set per tenant.</li>
-            <li>Every insight shown, pinned or dismissed is written to the ECMS Audit Log (feature: <i>CICOD-AI Insights</i>).</li>
-            <li>Insights only cover queues the viewer can already see. Consistency warnings require the admin role.</li>
+            <li>On/off per tenant: <code>ai.ecms.dashboardInsights</code>. Alert thresholds are set per tenant.</li>
+            <li>Only counts leave the page. Viewers only see queues they already have access to.</li>
+            <li>Every insight shown, pinned or dismissed is logged in the Audit Log.</li>
           </ul></div>
       </div>
     </div>
@@ -218,38 +214,55 @@ POST /ai/ecms/dashboard/explain
 <script src="../../../shared/ai-gateway.js"></script>
 <script src="../../../shared/doc.js"></script>
 <script>
-  // Mock screen data (real cicod figures), rendered before the component reads it.
-  const QUEUES = [['Order Fulfilment', 11003, 1, 2, 11006], ['Complaints', 2248, 108, 25, 2381], ['TEST AUTOMATION', 560, 10, 25, 595], ['IT Support', 479, 72, 33, 584], ['Product development', 165, 18, 7, 191]];
-  document.getElementById('wd-queues').innerHTML = QUEUES.map(([name, o, p, c, t]) => `<div class="wd__q" data-queue="${name}" data-open="${o}" data-progress="${p}" data-closed="${c}">
-    <div><div class="wd__q-name">${name}</div><div class="wd__q-tags"><span class="g-chip g-chip--ok">Open:${o.toLocaleString('en-GB')}</span><span class="g-chip g-chip--warn">In progress: ${p}</span><span class="g-chip g-chip--bad">Closed: ${c}</span></div></div>
-    <div class="wd__q-total">${t.toLocaleString('en-GB')}<span>Tasks</span></div></div>`).join('');
-  const WF = [['New CICOD apps', 34, 0, 6], ['Lagos intake', 22, 0, 0], ['Bid evaluation', 20, 1, 1], ['Exam results', 6, 1, 0], ['qa regression', 9, 0, 1], ['New hire', 21, 0, 0], ['max test', 58, 22, 0], ['Approvals', 12, 0, 3], ['Test Queue', 18, 1, 4], ['new CICOD apps', 6, 0, 0], ['TEST AUTOMATION', 3, 0, 1], ['Friday test', 1, 0, 0], ['test type', 14, 2, 3], ['REPAIR DETAILS', 5, 0, 2]];
-  const max = Math.max(...WF.map(w => w[1] + w[2] + w[3]));
-  document.getElementById('wd-chart').innerHTML = WF.map(([n, o, c, p]) => `<div class="wd__col" title="${n}: ${o} open, ${c} closed, ${p} in progress"><i class="o" style="height:${o / max * 100}%"></i><i class="c" style="height:${c / max * 100}%"></i><i class="p" style="height:${p / max * 100}%"></i></div>`).join('');
-  document.getElementById('wd-labels').innerHTML = WF.map(w => `<span>${w[0].slice(0, 3)}...</span>`).join('');
+  // Live figures (govtest Workflow Dashboard, date range: Month), rendered before the component reads them.
+  const esc = AIGateway.esc, n = v => v.toLocaleString('en-GB');
+  const QUEUES = [['Order Fulfilment', 11003, 1, 2, 11006], ['Complaints', 2248, 108, 25, 2381], ['TEST AUTOMATION', 567, 10, 25, 602], ['IT Support', 479, 72, 33, 584], ['Product development', 165, 18, 7, 191]];
+  document.getElementById('queues').innerHTML = QUEUES.map(([name, o, p, c, t]) => `<div class="wd-q" data-queue="${name}" data-open="${o}" data-progress="${p}" data-closed="${c}">
+    <div><div class="wd-q__name">${name}</div><div class="wd-q__tags"><span class="wd-tag wd-tag--o">Open:${n(o)}</span><span class="wd-tag wd-tag--p">In progress: ${p}</span><span class="wd-tag wd-tag--c">Closed: ${c}</span></div></div>
+    <div class="wd-q__total">${n(t)}<span>Tasks</span></div></div>`).join('');
+  // [workflow, open, closed, inProgress] — all 43 bars as shown on govtest
+  const WF = [['Delivery Complaint', 4, 0, 0], ['Billing Issue', 21, 0, 6], ['New Product', 3, 0, 0], ['complaint', 11, 0, 0], ['Account set up complaints', 1, 0, 0], ['Lagos', 1, 0, 0], ['Application issue', 10, 0, 0], ['Flagged transaction review', 1, 0, 1], ['Bid Registration', 1, 0, 0], ['Charity', 3, 0, 0], ['User Research', 1, 0, 0], ['Exam Practice', 1, 1, 0], ['Medical Evaluation', 1, 0, 0], ['test2', 1, 0, 0], ['qa tesing', 1, 0, 0], ['End to End test', 10, 0, 0], ['Module test', 1, 0, 0], ['New case intake', 0, 0, 1], ['qualified tester', 1, 0, 0], ['max admin', 2, 0, 1], ['new gov apps', 1, 0, 0], ['Automated Testing', 28, 11, 1], ['Test Queue', 2, 0, 0], ['Discovery', 8, 0, 0], ['Product Research', 5, 0, 4], ['Test Type', 2, 0, 0], ['test', 0, 0, 1], ['MOBILE TEST', 1, 0, 0], ['MOBILE', 3, 1, 3], ['feature update', 1, 0, 0], ['new product', 3, 0, 0], ['max', 1, 0, 0], ['Gov Test QT', 3, 0, 0], ['TEST WORKFLOW FIXES', 0, 0, 1], ['Workflow Test', 1, 0, 0], ['Workflow Management', 1, 0, 0], ['Friday Test', 1, 0, 0], ['Auto test', 3, 0, 1], ['PROCESS GATHERING', 7, 1, 0], ['testing', 2, 0, 1], ['Testiing', 14, 0, 1], ['REPAIR DEATAILS', 3, 0, 0], ['REPAIRS B', 1, 0, 2]];
   document.getElementById('wd-summary').dataset.aiData = JSON.stringify(WF.map(([name, open, closed, progress]) => ({ name, open, closed, progress })));
+  document.getElementById('wd-wfs').innerHTML = [['regression test', 4], ['End to End test', 34], ['Module test', 18], ['new gov apps', 4], ['Test Queue', 6], ['Test Type', 3], ['Gov Test QT', 3], ['Workflow Test', 1]].map(([w, c]) => `<div class="wd-wf">${w}<b>${c}</b></div>`).join('');
+
+  // Stacked bar chart (SVG) with the same hover tooltip as the live chart
+  function drawChart() {
+    const svg = document.getElementById('chart-svg'), W = svg.clientWidth || 700, H = svg.clientHeight || 360, pad = { l: 6, r: 6, t: 8, b: 30 };
+    const max = Math.max(...WF.map(w => w[1] + w[2] + w[3])), bw = (W - pad.l - pad.r) / WF.length, y = v => (v / max) * (H - pad.t - pad.b);
+    const css = getComputedStyle(document.querySelector('.wd'));
+    const col = { o: css.getPropertyValue('--wd-open'), c: css.getPropertyValue('--wd-closed'), p: css.getPropertyValue('--wd-prog'), line: css.getPropertyValue('--wd-line'), muted: css.getPropertyValue('--wd-muted') };
+    let s = [0.25, 0.5, 0.75, 1].map(f => `<line x1="${pad.l}" x2="${W - pad.r}" y1="${H - pad.b - f * (H - pad.t - pad.b)}" y2="${H - pad.b - f * (H - pad.t - pad.b)}" stroke="${col.line}"/>`).join('');
+    WF.forEach(([name, o, c, p], i) => {
+      const x = pad.l + i * bw + bw * 0.12, w = bw * 0.76; let base = H - pad.b;
+      [[o, col.o], [c, col.c], [p, col.p]].forEach(([v, fill]) => { if (!v) return; const h = y(v); base -= h; s += `<rect x="${x}" y="${base}" width="${w}" height="${h}" fill="${fill}"/>`; });
+      s += `<rect x="${pad.l + i * bw}" y="${pad.t}" width="${bw}" height="${H - pad.t - pad.b}" fill="transparent" data-i="${i}"/>`;
+      if (i % 2 === 0 || W > 900) s += `<text x="${x + w / 2}" y="${H - 10}" font-size="10" text-anchor="middle" fill="${col.muted}">${esc(name.slice(0, 3))}..</text>`;
+    });
+    svg.innerHTML = s;
+    const tip = document.getElementById('tip');
+    svg.querySelectorAll('[data-i]').forEach(r => {
+      r.addEventListener('mousemove', e => { const [name, o, c, p] = WF[+r.dataset.i], box = document.getElementById('chart').getBoundingClientRect();
+        tip.hidden = false; tip.innerHTML = `<b>${esc(name)}</b><div><span><i class="wd-dot" style="background:var(--wd-open)"></i>Open</span>${o}</div><div><span><i class="wd-dot" style="background:var(--wd-closed)"></i>Closed</span>${c}</div><div><span><i class="wd-dot" style="background:var(--wd-prog)"></i>In progress</span>${p}</div>`;
+        tip.style.left = Math.min(e.clientX - box.left + 12, box.width - 150) + 'px'; tip.style.top = Math.max(0, e.clientY - box.top - 70) + 'px'; });
+      r.addEventListener('mouseleave', () => { tip.hidden = true; });
+    });
+  }
+  drawChart(); addEventListener('resize', drawChart);
+  document.querySelectorAll('[data-toggle-theme]').forEach(b => b.addEventListener('click', () => setTimeout(drawChart, 50)));
+
+  // General Filter popover (live: "Dashboard date range" · Month)
+  document.getElementById('gf').addEventListener('click', e => { e.stopPropagation(); const p = document.getElementById('gf-pop'); p.hidden = !p.hidden; });
+  document.addEventListener('click', e => { if (!e.target.closest('#gf-pop') && !e.target.closest('#gf')) document.getElementById('gf-pop').hidden = true; });
 </script>
 <script src="dashboard-insights.js"></script>
 <script>
-  // Host-page wiring: the component emits events, and the page highlights queues and shows pinned notes.
+  // Host wiring: the component emits events; the page highlights the queue it refers to.
   document.addEventListener('ai-insight-focus', e => {
-    document.querySelectorAll('.wd__q--hl').forEach(x => x.classList.remove('wd__q--hl'));
-    const row = e.detail.queue && document.querySelector(`.wd__q[data-queue="${CSS.escape(e.detail.queue)}"]`);
-    if (row) { row.classList.add('wd__q--hl'); row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+    document.querySelectorAll('.wd-q--hl').forEach(x => x.classList.remove('wd-q--hl'));
+    const row = e.detail.queue && document.querySelector(`.wd-q[data-queue="${CSS.escape(e.detail.queue)}"]`);
+    if (row) { row.classList.add('wd-q--hl'); row.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
   });
-  document.addEventListener('ai-insight-pin', e => {
-    const box = document.getElementById('wd-pins');
-    box.classList.add('wd__pins--on');
-    const d = document.createElement('div');
-    d.className = 'wd__pin';
-    d.textContent = e.detail.text;
-    document.getElementById('wd-pin-list').prepend(d);
-  });
-  document.addEventListener('ai-consistency-action', e => {
-    if (e.detail.action !== 'reconcile' || e.detail.check !== 'open-count') return;
-    const stat = document.querySelector('.wd__stat--open');
-    if (!stat.querySelector('small.rec')) stat.insertAdjacentHTML('beforeend', '<small class="rec">⚠ Under reconciliation</small>');
-  });
+  document.getElementById('gf-range').addEventListener('change', () => { document.getElementById('gf-pop').hidden = true; document.querySelector('ai-dashboard-insights').load(); });
 </script>
 </body>
 </html>

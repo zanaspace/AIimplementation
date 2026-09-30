@@ -45,9 +45,18 @@
 
   function mockSummarise({ scope, messages = [] }) {
     if (scope === 'unread') {
-      const items = messages.map(lineFor).sort((a, b) => (b.action - a.action) || (!!b.due - !!a.due));
-      const actions = items.filter(i => i.action).length;
-      return { model: 'cicod-summarise-v1 (sovereign)', tldr: `${items.length} unread message${items.length === 1 ? '' : 's'}. ${actions} need${actions === 1 ? 's' : ''} something from you${items.find(i => i.due) ? `, the first by ${items.find(i => i.due).due}` : ''}.`, items };
+      // Group repeats (same sender + subject) and mark obvious test mail, so real asks stand out.
+      const groups = [];
+      messages.forEach(m => { const k = `${m.from}|${m.subject}`.toLowerCase(); const g = groups.find(x => x.k === k); if (g) { g.n++; } else groups.push({ k, m, n: 1 }); });
+      const items = groups.map(({ m, n }) => {
+        const it = lineFor(m);
+        it.test = /^(re: )?(test|testing)\b/i.test(m.subject) && !it.due;
+        if (it.test) { it.action = false; it.line = `Looks like a test message ("${m.subject}")`; }
+        if (n > 1) it.line += ` · ${n} copies`;
+        return it;
+      }).sort((a, b) => (b.action - a.action) || (a.test - b.test) || (!!b.due - !!a.due));
+      const actions = items.filter(i => i.action).length, tests = items.filter(i => i.test).length, dupes = messages.length - groups.length;
+      return { model: 'cicod-summarise-v1 (sovereign)', tldr: `${messages.length} unread. ${actions ? `${actions} need${actions === 1 ? 's' : ''} something from you${items.find(i => i.due) ? `, the first by ${items.find(i => i.due).due}` : ''}.` : 'Nothing needs action.'}${tests ? ` ${tests} look like test mail` : ''}${dupes ? ` and ${dupes} are repeats` : ''}${tests || dupes ? '.' : ''}`, items };
     }
     const all = messages.map(m => m.body).join(' ');
     const people = [...new Set(messages.map(m => m.from))];

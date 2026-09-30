@@ -106,7 +106,7 @@
     // ---------- finder ----------
     renderFinder() {
       this.innerHTML = `<section class="airf" aria-live="polite">
-        <div class="airf__head"><span class="airf__title"><span class="ai-badge">CICOD-AI</span> Describe what you need</span><span class="airf__hint">We'll find the right form and fill in what we can.</span></div>
+        <div class="airf__head"><span class="airf__title"><span class="ai-badge">CICOD-AI</span> Describe what you need</span><span class="airf__hint">CICOD-AI will automatically find the correct form for your request and pre-fill its fields for you.</span></div>
         <div class="airf__body">
           <div class="airf__ask"><textarea class="g-textarea airf__q" data-q rows="2" placeholder="e.g. I need an expense request for a trip to Kaduna next week"></textarea>
             <button class="g-btn g-btn--ai" data-find type="button">Find form</button></div>

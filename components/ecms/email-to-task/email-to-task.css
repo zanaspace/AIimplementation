@@ -2,7 +2,7 @@
    All classes are prefixed `aiet-` so the component can be dropped into any ECMS page. */
 ai-email-triage { display: block; }
 
-.aiet { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+.aiet { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .aiet__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
 .aiet__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
 
@@ -11,12 +11,16 @@ ai-email-triage { display: block; }
 .aiet__paste-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
 .aiet__hint { font-size: 11.5px; color: var(--text-3); }
 
+.aiet-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.aiet-modal__box { background: var(--surface); width: 100%; max-width: 900px; max-height: 90vh; border-radius: var(--radius); box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border); }
+.aiet-modal__close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-2); padding: 0; margin-left: 12px; }
+.aiet-modal__close:hover { color: var(--text); }
 .aiet__filters { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 14px 0; }
 .aiet__filter { border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 3px 10px; font-size: 12px; cursor: pointer; color: var(--text-2); }
 .aiet__filter span { font-weight: 700; margin-left: 2px; }
 .aiet__filter.is-on { background: var(--ai-100); border-color: var(--ai-500); color: var(--ai-600); }
 
-.aiet__list { padding: 10px 14px 14px; display: grid; gap: 10px; }
+.aiet__list { padding: 10px 14px 14px; display: grid; gap: 10px; overflow-y: auto; flex: 1; }
 .aiet__empty { color: var(--text-3); font-size: 12.5px; }
 .aiet__card { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; background: var(--surface); min-width: 0; }
 .aiet__card--done { background: var(--surface-2); }

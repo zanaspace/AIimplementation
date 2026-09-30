@@ -9,7 +9,7 @@
    Attributes:
      queues   optional comma-separated list of existing queue names (defaults to cicod queues)
    Events (bubbles):
-     ai-workflow-apply   detail: { draft }   host fills the wizard tabs
+     ai-workflow-apply   detail: { draft, lint, id, edited }   host fills the wizard tabs; lint 'bad' items block Create
      ai-workflow-result  detail: gateway response
    Gateway: POST /ecms/workflow/draft { prompt, tenantQueues[] }
      -> { model, confidence, draft:{ name, queue, queueIsNew, queueType, singleUser, statuses:[{name,role,escalation}],
@@ -136,8 +136,18 @@
 
   class AIWorkflowBuilder extends HTMLElement {
     connectedCallback() {
-      this.innerHTML = `<section class="aiwb" aria-live="polite">
-        <div class="aiwb__head"><span class="aiwb__title"><span class="ai-badge">CICOD-AI</span> Describe your process</span><span class="ai-confidence">Prompt-to-Workflow</span></div>
+      this.innerHTML = `
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+          <button type="button" class="g-btn g-btn--sm" data-toggle style="color: #fff; background: var(--ai-500); border-color: var(--ai-500); border-radius: 99px; box-shadow: var(--shadow);">✦ CICOD-AI · Describe your process</button>
+        </div>
+        <section class="aiwb" aria-live="polite" style="display: none;">
+        <div class="aiwb__head">
+          <span class="aiwb__title"><span class="ai-badge" style="background: var(--ai-50); color: var(--ai-600);">✦ CICOD-AI</span> Describe your process</span>
+          <span style="display: flex; gap: 12px; align-items: center;">
+            <span class="aiwb__mode" style="font-family: var(--mono); font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em;">Prompt-to-Workflow</span>
+            <button type="button" class="g-btn g-btn--ghost g-btn--sm" data-close title="Close" style="padding: 0 6px;">✕</button>
+          </span>
+        </div>
         <div class="aiwb__body">
           <textarea class="g-textarea aiwb__prompt" rows="3" placeholder="e.g. Vehicle repair request: requester → fleet officer inspection → HOD approval if > ₦200k → procurement → close, escalate after 48h"></textarea>
           <div class="aiwb__row">
@@ -147,6 +157,17 @@
           <div data-out></div>
         </div>
       </section>`;
+      const panel = this.querySelector('.aiwb');
+      const toggle = this.querySelector('[data-toggle]');
+      toggle.addEventListener('click', () => {
+        panel.style.display = 'block';
+        toggle.style.display = 'none';
+      });
+      this.querySelector('[data-close]').addEventListener('click', () => {
+        panel.style.display = 'none';
+        toggle.style.display = 'inline-flex';
+      });
+
       this.querySelectorAll('[data-ex]').forEach(b => b.addEventListener('click', () => { this.querySelector('.aiwb__prompt').value = EXAMPLES[b.dataset.ex]; }));
       this.querySelector('[data-gen]').addEventListener('click', () => this.generate());
     }
@@ -200,7 +221,7 @@
       });
       out.querySelector('[data-apply]').addEventListener('click', e => {
         feedback(this.res.id, 'ecms.prompt-to-workflow', this.edited ? 'edited' : 'accepted');
-        this.dispatchEvent(new CustomEvent('ai-workflow-apply', { detail: { draft: d }, bubbles: true }));
+        this.dispatchEvent(new CustomEvent('ai-workflow-apply', { detail: { draft: d, lint: this.res.lint, id: this.res.id, edited: !!this.edited }, bubbles: true }));
         e.target.textContent = 'Applied to wizard ✓';
       });
       out.querySelector('[data-regen]').addEventListener('click', () => { feedback(this.res.id, 'ecms.prompt-to-workflow', 'regenerated'); this.generate(); });

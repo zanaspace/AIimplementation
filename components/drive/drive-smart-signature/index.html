@@ -16,7 +16,7 @@
     <div>
       <span class="ai-badge">CICOD · D7 · D8 · Phase 2</span>
       <h1>Smart Signature & Routing</h1>
-      <p>The Smart Signature Copilot transforms the document signing process. When you upload a file for signature, it automatically reads the document to identify who needs to sign it, matches them to users in CICOD, and maps out the exact locations for their signatures and dates. It also generates a "Signer's Brief"—a quick, plain-English summary of the financial commitments or obligations the user is about to authorize.</p>
+      <p>Smart Signature automatically identifies required signers, auto-places their signature boxes on the document, and generates a quick "Signer's Brief" highlighting the core obligations.</p>
       <div class="doc__meta"><span class="g-chip">Screen: Drive → Sign File</span><span class="g-chip">Component: &lt;ai-smart-signature&gt;</span><span class="g-chip">Endpoint: /drive/signature/analyze</span></div>
     </div>
     <div class="doc__toolbar">
@@ -27,38 +27,72 @@
 
   <section class="doc__section">
     <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a mockup of the Drive <b>Sign File</b> setup screen. The AI automatically scans the contract to detect the required signers and extracts a summary of the obligations. Click <b>Auto-Place Fields</b> to see the AI automatically drop the signature blocks onto the correct lines on the document.</p>
+    <p class="doc__lede">This single Signature Copilot interface handles both new uploads and existing files. It auto-detects signers and obligations.</p>
     
     <div id="screen" class="shell" data-app="drive" data-active="My Documents">
       <div class="shell__content">
-        <div class="gd__bar" style="padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-          <h2 class="shell__title" style="margin:0; font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Set Up Signature: Q3_Maintenance_Contract.pdf</h2>
-          <button class="g-btn" type="button">Cancel</button>
-        </div>
-        
-        <div class="layout-split">
-          <!-- Document Preview -->
-          <div class="doc-preview">
-            <div class="doc-preview__content">
-              <h2>SERVICE LEVEL AGREEMENT</h2>
-              <p>This agreement is made between CICOD and TechCorp Ltd for the provision of Q3 server maintenance and cloud infrastructure support.</p>
-              <p>Total consideration for these services is strictly capped at ₦4,500,000.00 (Four million, five hundred thousand Naira). Services shall commence on October 1st, 2026.</p>
-              <br><br><br><br>
-              <p>Signed on behalf of CICOD by:</p>
-              <br><br>
-              <div>_________________________________<br>Director, Administration</div>
-              <br><br>
-              <div>_________________________________<br>Head of Finance</div>
+        <!-- My Documents View -->
+        <div class="dmd-head" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;">
+          <div>
+            <h2 class="shell__title" style="margin:0; font-size: 16px; font-weight: 500; color: var(--text-2);">My Documents <span style="margin: 0 8px;">&gt;</span> <span style="color: var(--text); font-weight: 600;">Finance Folder</span></h2>
+            <a href="#" onclick="return false" style="color: var(--gov-green-600); display: flex; align-items: center; gap: 6px; font-size: 13px; text-decoration: none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg> Visit the old GovDrive app</a>
+            <div style="margin-top: 16px;">
+              <div class="dmd-new" style="position: relative;">
+                <input type="file" id="real-file-upload" accept=".pdf,.doc,.docx" style="display: none;" />
+                <button class="g-btn dmd-new__btn" type="button" id="dmd-new-btn" aria-expanded="false" style="background: #fff; padding: 6px 16px; border: 1px solid var(--gov-green-600); color: var(--gov-green-600); border-radius: 999px; font-weight: 600;">+ NEW</button>
+                <div class="dmd-menu" id="dmd-menu" hidden style="position: absolute; top: 40px; left: 0; z-index: 6; min-width: 190px; background: #fff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 8px 0;">
+                  <button type="button" id="dmd-upload" style="display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; background: none; padding: 8px 16px; font-size: 14px; cursor: pointer; color: var(--text);"><span style="color: var(--gov-green-600); font-size: 16px; font-weight: bold;">↑</span> Upload File(s)</button>
+                  <button type="button" style="display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 0; background: none; padding: 8px 16px; font-size: 14px; cursor: pointer; color: var(--text);"><span style="color: var(--gov-green-600); font-size: 18px; font-weight: bold;">+</span> Create Folder</button>
+                </div>
+              </div>
             </div>
-            
-            <!-- AI placed signature boxes -->
-            <div class="doc-preview__sig-line doc-preview__sig-line--left" id="sig-box-1">✦ Prince Ekpenyong (Sign)</div>
-            <div class="doc-preview__sig-line doc-preview__sig-line--left" id="sig-box-2" style="bottom: 20px;">✦ Praise (Sign)</div>
           </div>
+        </div>
 
-          <!-- AI Setup Panel -->
-          <div data-ai-spot="CICOD-AI · Smart Signature Copilot">
-            <ai-smart-signature></ai-smart-signature>
+        <div class="g-card dmd-card" style="padding: 14px 16px;">
+          <div class="dmd-card__head" style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+            <h3 style="margin: 0; font-size: 14px;">Files (5)</h3>
+            <span style="display:flex;gap:8px;align-items:center"><button class="g-btn g-btn--sm" type="button">FILE TYPE ▾</button></span>
+          </div>
+          <div class="g-table-wrap">
+            <table class="g-table" style="min-width: 720px;">
+              <thead><tr><th>File Name</th><th>Owner</th><th>Classification Type</th><th>File Size</th><th>Date</th></tr></thead>
+              <tbody id="dmd-rows">
+                <tr class="file-row" style="cursor: pointer;"><td><span style="display:inline-flex;align-items:center;gap:12px;">☆ 📄 AEDC COMMISSIONS AUG 2026 BOARD REPORT.pdf</span></td><td><span class="dmd-owner" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gov-green-600); white-space: nowrap;"><i style="width: 26px; height: 26px; border-radius: 50%; background: var(--gov-green-700); color: #fff; display: grid; place-items: center; font-size: 10px; font-weight: 700; font-style: normal;">AN</i>Ann Nya <span style="color: var(--text-3); font-weight: 500; margin-left: 4px;">ME</span></span></td><td><span class="g-chip g-chip--ok">Official (O)</span></td><td>191.00 KB</td><td>Sep 21, 2026</td></tr>
+                <tr class="file-row" style="cursor: pointer;"><td><span style="display:inline-flex;align-items:center;gap:12px;">☆ 📄 New Contract.docx</span></td><td><span class="dmd-owner" style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gov-green-600); white-space: nowrap;"><i style="width: 26px; height: 26px; border-radius: 50%; background: var(--gov-green-700); color: #fff; display: grid; place-items: center; font-size: 10px; font-weight: 700; font-style: normal;">AN</i>Ann Nya <span style="color: var(--text-3); font-weight: 500; margin-left: 4px;">ME</span></span></td><td><span class="g-chip g-chip--ok">Official (O)</span></td><td>10.53 KB</td><td>Apr 5, 2024</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Smart Signature Overlay -->
+        <div class="g-card dmd-dialog" id="sig-dialog" role="dialog" aria-label="Smart Signature" hidden style="max-width: 1000px; margin: 16px 0; overflow: hidden; position: relative;">
+          <!-- Loading Overlay -->
+          <div id="ai-loading-overlay" style="position: absolute; inset: 0; background: rgba(255,255,255,0.9); z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="width: 40px; height: 40px; border: 4px solid var(--surface-2); border-top-color: var(--ai-600); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <h3 style="margin-top: 16px; color: var(--text);">CICOD-AI is analyzing document...</h3>
+            <p style="color: var(--text-3); font-size: 13px;">Extracting signers and generating summary</p>
+          </div>
+          <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+          <div class="dmd-dialog__head" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border);">
+            <h3 id="sig-dialog-title" style="margin: 0; font-size: 16px;">Set Up Signature</h3>
+            <button class="g-btn g-btn--ghost g-btn--sm" type="button" id="sig-close" aria-label="Close">✕</button>
+          </div>
+          <div class="dmd-dialog__body" style="padding: 0;">
+            <div class="layout-split" style="border: none; border-radius: 0;">
+              <!-- Document Preview -->
+              <div class="doc-preview">
+                <div class="doc-preview__content" id="live-doc-preview" style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-3); font-style: italic;">
+                  Select a file from the table or upload a new document to preview it here.
+                </div>
+                <!-- AI placed signature boxes -->
+                <div class="doc-preview__sig-line doc-preview__sig-line--left" id="sig-box-1">✦ Prince Ekpenyong (Sign)</div>
+                <div class="doc-preview__sig-line doc-preview__sig-line--left" id="sig-box-2" style="bottom: 20px;">✦ Praise (Sign)</div>
+              </div>
+              <!-- AI Setup Panel -->
+              <ai-smart-signature></ai-smart-signature>
+            </div>
           </div>
         </div>
       </div>
@@ -79,6 +113,85 @@
 <script src="../../../shared/shell.js"></script>
 <script src="smart-signature.js"></script>
 <script>
+  // Menu logic
+  const menu = document.getElementById('dmd-menu');
+  const newBtn = document.getElementById('dmd-new-btn');
+  newBtn.addEventListener('click', () => { 
+    menu.hidden = !menu.hidden; 
+    newBtn.setAttribute('aria-expanded', String(!menu.hidden)); 
+  });
+
+  // Open Signature Dialog logic
+  const dialog = document.getElementById('sig-dialog');
+  const dialogTitle = document.getElementById('sig-dialog-title');
+  
+  // 1. Upload Trigger via Real File Input
+  const fileInput = document.getElementById('real-file-upload');
+  const loadingOverlay = document.getElementById('ai-loading-overlay');
+  
+  document.getElementById('dmd-upload').addEventListener('click', () => { 
+    menu.hidden = true;
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const fileName = file.name;
+      dialogTitle.textContent = "Smart Signature: " + fileName;
+      
+      // Load the file into the preview iframe
+      const previewContainer = document.getElementById('live-doc-preview');
+      const objectUrl = URL.createObjectURL(file);
+      
+      // If it's a PDF or image, render it natively. Otherwise use a generic iframe.
+      if (file.type.startsWith('image/')) {
+        previewContainer.innerHTML = `<img src="${objectUrl}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+      } else {
+        previewContainer.innerHTML = `<iframe src="${objectUrl}" style="width: 100%; height: 100%; border: none;"></iframe>`;
+      }
+      
+      // Show loading state
+      loadingOverlay.style.display = 'flex';
+      dialog.hidden = false;
+      dialog.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      
+      // Simulate AI processing delay
+      setTimeout(() => {
+        loadingOverlay.style.display = 'none';
+        
+        // We do NOT auto-trigger the animation here anymore.
+        // We wait for the user to click the "Auto-Place Fields" button in the AI component,
+        // which will fire the 'fields-placed' event handled below!
+      }, 2500);
+    }
+    // Reset input so the same file can be uploaded again if needed
+    fileInput.value = '';
+  });
+
+  // 2. Click Existing File Trigger
+  document.querySelectorAll('.file-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const rowName = row.querySelector('td:first-child').innerText.replace('☆ 📄 ', '');
+      dialogTitle.textContent = "Smart Signature: " + rowName;
+      
+      const previewContainer = document.getElementById('live-doc-preview');
+      previewContainer.innerHTML = `
+        <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-3); font-style: italic;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Preview of ${rowName} loaded from Drive
+        </div>`;
+      
+      dialog.hidden = false; 
+      dialog.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); 
+    });
+  });
+
+  // Close Dialog
+  document.getElementById('sig-close').addEventListener('click', () => { 
+    dialog.hidden = true; 
+  });
+
   // Listen for the AI component's event to show the signature boxes
   document.addEventListener('fields-placed', () => {
     document.getElementById('sig-box-1').style.bottom = '100px';

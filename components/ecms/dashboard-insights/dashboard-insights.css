@@ -1,39 +1,42 @@
-/* <ai-dashboard-insights>: Insights strip, admin data-consistency warning and the
-   inline "✦ Explain" narratives. Classes are prefixed `aidi-`. */
-ai-dashboard-insights { display: block; }
+/* <ai-dashboard-insights>: one Insights button + side panel, and small ✦ Explain buttons with a
+   floating popover. Nothing is inserted into the dashboard layout. Classes are prefixed `aidi-`. */
+ai-dashboard-insights { display: inline-block; position: relative; }
 
-.aidi { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
-.aidi__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 10px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
-.aidi__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-.aidi__body { padding: 12px 14px; }
+.aidi-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 12px; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--ai-500) 45%, var(--border)); background: var(--ai-50); color: var(--ai-600); font: 600 13px var(--font); cursor: pointer; white-space: nowrap; }
+.aidi-btn:hover, .aidi-btn[aria-expanded="true"] { background: var(--ai-500); color: #fff; }
+.aidi-btn__n { min-width: 20px; padding: 0 6px; border-radius: 99px; background: var(--ai-500); color: #fff; font-size: 11px; line-height: 18px; }
+.aidi-btn[aria-expanded="true"] .aidi-btn__n { background: #fff; color: var(--ai-600); }
+.aidi-btn--alert .aidi-btn__n { background: var(--bad); }
 
-.aidi__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
-.aidi__card { text-align: left; display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--border); border-left: 4px solid var(--info); background: var(--surface); cursor: pointer; min-width: 0; }
-.aidi__card:hover { background: var(--surface-2); }
-.aidi__card--bad { border-left-color: var(--bad); }
-.aidi__card--warn { border-left-color: var(--warn); }
-.aidi__card--ok { border-left-color: var(--ok); }
-.aidi__card--active { outline: 2px solid var(--ai-500); outline-offset: 1px; }
-.aidi__card-title { font-weight: 700; font-size: 13px; }
-.aidi__card-detail { font-size: 12px; color: var(--text-2); }
-.aidi__card-link { font-size: 11.5px; font-weight: 600; color: var(--ai-600); }
+.aidi-panel { position: fixed; top: 12px; right: 12px; bottom: 12px; z-index: 60; width: min(380px, calc(100vw - 24px)); display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); text-align: left; }
+.aidi-panel[hidden] { display: none; }
+.aidi-panel__head { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 13.5px; }
+.aidi-panel__body { padding: 12px 14px; overflow: auto; flex: 1; }
+.aidi-x { border: 0; background: none; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; color: var(--text-2); }
+.aidi-x:hover { background: var(--surface-2); }
+.aidi-list { display: grid; gap: 8px; }
+.aidi-card { display: grid; gap: 3px; text-align: left; padding: 10px 12px; border: 1px solid var(--border); border-left: 4px solid var(--info); border-radius: var(--radius); background: var(--surface); cursor: pointer; font-family: var(--font); color: var(--text); }
+.aidi-card:hover { background: var(--surface-2); }
+.aidi-card b { font-size: 13px; }
+.aidi-card span { font-size: 12px; color: var(--text-2); }
+.aidi-card em { font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--ai-600); }
+.aidi-card--bad { border-left-color: var(--bad); } .aidi-card--warn { border-left-color: var(--warn); } .aidi-card--ok { border-left-color: var(--ok); }
+.aidi-card--active { outline: 2px solid var(--ai-500); outline-offset: 1px; }
+.aidi-h { margin: 16px 0 8px; font-size: 12px; display: flex; gap: 6px; align-items: center; }
+.aidi-cons { padding: 10px 12px; border-radius: var(--radius); background: var(--warn-bg); margin-bottom: 8px; }
+.aidi-cons b { font-size: 12.5px; }
+.aidi-cons p { margin: 3px 0; font-size: 12px; color: var(--text-2); }
+.aidi-cons small { display: block; font-size: 11px; color: var(--text-3); margin-bottom: 6px; }
+.aidi-pin { font-size: 12.5px; padding: 8px 10px; border-left: 3px solid var(--ai-500); background: var(--surface-2); border-radius: 6px; margin-bottom: 6px; }
+.aidi-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.aidi-foot { margin: 14px 0 0; font-size: 11px; color: var(--text-3); }
+.aidi-link { border: 0; background: none; color: var(--ai-600); font: 600 11px var(--font); cursor: pointer; padding: 0; }
 
-.aidi__cons { margin-top: 12px; border-radius: var(--radius); background: var(--warn-bg); padding: 10px 12px; }
-.aidi__cons-head { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 6px; }
-.aidi__cons-item { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; padding: 8px 0; border-top: 1px dashed var(--border-strong); flex-wrap: wrap; }
-.aidi__cons-item > div:first-child { flex: 1 1 280px; min-width: 0; }
-.aidi__cons-item b { font-size: 12.5px; }
-.aidi__cons-item p { margin: 2px 0; font-size: 12px; color: var(--text-2); }
-.aidi__cons-src { font-size: 11px; color: var(--text-3); }
-.aidi__cons-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-
-.aidi__foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 14px; border-top: 1px solid var(--border); background: var(--surface-2); font-size: 11px; color: var(--text-3); }
-
-/* Explain button + inline narrative placed inside host cards */
-.aidi-explain-btn { color: var(--ai-600); border-color: color-mix(in srgb, var(--ai-500) 40%, var(--border)); }
-.aidi-x { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--ai-50); border: 1px solid color-mix(in srgb, var(--ai-500) 25%, var(--border)); }
-.aidi-x__head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: center; }
-.aidi-x__text { margin: 8px 0 4px; font-size: 13px; color: var(--text); }
-.aidi-x__text[contenteditable="true"] { outline: 1px dashed var(--ai-500); padding: 4px; border-radius: 4px; background: var(--surface); }
-.aidi-x__facts { margin: 0 0 8px; padding-left: 18px; font-size: 12px; color: var(--text-2); }
-.aidi-x__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+/* small ✦ in each card header + floating popover */
+.aidi-explain-btn { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--ai-500) 40%, var(--border)); background: var(--ai-50); color: var(--ai-600); font-size: 13px; font-weight: 700; cursor: pointer; }
+.aidi-explain-btn:hover { background: var(--ai-500); color: #fff; }
+.aidi-pop { position: absolute; z-index: 70; padding: 12px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 30%, var(--border)); box-shadow: var(--shadow-lg); }
+.aidi-pop__head { display: flex; gap: 8px; align-items: center; }
+.aidi-pop__head .aidi-x { margin-left: auto; }
+.aidi-pop__text { margin: 8px 0 4px; font-size: 13px; color: var(--text); }
+.aidi-pop__facts { margin: 0 0 10px; padding-left: 18px; font-size: 12px; color: var(--text-2); }

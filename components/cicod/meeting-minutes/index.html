@@ -26,6 +26,8 @@
   .cr__drive[hidden] { display: none; }
   .cr__drive h4 { margin: 0 0 6px; font-size: 13px; }
   .cr__drive ul { margin: 0; padding-left: 18px; color: var(--text-2); }
+  .cr__table tr [data-ai] { opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+  .cr__table tr:hover [data-ai] { opacity: 1; pointer-events: auto; }
 </style>
 </head>
 <body>
@@ -66,8 +68,15 @@
           </table>
         </div>
         <div class="g-card cr__player" id="cr-player" hidden><span>▶</span><b id="cr-ptitle"></b><span class="cr__bar"><i id="cr-pbar"></i></span><span class="cr__time" id="cr-ptime">00:00</span></div>
-        <div data-ai-spot="CICOD-AI · Minutes panel (tabs + Drive + ECMS)" style="margin-top:12px">
-          <ai-meeting-minutes id="cr-ai" drive-path="General Documents/MINUTES_OF_MEETINGS"></ai-meeting-minutes>
+        <!-- Hidden AI Modal Overlay -->
+        <div class="g-card dmd-dialog" id="ai-modal" role="dialog" aria-label="CICOD-AI" hidden style="max-width: 1000px; margin: 16px 0;">
+          <div class="dmd-dialog__head" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; font-size: 16px;">CICOD-AI: Meeting Minutes</h3>
+            <button class="g-btn g-btn--ghost g-btn--sm" type="button" id="ai-modal-close" aria-label="Close">✕</button>
+          </div>
+          <div class="dmd-dialog__body" style="padding: 16px; background: var(--bg);">
+            <ai-meeting-minutes id="cr-ai" drive-path="General Documents/MINUTES_OF_MEETINGS"></ai-meeting-minutes>
+          </div>
         </div>
         <div class="g-card cr__drive" id="cr-drive" hidden><h4>Created from this meeting</h4><ul id="cr-created"></ul></div>
       </div>
@@ -198,6 +207,10 @@ document.addEventListener('ai-minutes-seek',  e =&gt; player.seek(e.detail.t));
       ['title', 'room', 'date', 'duration', 'attendees'].forEach(k => ai.setAttribute(k === 'title' ? 'meeting-title' : k, row.dataset[k]));
       ai.setAttribute('recording', row.dataset.rec);
       row.querySelector('[data-status]').innerHTML = '<span class="g-chip g-chip--ai">Draft ready</span>';
+      
+      const modal = document.getElementById('ai-modal');
+      modal.hidden = false;
+      modal.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
   }
   function seek(t) {
@@ -222,6 +235,10 @@ document.addEventListener('ai-minutes-seek',  e =&gt; player.seek(e.detail.t));
     const box = document.getElementById('cr-drive'); box.hidden = false;
     document.getElementById('cr-created').insertAdjacentHTML('beforeend', e.detail.tasks.map(t => `<li>ECMS task <b>#${n++}</b> · ${esc(t.queue)} · ${esc(t.title)} → ${esc(t.assignee)}, due ${esc(t.due)}</li>`).join(''));
     toast.textContent = `${e.detail.tasks.length} ECMS tasks created. Each assignee sees theirs under Tasks Assigned To Me.`;
+  });
+
+  document.getElementById('ai-modal-close')?.addEventListener('click', () => {
+    document.getElementById('ai-modal').hidden = true;
   });
 </script>
 </body>

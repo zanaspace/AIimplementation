@@ -28,7 +28,39 @@
   .fm__done { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--ok-bg); font-size: 13px; }
   .fm__flash { animation: fm-flash 1.4s ease; }
   @keyframes fm-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); border-color: var(--ai-500); } 100% { box-shadow: none; } }
-  @media (max-width: 600px) { .fm__grid { grid-template-columns: 1fr; } }
+  .fm__head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .fm__msg { margin-top: 12px; padding: 10px 12px; border-radius: var(--radius); background: var(--ok-bg); font-size: 13px; }
+  .fm__msg--bad { background: var(--bad-bg); color: var(--text); }
+  .fm__done-list { margin: 6px 0 0; padding-left: 18px; }
+  .fm__pub { max-width: 860px; margin: 8px auto 0; padding: 18px; }
+  .fm__pub h3 { margin: 0 0 6px; font-size: 16px; }
+  .fm__pub-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 14px; }
+  .fm__pub-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--text-2); }
+  .fm__pub-meta code { font-size: 11px; overflow-wrap: anywhere; }
+  .fm__tabs { display: flex; gap: 4px; }
+  .fm__tabs button { border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 5px 12px; font: 12.5px var(--font); color: var(--text-2); cursor: pointer; }
+  .fm__tabs [aria-selected="true"] { background: var(--gov-green-100); color: var(--gov-green-600); border-color: transparent; font-weight: 600; }
+  .fm__tools { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .fm__pubform { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+  .fm__pf { min-width: 0; }
+  .fm__pf--full { grid-column: 1 / -1; }
+  .fm__req { color: var(--bad); font-style: normal; }
+  .fm__rule { font-size: 11.5px; color: var(--ai-600); margin-top: 3px; }
+  .fm__err { font-size: 12px; color: var(--bad); margin-top: 3px; min-height: 0; }
+  .fm__bad { border-color: var(--bad) !important; }
+  .fm__ok { border-color: var(--ok) !important; }
+  .fm__words { font-size: 12px; color: var(--ai-600); margin-top: 3px; }
+  .fm__opts { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; padding: 6px 0; }
+  .fm__sign { font-family: "Brush Script MT", cursive; font-size: 18px; }
+  .fm__actions { display: flex; gap: 8px; margin-top: 14px; }
+  .fm__new td { animation: fm-row 2.4s ease; }
+  @keyframes fm-row { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+  .fm__one { margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); }
+  .fm__one h4 { margin: 0 0 8px; font-size: 13px; }
+  .fm__one dl { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 6px 10px; margin: 0; font-size: 13px; }
+  .fm__one dt { color: var(--text-3); }
+  .fm__one dd { margin: 0; overflow-wrap: anywhere; }
+  @media (max-width: 600px) { .fm__grid, .fm__pubform { grid-template-columns: 1fr; } .fm__one dl { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -38,7 +70,7 @@
     <div>
       <span class="ai-badge">ECMS · E-W2 · Priority 2</span>
       <h1>CICOD-AI Form Builder</h1>
-      <p>Most MDA forms still exist on paper. The officer either <b>describes the form</b> in a sentence or <b>uploads a photo or PDF of the paper form</b>. The CICOD-AI returns a field list with labels, types, required flags, validation and options, and a <b>live preview</b>. It also suggests Nigerian validation rules (phone format, NIN 11 digits, NUBAN 10 digits). Every field can be edited before "Use these fields".</p>
+      <p>Describe a form, or upload a photo of the paper version. CICOD-AI builds the whole form in one go: name, fields, options, rules, destination and email response. You check it and click Save.</p>
       <div class="doc__meta"><span class="g-chip">Screen: ECMS → Forms → Create Form</span><span class="g-chip">Component: &lt;ai-form-builder&gt;</span><span class="g-chip">Endpoint: /ecms/form/draft · /from-scan</span></div>
     </div>
     <div class="doc__toolbar">
@@ -49,44 +81,229 @@
 
   <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
-    <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of the ECMS <b>Create Form</b> screen. Pick the <i>Upload paper form</i> tab and click <i>Use sample paper form</i> to see OCR turn a scanned Expense Request form into fields. Or describe one, e.g. <i>"Public scholarship application for citizens: full name, NIN, date of birth, state of origin, phone"</i>. Apply the validation suggestions, edit any row, watch the preview, then click <i>Use these fields</i>.</p>
+    <h2>1. Try it</h2>
+    <p class="doc__lede">Same steps as live ECMS: <b>New Form</b> → <b>+ Create</b> → open it from <b>All Forms</b> → build it in the designer → <b>Save</b>. Try <b>✦ Build with CICOD-AI</b> to see every field already placed when the designer opens.</p>
+    <style>
+      /* Live ECMS Forms screens (govtest). Classes prefixed fd- */
+      .fd { --fd-line: #e4e4e7; --fd-muted: #71717a; --fd-green: #1c6b45; --fd-green-bg: #e3ede7; --fd-card: #fcfcfc; --fd-bg: #fafafa; --fd-soft: #f4f4f5; --fd-bad: #dc2626; }
+      :root[data-theme="dark"] .fd { --fd-line: #283045; --fd-muted: #9aa3b5; --fd-card: #151b29; --fd-bg: #0f1420; --fd-soft: #1a2131; --fd-green-bg: #16392a; --fd-green: #2e8b5e; }
+      @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .fd { --fd-line: #283045; --fd-muted: #9aa3b5; --fd-card: #151b29; --fd-bg: #0f1420; --fd-soft: #1a2131; --fd-green-bg: #16392a; --fd-green: #2e8b5e; } }
+      .fd [hidden] { display: none !important; }
+      .fd-crumb { font-size: 13px; color: var(--fd-muted); margin-bottom: 10px; }
+      .fd-crumb a { color: var(--fd-muted); cursor: pointer; }
+      .fd-crumb b { color: var(--text); }
+      .fd-green { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--fd-green); color: #fff; font: 600 13.5px var(--font); cursor: pointer; }
+      .fd-out { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border: 1px solid var(--fd-line); border-radius: 8px; background: var(--fd-card); color: var(--text); font: 500 13px var(--font); cursor: pointer; }
+      .fd-ic { width: 32px; height: 32px; display: inline-grid; place-items: center; border: 1px solid var(--fd-line); border-radius: 8px; background: var(--fd-card); color: var(--text); cursor: pointer; font-size: 14px; }
+      .fd-ic:disabled { opacity: .4; cursor: default; }
+      .fd-rte { border: 1px solid var(--fd-line); border-radius: 8px; overflow: hidden; background: var(--fd-card); }
+      .fd-rte__bar { display: flex; gap: 12px; padding: 6px 10px; border-bottom: 1px solid var(--fd-line); font-size: 12px; color: var(--fd-muted); }
+      .fd-rte textarea { display: block; width: 100%; border: 0; min-height: 84px; padding: 8px 10px; background: transparent; color: var(--text); font: 13px var(--font); resize: vertical; }
+      .fd-rte__count { text-align: right; font-size: 11px; color: var(--fd-muted); padding: 4px 10px; background: var(--fd-soft); }
+      .fd-req { color: var(--fd-bad); }
+      .fd-err { color: var(--fd-bad); font-size: 12px; margin-top: 4px; }
+      .fd-input, .fd-select { width: 100%; min-height: 34px; padding: 0 10px; border: 1px solid var(--fd-line); border-radius: 8px; background: var(--fd-card); color: var(--text); font: 13px var(--font); }
+      .fd-input--bad, .fd-select--bad { border-color: var(--fd-bad); box-shadow: 0 0 0 2px color-mix(in srgb, var(--fd-bad) 18%, transparent); }
+      .fd-label { display: block; font-size: 13px; margin: 0 0 6px; }
+      .fd-ai-note { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 8px; background: var(--ai-50); border: 1px solid color-mix(in srgb, var(--ai-500) 30%, transparent); font-size: 12.5px; color: var(--text-2); }
+      .fd-ai-note .ai-badge { flex-shrink: 0; }
+
+      /* 1. New Form */
+      .fd-new { max-width: 640px; margin: 0 auto; background: var(--fd-card); border: 1px solid var(--fd-line); border-radius: 12px; padding: 16px; }
+      .fd-new__head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .fd-new h3 { margin: 0; font-size: 15px; font-weight: 500; }
+      .fd-new > p { margin: 2px 0 14px; font-size: 13px; color: var(--fd-muted); }
+      .fd-banner { border: 2px dashed var(--fd-line); border-radius: 8px; padding: 22px; text-align: center; font-size: 12px; color: var(--fd-muted); margin: 8px 0 14px; }
+      .fd-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+      .fd-new .fd-green { width: 100%; margin-top: 14px; }
+
+      /* 2. All Forms */
+      .fd-list__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+      .fd-list__head h3 { margin: 0; font-size: 17px; font-weight: 600; }
+      .fd-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--fd-line); overflow-x: auto; margin-bottom: 12px; }
+      .fd-tabs span { padding: 8px 10px; font-size: 13.5px; color: var(--fd-muted); border-bottom: 2px solid transparent; white-space: nowrap; }
+      .fd-tabs .on { color: var(--fd-green); border-color: var(--fd-green); font-weight: 500; }
+      .fd-panel { background: var(--fd-card); border: 1px solid var(--fd-line); border-radius: 12px; padding: 12px; }
+      .fd-tools { display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 8px; }
+      .fd-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+      .fd-table th { text-align: left; font-weight: 500; padding: 10px; border-bottom: 1px solid var(--fd-line); white-space: nowrap; }
+      .fd-table td { padding: 10px; border-bottom: 1px solid var(--fd-line); white-space: nowrap; }
+      .fd-table a { color: var(--fd-green); cursor: pointer; }
+      .fd-st { display: inline-block; padding: 1px 8px; border-radius: 6px; font-size: 12px; background: var(--fd-green-bg); color: var(--fd-green); }
+      .fd-st--off { background: var(--fd-soft); color: var(--fd-muted); }
+      .fd-row-new td { animation: fd-row 2.4s ease; }
+      @keyframes fd-row { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+
+      /* 3. Designer */
+      .fd-dhead { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+      .fd-dhead h3 { margin: 0; font-size: 16px; font-weight: 600; display: flex; gap: 8px; align-items: center; }
+      .fd-dhead__r { display: flex; gap: 6px; align-items: center; }
+      .fd-designer { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 16px; align-items: start; }
+      .fd-left { background: var(--fd-card); border: 1px solid var(--fd-line); border-radius: 12px; max-height: 820px; overflow: auto; }
+      .fd-left__top { padding: 12px 14px; }
+      .fd-left__top b { display: block; font-weight: 500; font-size: 14px; }
+      .fd-left__top small { color: var(--fd-muted); font-size: 12px; }
+      .fd-sec > button { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border: 0; border-top: 1px solid var(--fd-line); border-bottom: 1px solid var(--fd-line); background: var(--fd-soft); font: 500 13px var(--font); color: var(--text); cursor: pointer; }
+      .fd-sec__body { padding: 12px; display: grid; gap: 10px; }
+      .fd-pal h6 { margin: 4px 0 6px; font-size: 12px; font-weight: 500; color: var(--fd-muted); }
+      .fd-pal__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+      .fd-pal__item { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 10px; border: 1px solid var(--fd-line); border-radius: 8px; background: var(--fd-card); color: var(--fd-muted); font: 12px var(--font); cursor: grab; text-align: left; }
+      .fd-pal__item:hover { border-color: var(--fd-green); color: var(--fd-green); }
+      .fd-pal__item i { font-style: normal; width: 14px; text-align: center; }
+      .fd-toggle { position: relative; width: 36px; height: 20px; border-radius: 99px; background: var(--fd-line); border: 0; cursor: pointer; flex-shrink: 0; }
+      .fd-toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+      .fd-toggle[aria-checked="true"] { background: var(--fd-green); }
+      .fd-toggle[aria-checked="true"]::after { left: 18px; }
+      .fd-setrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px; border: 1px solid var(--fd-line); border-radius: 8px; font-size: 13px; }
+
+      .fd-canvas { background: var(--fd-bg); border: 1px solid var(--fd-line); border-radius: 12px; min-height: 620px; overflow: hidden; }
+      .fd-cbanner { background: var(--fd-soft); padding: 34px 12px; text-align: center; font-size: 13px; color: var(--text); }
+      .fd-cbanner small { display: block; color: var(--fd-muted); font-size: 11.5px; margin-top: 4px; }
+      .fd-cards { padding: 16px min(10%, 88px) 24px; display: grid; gap: 0; }
+      .fd-drop { border: 2px dashed var(--fd-line); border-radius: 10px; padding: 22px; text-align: center; color: var(--fd-muted); font-size: 13px; }
+      .fd-drop.over, .fd-slot.over { border-color: var(--fd-green); background: var(--fd-green-bg); }
+      .fd-slot { height: 22px; margin: 2px 0; border: 2px dashed transparent; border-radius: 8px; display: grid; place-items: center; color: var(--fd-muted); font-size: 15px; cursor: pointer; }
+      .fd-slot:hover { color: var(--fd-green); }
+      .fd-add { border: 1px dashed var(--fd-line); border-radius: 10px; padding: 12px; text-align: center; color: var(--fd-muted); background: transparent; font: 13px var(--font); cursor: pointer; width: 100%; margin-top: 8px; position: relative; }
+      .fd-card { background: var(--fd-card); border: 1px solid var(--fd-line); border-radius: 10px; padding: 8px 20px 14px; position: relative; }
+      .fd-card--sel { border-left: 4px solid var(--fd-green); box-shadow: var(--shadow); }
+      .fd-card--bad { border-color: color-mix(in srgb, var(--fd-bad) 45%, var(--fd-line)); background: color-mix(in srgb, var(--fd-bad) 4%, var(--fd-card)); }
+      .fd-card--sel.fd-card--bad { border-left-color: var(--fd-bad); }
+      .fd-card--dragging { opacity: .45; }
+      .fd-handle { text-align: center; color: var(--fd-muted); cursor: grab; font-size: 14px; letter-spacing: 1px; line-height: 12px; user-select: none; }
+      .fd-card__title { font-weight: 600; font-size: 14.5px; margin: 6px 0 2px; }
+      .fd-card__title-in { width: 100%; border: 0; border-bottom: 1px solid var(--fd-line); background: var(--fd-soft); padding: 8px 10px; font: 600 14.5px var(--font); color: var(--text); border-radius: 4px 4px 0 0; }
+      .fd-card__pv { font-size: 12.5px; color: var(--fd-muted); margin-top: 4px; }
+      .fd-card__pv--line { border-bottom: 1px dashed var(--fd-line); padding-bottom: 4px; max-width: 60%; }
+      .fd-card__foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 12px; font-size: 12px; color: var(--fd-muted); flex-wrap: wrap; }
+      .fd-card__foot span.r { display: flex; align-items: center; gap: 12px; color: var(--text); font-size: 13px; }
+      .fd-card__foot button.x { border: 0; background: none; cursor: pointer; font-size: 14px; color: var(--fd-muted); }
+      .fd-card__foot button.del { color: var(--fd-bad); }
+      .fd-card__err { color: var(--fd-bad); font-size: 12px; margin-top: 6px; }
+      .fd-otabs { display: flex; gap: 6px; margin: 10px 0 8px; }
+      .fd-otabs button { border: 0; border-radius: 99px; padding: 3px 10px; font: 12px var(--font); background: none; color: var(--fd-muted); cursor: pointer; }
+      .fd-otabs button.on { background: var(--fd-green); color: #fff; }
+      .fd-opt { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; border: 1px solid var(--fd-line); border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; }
+      .fd-opt input { border: 0; border-bottom: 1px solid var(--fd-line); background: transparent; font: 13px var(--font); color: var(--text); padding: 4px 2px; min-width: 0; }
+      .fd-opt span { color: var(--fd-muted); font-size: 12px; white-space: nowrap; }
+      .fd-opt button { border: 0; background: none; cursor: pointer; color: var(--text); }
+      .fd-addopt { border: 0; background: none; font: 12.5px var(--font); color: var(--text); cursor: pointer; padding: 4px 8px; }
+      .fd-rule { display: flex; gap: 8px; align-items: center; margin-top: 10px; font-size: 12px; color: var(--ai-600); }
+      .fd-rule input { flex: 1; min-width: 0; border: 1px dashed color-mix(in srgb, var(--ai-500) 45%, transparent); border-radius: 6px; padding: 4px 8px; font: 12px var(--font); background: var(--ai-50); color: var(--text); }
+      .fd-aichip { position: absolute; top: 8px; right: 10px; font-size: 10.5px; font-weight: 700; color: var(--ai-600); }
+      .fd-menu { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20; background: var(--fd-card); border: 1px solid var(--fd-line); border-radius: 10px; box-shadow: var(--shadow-lg); max-height: 320px; overflow: auto; text-align: left; padding: 6px 0; }
+      .fd-menu h6 { margin: 6px 12px 2px; font-size: 11px; font-weight: 500; color: var(--fd-muted); }
+      .fd-menu button { display: flex; gap: 8px; width: 100%; border: 0; background: none; padding: 6px 12px; font: 13px var(--font); color: var(--text); cursor: pointer; }
+      .fd-menu button:hover { background: var(--fd-soft); }
+      .fd-toasts { position: fixed; top: 16px; right: 16px; z-index: 200; display: grid; gap: 8px; }
+      .fd-toast { min-width: 240px; max-width: 360px; padding: 10px 14px; border-radius: 10px; background: var(--fd-card); color: var(--text); border: 1px solid var(--fd-line); box-shadow: var(--shadow-lg); font-size: 13px; display: flex; gap: 8px; align-items: center; }
+      .fd-toast--bad { border-left: 4px solid var(--fd-bad); }
+      .fd-toast--ok { border-left: 4px solid var(--fd-green); }
+      .fd-modal { border: 0; padding: 0; border-radius: 14px; width: min(480px, calc(100vw - 32px)); max-height: calc(100vh - 48px); background: var(--fd-card, #fff); color: var(--text); box-shadow: var(--shadow-lg); }
+      .fd-modal::backdrop { background: rgba(15, 20, 32, .5); backdrop-filter: blur(3px); }
+      .fd-modal__head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 6px; font-size: 14px; }
+      .fd-modal__body { padding: 4px 18px 14px; max-height: 62vh; overflow: auto; }
+      .fd-modal__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--fd-line); background: var(--fd-soft); border-radius: 0 0 14px 14px; flex-wrap: wrap; }
+      .fd-modal__body h4 { margin: 4px 0 4px; font-size: 16px; }
+      .fd-modal__body > p { margin: 0 0 12px; font-size: 12.5px; color: var(--fd-muted); }
+      .fd-pf { margin-bottom: 12px; }
+      .fd-pf .fd-rulehint { font-size: 11.5px; color: var(--ai-600); margin-top: 3px; }
+      .fd-pf .fd-err { min-height: 0; }
+      .fd-opts { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
+      .fd-share { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+      .fd-share span { padding: 6px 10px; border: 1px solid var(--fd-line); border-radius: 8px; font-size: 12.5px; }
+      .fd-testbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 8px 10px; margin: 0 0 12px; border-radius: 8px; background: var(--ai-50); font-size: 12px; }
+      .fd-result { margin-top: 8px; padding: 10px 12px; border-radius: 8px; font-size: 12.5px; background: var(--ok-bg); }
+      .fd-result--bad { background: var(--bad-bg); }
+      .show-spots .fd [data-ai-spot] { outline: 2px dashed var(--ai-500); outline-offset: 3px; border-radius: 10px; position: relative; }
+      .show-spots .fd [data-ai-spot]::after { content: attr(data-ai-spot); position: absolute; top: -11px; right: 8px; background: var(--ai-500); color: #fff; font: 700 10px var(--font); padding: 2px 8px; border-radius: 999px; z-index: 5; white-space: nowrap; pointer-events: none; }
+      @media (max-width: 1100px) { .fd-designer { grid-template-columns: 1fr; } .fd-left { max-height: none; } }
+      @media (max-width: 600px) { .fd-grid2 { grid-template-columns: 1fr; } .fd-cards { padding: 12px; } .fd-pal__grid { grid-template-columns: 1fr; } }
+    </style>
     <div id="screen" class="shell" data-app="ecms" data-active="Create Form">
-      <div class="shell__content">
-        <div class="fm__crumb">Forms › <b>New</b></div>
-        <div data-ai-spot="CICOD-AI · Describe or upload a paper form">
-          <ai-form-builder max-description="1500"></ai-form-builder>
-        </div>
-        <div class="g-card fm__card" id="fm-card">
-          <h3>New Form</h3>
-          <p>The form tool enables you to collect information from either internal or external users.</p>
-          <label class="g-label">Upload Form Banner</label>
-          <p class="fm__hint">Supported formats: jpeg, jpg, png, gif. Max size: 2 MB. Recommended dimensions: 748×159</p>
-          <div class="fm__banner">⤒<br>Drop your banner here or click to select a file</div>
-          <div class="fm__grid">
-            <div><label class="g-label" for="fm-name">Form Name *</label><input class="g-input" id="fm-name" placeholder="My new form"></div>
-            <div><label class="g-label" for="fm-type">Form Type *</label><select class="g-select" id="fm-type"><option>Internal</option><option>External</option><option>Capture</option><option>Inter MDA</option><option>Status</option></select></div>
+      <div class="shell__content fd" id="fd">
+        <!-- 1. NEW FORM (live: /ecms/forms/new) -->
+        <section data-step="new">
+          <div class="fd-crumb">Forms › <b>New</b></div>
+          <div class="fd-new" id="fm-card">
+            <div class="fd-new__head"><h3>New Form</h3><span data-ai-spot="① CICOD-AI · builds the whole form"><ai-form-builder max-description="1500" id="aib-new"></ai-form-builder></span></div>
+            <p>The form tool enables you to collect information from either internal or external users.</p>
+            <label class="fd-label">Upload Form Banner</label>
+            <div style="font-size:12px;color:var(--fd-muted)">Supported formats: jpeg, jpg, png, gif.<br>Max size: 2 MB.<br>Recommended dimensions: 748x159</div>
+            <div class="fd-banner">⤒<br>Drop your banner here or click to select a file</div>
+            <div class="fd-grid2">
+              <div><label class="fd-label" for="fm-name">Form Name <span class="fd-req">*</span></label><input class="fd-input" id="fm-name" placeholder="My new form"><div class="fd-err" id="fm-name-e"></div></div>
+              <div><label class="fd-label" for="fm-type">Form Type <span class="fd-req">*</span></label><select class="fd-select" id="fm-type"><option>Internal</option><option>External</option><option>Capture</option><option>Inter MDA</option><option>Status</option></select></div>
+            </div>
+            <label class="fd-label" for="fm-desc">Description <span class="fd-req">*</span></label>
+            <div class="fd-rte"><div class="fd-rte__bar" aria-hidden="true"><span>↶</span><span>↷</span><b>B</b><i>I</i><u>U</u><span>T</span><span>¶</span><b>H</b><span>≡</span><span>1.</span><span>•</span></div>
+              <textarea id="fm-desc" maxlength="1500" placeholder="Enter description"></textarea><div class="fd-rte__count"><span id="fm-count">0</span>/1500 characters</div></div>
+            <div class="fd-err" id="fm-desc-e"></div>
+            <div class="fd-ai-note" id="fm-ai-note" style="margin-top:12px" hidden></div>
+            <button class="fd-green" id="fm-create" type="button">+ Create</button>
           </div>
-          <label class="g-label" for="fm-desc" style="margin-top:12px">Description *</label>
-          <div class="fm__desc" style="margin-top:0">
-            <div class="fm__desc-bar" aria-hidden="true"><span>↶</span><span>↷</span><b>B</b><i>I</i><u>U</u><span>T</span><span>¶</span><b>H</b><span>≡</span><span>1.</span><span>•</span></div>
-            <textarea class="g-textarea" id="fm-desc" maxlength="1500" placeholder="Enter description"></textarea>
-            <div class="fm__count"><span id="fm-count">0</span>/1500 characters</div>
+        </section>
+
+        <!-- 2. ALL FORMS (live: /ecms/forms?tab=all) -->
+        <section data-step="list" hidden>
+          <div class="fd-list__head"><h3>Forms</h3><button class="fd-green" type="button" data-go-new>+ Create</button></div>
+          <div class="fd-tabs"><span class="on">My Forms</span><span>Internal Forms</span><span>External Forms</span><span>Inter MDA Forms</span><span>Status Forms</span><span>Data Capture Forms</span></div>
+          <div class="fd-ai-note" id="list-ai" style="margin-bottom:10px" hidden></div>
+          <div class="fd-panel"><div class="fd-tools"><span class="fd-out">▦ Custom View</span><span class="fd-out">⟳ Sync</span></div>
+            <div style="overflow-x:auto"><table class="fd-table"><thead><tr><th>Form Name</th><th>Queue</th><th>Queue Type</th><th>Form Type</th><th>Display Period</th><th>Status</th></tr></thead><tbody id="list-rows"></tbody></table></div></div>
+        </section>
+
+        <!-- 3. DESIGNER (live: /ecms/forms/:id) -->
+        <section data-step="designer" hidden>
+          <div class="fd-crumb"><a data-go-list>Forms</a> › <b id="d-crumb"></b> <span class="fd-out" style="float:right;min-height:28px">◷ View Analytics</span></div>
+          <div class="fd-dhead"><h3><span class="fd-ic" style="width:28px;height:28px">≡</span><span id="d-title"></span> ✎</h3>
+            <div class="fd-dhead__r"><button class="fd-ic" id="d-undo" type="button" title="Undo" aria-label="Undo">↶</button><button class="fd-ic" id="d-redo" type="button" title="Redo" aria-label="Redo">↷</button><button class="fd-ic" id="d-preview" type="button" title="Preview" aria-label="Preview">👁</button><button class="fd-ic" id="d-share" type="button" title="Share" aria-label="Share">⤴</button><button class="fd-green" id="d-save" type="button">Save</button></div></div>
+          <div class="fd-designer">
+            <aside class="fd-left">
+              <div class="fd-left__top"><b id="d-typehead">Internal Form</b><small id="d-typesub">Submission of this form will create a task</small></div>
+              <div class="fd-sec"><button type="button" data-sec="details">Details <span>⌄</span></button>
+                <div class="fd-sec__body" data-secb="details">
+                  <div><label class="fd-label" for="d-name">Form Name</label><input class="fd-input" id="d-name"></div>
+                  <div><label class="fd-label" for="d-desc">Description</label><div class="fd-rte"><div class="fd-rte__bar" aria-hidden="true"><b>B</b><i>I</i><u>U</u><span>🔗</span><span>T</span><span>•</span><span>1.</span></div><textarea id="d-desc" maxlength="1500"></textarea><div class="fd-rte__count"><span id="d-desc-n">0</span>/1500 characters</div></div></div>
+                </div></div>
+              <div class="fd-sec" data-ai-spot="② Destination set by CICOD-AI"><button type="button" data-sec="dest">Destination <span>⌄</span></button>
+                <div class="fd-sec__body" data-secb="dest">
+                  <div><label class="fd-label" for="d-queue">Queue</label><select class="fd-select" id="d-queue"></select><div class="fd-err" id="d-queue-e"></div></div>
+                  <div><label class="fd-label" for="d-qtype">Queue Type</label><select class="fd-select" id="d-qtype"></select><div class="fd-err" id="d-qtype-e"></div></div>
+                </div></div>
+              <div class="fd-sec"><button type="button" data-sec="fields">Form Fields <span>⌄</span></button>
+                <div class="fd-sec__body fd-pal" data-secb="fields" id="palette"></div></div>
+              <div class="fd-sec"><button type="button" data-sec="settings">Settings <span>⌄</span></button>
+                <div class="fd-sec__body" data-secb="settings">
+                  <div class="fd-setrow">Display this form for a particular time <button class="fd-toggle" role="switch" aria-checked="false" type="button" data-sw aria-label="Display for a particular time"></button></div>
+                  <div data-ai-spot="③ Email response written by CICOD-AI"><label class="fd-label" for="d-email">Initial Email Response</label><div class="fd-rte"><div class="fd-rte__bar" aria-hidden="true"><b>B</b><i>I</i><u>U</u><span>🔗</span><span>T</span><span>•</span><span>1.</span></div><textarea id="d-email" maxlength="1000" placeholder="Start typing..."></textarea><div class="fd-rte__count"><span id="d-email-n">0</span>/1000 characters</div></div><div class="fd-err" id="d-email-e"></div></div>
+                  <div><label class="fd-label" for="d-ftype">Form Type <span id="d-ftype-l"></span></label><select class="fd-select" id="d-ftype"><option>Internal</option><option>External</option><option>Capture</option><option>Inter MDA</option><option>Status</option></select></div>
+                </div></div>
+            </aside>
+            <div class="fd-canvas" id="canvas">
+              <div class="fd-cbanner">⇪<br>Click to upload or drag and drop<small>Allowed: jpg, jpg, or png</small></div>
+              <div class="fd-cards">
+                <div class="fd-ai-note" id="d-ai" style="margin-bottom:12px" hidden></div>
+                <div id="cards"></div>
+                <div style="position:relative"><button class="fd-add" id="d-add" type="button">+ Add field</button><div class="fd-menu" id="d-menu" hidden></div></div>
+                <div style="text-align:center;margin-top:10px" data-ai-spot="④ Add more with CICOD-AI"><ai-form-builder max-description="1500" id="aib-designer" label="✦ Add fields with CICOD-AI"></ai-form-builder></div>
+              </div>
+            </div>
           </div>
-          <div class="fm__fields" data-ai-spot="CICOD-AI · Fields added from CICOD-AI">
-            <h4>Form fields (<span id="fm-nf">0</span>)</h4>
-            <div id="fm-fields"><p class="fm__hint">No fields yet. Fields are added after the form is created, or from the CICOD-AI builder above.</p></div>
-          </div>
-          <button class="g-btn g-btn--primary fm__create" id="fm-create" type="button">+ Create</button>
-          <div id="fm-done"></div>
-        </div>
+        </section>
+
+        <div class="fd-toasts" id="toasts" aria-live="polite"></div>
+        <dialog class="fd-modal" id="m-preview"><div class="fd-modal__head">Form Preview <button class="fd-ic" style="border:0" data-close type="button" aria-label="Close">✕</button></div><div class="fd-modal__body" id="pv-body"></div>
+          <div class="fd-modal__foot"><button class="fd-out" data-close type="button">Close</button><button class="fd-green" type="button" onclick="window.print()">🖶 Print</button></div></dialog>
+        <dialog class="fd-modal" id="m-share"><div class="fd-modal__head">Share Link <button class="fd-ic" style="border:0" data-close type="button" aria-label="Close">✕</button></div><div class="fd-modal__body"><input class="fd-input" id="sh-link" readonly><div class="fd-share"><span>WhatsApp</span><span>Facebook</span><span>Twitter</span><span>Email</span></div></div>
+          <div class="fd-modal__foot"><button class="fd-out" data-close type="button">Cancel</button><button class="fd-green" id="sh-copy" type="button">Copy</button></div></dialog>
       </div>
     </div>
     <div class="doc__where" style="margin-top:12px">
-      <div class="doc__where-item"><b>Primary placement</b>Above the New Form card on <code>/ecms/forms/new</code></div>
-      <div class="doc__where-item"><b>Also appears in</b>The form designer (add fields to an existing form), Workflows → Form tab, and Form Analytics ("simplify this form", E-W6)</div>
-      <div class="doc__where-item"><b>Trigger</b>"Generate fields" click, or a photo/PDF dropped on the upload tab</div>
-      <div class="doc__where-item"><b>Who sees it</b>Users who can create forms. Uploaded scans are stored in the tenant's Drive and processed in-country</div>
+      <div class="doc__where-item"><b>① New Form</b><b>✦ Build with CICOD-AI</b> in the card header fills name, type and description.</div>
+      <div class="doc__where-item"><b>② Designer</b>Fields are already placed. Destination and email response are set, so Save works first time.</div>
+      <div class="doc__where-item"><b>③ Edit by hand</b>Drag, reorder, add or remove fields as usual. <b>✦ Add fields with CICOD-AI</b> adds more later.</div>
+      <div class="doc__where-item"><b>New</b>A <b>✦ Rule</b> on each field (NIN, phone, age…) and <b>✦ Test entry</b> in Preview.</div>
     </div>
     <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
   </section>
@@ -94,32 +311,27 @@
   <!-- 2. HOW IT WORKS -->
   <section class="doc__section">
     <h2>2. How it works</h2>
-    <p class="doc__lede">Document intelligence reads the paper form's layout. An LLM turns labels and boxes, or a description, into typed fields, and a rules library adds Nigerian validation.</p>
     <div class="doc__flow">
-      <div class="doc__step"><h4>Capture</h4><p>Either the description text goes to <code>/ecms/form/draft</code>, or the uploaded photo/PDF goes to <code>/ecms/form/from-scan</code>.</p></div>
-      <div class="doc__step"><h4>Protect</h4><p>Scans are processed on the in-country document model. A filled-in form's handwritten values are discarded; only printed labels are kept, so no citizen data is stored.</p></div>
-      <div class="doc__step"><h4>Read the form</h4><p>OCR plus layout analysis finds labels, blank lines, boxes and tick-boxes, with a confidence per line. Low-confidence lines are highlighted for checking.</p></div>
-      <div class="doc__step"><h4>Design fields</h4><p>The LLM chooses a type for each label (Date, Currency, Dropdown, Signature…), marks required fields and suggests options, e.g. 36 states + FCT, GL 01–17.</p></div>
-      <div class="doc__step"><h4>Validate</h4><p>A rules library proposes Nigerian formats: phone numbers (11 digits or +234), NIN and BVN (11 digits), NUBAN (10 digits), vehicle plates, and date order.</p></div>
-      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer edits, adds or removes rows, then clicks "Use these fields". Accepted suggestions and edits go to <code>/feedback</code>.</p></div>
+      <div class="doc__step"><h4>1. Describe</h4><p>Type what the form collects, or upload a photo or PDF of the paper form.</p></div>
+      <div class="doc__step"><h4>2. Build</h4><p>CICOD-AI picks field types, options and Nigerian rules (NIN, phone, NUBAN).</p></div>
+      <div class="doc__step"><h4>3. Place</h4><p>Fields go straight into the designer, with destination and email response set.</p></div>
+      <div class="doc__step"><h4>4. Check &amp; save</h4><p>Review, test with sample data, then Save. Your edits help it learn.</p></div>
     </div>
   </section>
 
   <!-- 3. BENEFITS -->
   <section class="doc__section">
-    <h2>3. Benefits to this feature</h2>
-    <p class="doc__lede">Targets from the CICOD-AI augmentation analysis and <i>newFeatures.md</i> ("current form builder to optimise with CICOD-AI").</p>
+    <h2>3. Benefits</h2>
     <div class="doc__benefits">
-      <div class="doc__benefit"><div class="doc__benefit-kpi">1 hr → 5 min</div><h4>Time to build a form</h4><p>Target: a 15-field form from a scan in minutes, instead of adding fields one by one.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Paper → digital</div><h4>Digitising at scale</h4><p>Registries can photograph existing paper forms and have them online the same day.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Bad data ↓</div><h4>Validation by default</h4><p>NIN, phone and account numbers are checked at entry, not corrected later by staff.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Consistent</div><h4>Same field types everywhere</h4><p>"State of origin" and "Grade level" use the same dropdowns on every form, which makes reports comparable.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">1 hr → 5 min</div><h4>Faster forms</h4><p>A 15-field form in minutes, not field by field.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Paper → online</div><h4>Same-day digitising</h4><p>Photograph a paper form and publish it the same day.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Clean data</div><h4>Checked at entry</h4><p>Wrong NINs, phones and account numbers are caught as people type.</p></div>
     </div>
   </section>
 
   <!-- 4. INTEGRATION -->
   <section class="doc__section">
-    <h2>4. How to implement it in ECMS</h2>
+    <h2>4. How to build it</h2>
     <div class="doc__cols">
       <div>
         <div class="doc__panel"><h4>Mount (Create Form page)</h4>
@@ -139,11 +351,9 @@ document.addEventListener('ai-form-apply', e =&gt; {
 &lt;/script&gt;</pre></div>
         <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
           <ol class="doc__list">
-            <li>Map the ECMS form field types to a JSON schema (label, type, required, validation, options).</li>
-            <li>Build the validation rules library (phone, NIN, BVN, NUBAN, plates, date order) and shared option lists (states, LGAs, grade levels).</li>
-            <li>Expose <code>/ecms/form/draft</code> and <code>/ecms/form/from-scan</code> (document intelligence, then LLM) on the CICOD-AI Gateway.</li>
-            <li>Mount the component on Create Form and wire <code>ai-form-apply</code> to the form draft.</li>
-            <li>Pilot with 20 paper forms from Registry; measure fields kept unchanged.</li>
+            <li>Add <code>/ecms/form/draft</code> and <code>/ecms/form/from-scan</code> to the CICOD-AI Gateway.</li>
+            <li>Add the button to Create Form and the designer. Place the returned fields on the canvas.</li>
+            <li>Add the Rule setting to field cards. Pilot with 20 Registry paper forms.</li>
           </ol></div>
       </div>
       <div>
@@ -168,10 +378,9 @@ POST /ai/ecms/form/from-scan
     "validation": "Exactly 11 digits · NIMC check" }] }</pre></div>
         <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
           <ul class="doc__list">
-            <li>Feature flag <code>ai.ecms.promptToForm</code> in ECMS Settings, on/off per tenant.</li>
-            <li>OCR lines below 85% confidence are highlighted and must be reviewed.</li>
-            <li>Generated and applied forms are written to the ECMS Audit Log (feature: <i>CICOD-AI Forms</i>).</li>
-            <li>Only users with form-creation permission see the component; scans inherit the uploader's Drive permissions.</li>
+            <li>On/off per tenant: <code>ai.ecms.promptToForm</code>.</li>
+            <li>Nothing is saved until the officer clicks Save. Unclear scan text is flagged for review.</li>
+            <li>Scans stay in-country. Every AI form is logged in the ECMS Audit Log.</li>
           </ul></div>
       </div>
     </div>
@@ -183,25 +392,326 @@ POST /ai/ecms/form/from-scan
 <script src="../../../shared/doc.js"></script>
 <script src="prompt-to-form.js"></script>
 <script>
-  // Host-page wiring: the Create Form screen owns its fields; the component only proposes them.
+  // Host page: copies the live govtest Forms flow (New Form → All Forms → designer → Save).
+  // <ai-form-builder> only proposes; this page places its proposal into the same designer an officer uses by hand.
   const $ = id => document.getElementById(id);
   const esc = window.AIGateway.esc;
-  const desc = $('fm-desc');
-  desc.addEventListener('input', () => { $('fm-count').textContent = desc.value.length; });
-  const flash = el => { el.classList.remove('fm__flash'); void el.offsetWidth; el.classList.add('fm__flash'); };
+
+  /* ---------- Live catalogue (captured from govtest, 29 Sep 2026) ---------- */
+  const PALETTE = [['Text', [['Short answer', 'T'], ['Paragraph', '≡']]], ['Number', [['Number', '#'], ['Currency', '₦']]], ['Choice', [['Dropdown', '☰'], ['Checkboxes', '☑'], ['Radio Group', '◉']]],
+    ['Special', [['Business sector', '▣'], ['File upload', '⤒'], ['Image upload', '▨'], ['Distance', '↔'], ['Dimension', '⬚'], ['Weight', '⚖']]], ['Date', [['Date', '▦']]], ['Rating & Scale', [['Star rating', '☆'], ['Scale', '⇹']]],
+    ['Compound', [['Contact', '☺'], ['Address', '⌖'], ['Organization', '▤']]], ['Layout', [['Section title', '☰'], ['Divider', '―'], ['Body text', '¶']]]];
+  const CHOICE = new Set(['Dropdown', 'Checkboxes', 'Radio Group']), LAYOUT = new Set(['Section title', 'Divider', 'Body text']);
+  const QUEUES = ['1Gov test', 'ACTIVITIES', 'ADMIN', 'admin portal', 'Adult Care', 'AI IMPLEMENTATION', 'approval work', 'Assign User', 'AUTO MOBILE REPAIR', 'Bid Submission', 'Business Intelligence', 'Case management', 'Child Care', 'Civil Service Inspectorate', 'Civil Service Transformation', 'Complaints', 'Construction', 'Content Operations', 'convergence', 'Correspondence', 'Correspondence Management', 'CRITICAL UPDATE', 'Customer service', 'Customer Success', 'Daily update', 'Democratic systems of government', 'Department', 'didi test', 'Digital Innovation', 'Document Approval', 'Edo', 'Education', 'Engineering', 'Enterprise', 'Escalation', 'Exception Queue', 'FARUD AND RISK MANAGEMENT', 'Federal Integrated Staff Housing', 'Final workflow', 'Finance', 'TEST AUTOMATION'];
+  const QTYPES = { 'TEST AUTOMATION': ['Auto test', 'Auto Testing', 'Auto Tests', 'Automated Testing', 'Send Email Toggle Test', 'Testiiing', 'Testiing'] }; // only queue whose types were opened
+  const FORMS = [['gaming', 'N/A', 'N/A', 'Internal', 'N/A', 'active'], ['Testing for (duplicated)', 'TEST AUTOMATION', 'Testiing', 'External', 'N/A', 'active'], ['testing duplicates tt', 'TEST AUTOMATION', 'Testiing', 'External', 'N/A', 'active'],
+    ['Testing form creation 2', 'TEST AUTOMATION', 'Testiing', 'External', 'N/A', 'active'], ['Testing form creation', 'N/A', 'N/A', 'Internal', 'N/A', 'suspended'], ['Market survey', 'N/A', 'N/A', 'External', 'N/A', 'active'],
+    ['Testing View Analytics (Internal form)', 'TEST AUTOMATION', 'Auto test', 'External', 'N/A', 'active'], ['data capture test (Copy)', 'Adult Care', 'Application', 'Data Capture', 'N/A', 'suspended']].map(r => ({ name: r[0], queue: r[1], qtype: r[2], type: r[3], period: r[4], status: r[5] }));
+
+  /* ---------- State ---------- */
+  let form = null, pending = null, sel = null, hist = [], fut = [], uid = 0;
+  const newId = () => 'f' + (++uid);
+  const blank = kind => ({ id: newId(), label: LAYOUT.has(kind) ? (kind === 'Divider' ? 'Divider' : kind) : 'Untitled question', kind, required: false, options: CHOICE.has(kind) ? ['Option 1', 'Option 2'] : [], linked: '', rule: '', ai: false, aiType: '' });
+  const snap = () => { hist.push(JSON.stringify(form.fields)); if (hist.length > 60) hist.shift(); fut = []; };
+  const toast = (msg, bad) => { const t = document.createElement('div'); t.className = 'fd-toast ' + (bad ? 'fd-toast--bad' : 'fd-toast--ok'); t.textContent = (bad ? '⚠ ' : '✓ ') + msg; $('toasts').appendChild(t); setTimeout(() => t.remove(), 3800); };
+  const setNav = name => document.querySelectorAll('#screen .shell__nav-item').forEach(n => n.classList.toggle('shell__nav-item--active', n.textContent.trim() === name));
+  function go(step) {
+    document.querySelectorAll('[data-step]').forEach(s => { s.hidden = s.dataset.step !== step; });
+    setNav(step === 'new' ? 'Create Form' : 'All Forms');
+    $('screen').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ---------- AI proposal → live field types ---------- */
+  const LINKED = ['36 states + FCT', '774 LGAs', 'GL 01 – GL 17', 'CBN list of licensed banks', 'From ECMS Departments'];
+  function toKind(f) {
+    const L = f.label.toLowerCase();
+    if (f.type === 'Long text') return /address/.test(L) ? 'Address' : 'Paragraph';
+    if (f.type === 'File upload') return /photo|passport|image|picture/.test(L) ? 'Image upload' : 'File upload';
+    return { Text: 'Short answer', Number: 'Number', Currency: 'Currency', Date: 'Date', Dropdown: 'Dropdown', Radio: 'Radio Group', Checkbox: 'Checkboxes', Phone: 'Short answer', Email: 'Short answer', NIN: 'Short answer', Signature: 'Short answer' }[f.type] || 'Short answer';
+  }
+  const fromAI = f => { const kind = toKind(f), linked = LINKED.includes(f.options) ? f.options : '';
+    return { id: newId(), label: f.label, kind, required: !!f.required, options: CHOICE.has(kind) && !linked ? String(f.options || 'Yes, No').split(',').map(o => o.trim()).filter(Boolean) : [], linked, rule: f.type === 'Signature' ? 'Type full name to sign' : (f.validation || ''), ai: true, aiType: f.type }; };
+
   document.addEventListener('ai-form-apply', e => {
     const d = e.detail;
-    $('fm-name').value = d.name; $('fm-type').value = d.formType;
-    desc.value = d.description.slice(0, 1500); $('fm-count').textContent = desc.value.length;
-    $('fm-nf').textContent = d.fields.length;
-    $('fm-fields').innerHTML = `<div class="g-table-wrap"><table class="g-table"><thead><tr><th>#</th><th>Label</th><th>Type</th><th>Required</th><th>Validation</th></tr></thead><tbody>${d.fields.map((f, i) => `<tr><td>${i + 1}</td><td>${esc(f.label)}</td><td>${esc(f.type)}</td><td>${f.required ? 'Yes' : 'No'}</td><td>${esc(f.validation || f.options || '—')}</td></tr>`).join('')}</tbody></table></div>`;
-    [$('fm-name'), $('fm-type'), desc, $('fm-fields')].forEach(flash);
-    $('fm-card').scrollIntoView({ block: 'start', behavior: 'smooth' });
+    if (e.target.id === 'aib-new') {
+      pending = d;
+      $('fm-name').value = d.name; $('fm-type').value = d.formType; $('fm-desc').value = d.description.slice(0, 1500); $('fm-count').textContent = $('fm-desc').value.length;
+      $('fm-name-e').textContent = $('fm-desc-e').textContent = '';
+      const note = $('fm-ai-note'); note.hidden = false;
+      note.innerHTML = `<span class="ai-badge">CICOD-AI</span><span><b>${d.fields.length} fields</b> are ready. Click <b>+ Create</b>, then open the form.</span>`;
+    } else if (form) {
+      snap();
+      const add = d.fields.map(fromAI).filter(f => !form.fields.some(x => x.label.toLowerCase() === f.label.toLowerCase()));
+      form.fields.push(...add);
+      if (!form.queue) { form.queue = d.queue; form.queueType = d.queueType; form.qtNew = d.queueTypeIsNew; }
+      if (!form.email) form.email = d.emailResponse;
+      sel = add[0]?.id || sel;
+      renderDesigner();
+      aiNote(`Added <b>${add.length} field${add.length === 1 ? '' : 's'}</b>${d.fields.length > add.length ? ` (${d.fields.length - add.length} skipped because a field with that label already exists)` : ''}. Review them, then click <b>Save</b>.`);
+    }
   });
+  const aiNote = html => { const n = $('d-ai'); n.hidden = false; n.innerHTML = `<span class="ai-badge">CICOD-AI</span><span>${html}</span>`; };
+
+  /* ---------- 1. New Form → Create ---------- */
+  $('fm-desc').addEventListener('input', () => { $('fm-count').textContent = $('fm-desc').value.length; });
   $('fm-create').addEventListener('click', () => {
-    const n = $('fm-nf').textContent;
-    $('fm-done').innerHTML = $('fm-name').value ? `<div class="fm__done">Form "<b>${esc($('fm-name').value)}</b>" (${esc($('fm-type').value)}) created with ${esc(n)} fields. (Demo only)</div>` : '<div class="fm__done" style="background:var(--warn-bg)">Form Name is required.</div>';
+    const name = $('fm-name').value.trim(), desc = $('fm-desc').value.trim();
+    $('fm-name-e').textContent = name ? '' : 'Form name is required';
+    $('fm-desc-e').textContent = desc ? '' : 'Description is required';
+    if (!name || !desc) return;
+    const p = pending && pending.name === name ? pending : null;
+    form = { id: Math.random().toString(36).slice(2, 12), name, type: $('fm-type').value, desc, queue: p ? p.queue : '', queueType: p ? p.queueType : '', qtNew: p ? p.queueTypeIsNew : false,
+      email: p ? p.emailResponse : '', fields: p ? p.fields.map(fromAI) : [], saved: false, fromAI: !!p };
+    hist = []; fut = []; sel = null;
+    FORMS.unshift({ name, queue: 'N/A', qtype: 'N/A', type: form.type, period: 'N/A', status: 'active', mine: true });
+    renderList(); go('list'); toast('Form created');
+    const n = $('list-ai'); n.hidden = !p;
+    if (p) n.innerHTML = `<span class="ai-badge">CICOD-AI</span><span>Open <b>${esc(name)}</b>. Its ${form.fields.length} fields are already placed.</span>`;
   });
+  document.querySelectorAll('[data-go-new]').forEach(b => b.addEventListener('click', () => { pending = null; $('fm-ai-note').hidden = true; ['fm-name', 'fm-desc'].forEach(id => { $(id).value = ''; }); $('fm-count').textContent = 0; go('new'); }));
+
+  /* ---------- 2. All Forms ---------- */
+  function renderList() {
+    $('list-rows').innerHTML = FORMS.map((f, i) => `<tr class="${f.mine && i === 0 && !form?.saved ? 'fd-row-new' : ''}"><td><a data-open="${i}">${esc(f.name)}</a></td><td>${esc(f.queue)}</td><td>${esc(f.qtype)}</td><td>${esc(f.type)}</td><td>${f.period}</td><td><span class="fd-st ${f.status === 'active' ? '' : 'fd-st--off'}">${f.status}</span></td></tr>`).join('');
+    $('list-rows').querySelectorAll('[data-open]').forEach(a => a.addEventListener('click', () => FORMS[+a.dataset.open].mine ? openDesigner() : toast(`Opens "${FORMS[+a.dataset.open].name}" in the designer. Only the new form is editable in this prototype.`, true)));
+  }
+  document.querySelectorAll('[data-go-list]').forEach(a => a.addEventListener('click', () => { renderList(); go('list'); }));
+
+  /* ---------- 3. Designer ---------- */
+  function openDesigner() {
+    go('designer');
+    if (form.fromAI && form.fields.length && !form.saved) aiNote(`<b>${form.fields.length} fields</b> placed. Destination and email response set. Check them, then click <b>Save</b>.`);
+    else $('d-ai').hidden = true;
+    renderDesigner();
+  }
+  function renderDesigner() {
+    $('d-crumb').textContent = form.name; $('d-title').textContent = form.name;
+    $('d-name').value = form.name; $('d-desc').value = form.desc; $('d-desc-n').textContent = form.desc.length;
+    $('d-typehead').textContent = `${form.type} Form`; $('d-typesub').textContent = form.type === 'Internal' ? 'Submission of this form will create a task' : 'People with the link can submit this form';
+    $('d-ftype').value = form.type; $('d-ftype-l').textContent = form.type.toLowerCase();
+    $('d-email').value = form.email; $('d-email-n').textContent = form.email.length;
+    renderDest(); renderPalette(); renderCards();
+    $('d-undo').disabled = !hist.length; $('d-redo').disabled = !fut.length;
+  }
+  function renderDest(showErr) {
+    const q = $('d-queue'), t = $('d-qtype');
+    const qs = QUEUES.includes(form.queue) || !form.queue ? QUEUES : [form.queue, ...QUEUES];
+    q.innerHTML = `<option value="">Select a queue</option>${qs.map(x => `<option${x === form.queue ? ' selected' : ''}>${esc(x)}</option>`).join('')}`;
+    const types = [...(QTYPES[form.queue] || []), ...(form.qtNew && form.queueType ? [form.queueType] : [])];
+    t.disabled = !form.queue;
+    t.innerHTML = `<option value="">${!form.queue ? 'No queue types available' : types.length ? 'Select a queue type' : 'No queue types available'}</option>${types.map(x => `<option value="${esc(x)}"${x === form.queueType ? ' selected' : ''}>${esc(x)}${form.qtNew && x === form.queueType ? ' (new · CICOD-AI)' : ''}</option>`).join('')}`;
+    const qe = !form.queue, te = !form.queueType;
+    $('d-queue-e').textContent = qe ? 'Queue is required' : ''; $('d-qtype-e').textContent = te ? 'Queue type is required' : '';
+    q.classList.toggle('fd-select--bad', qe); t.classList.toggle('fd-select--bad', te);
+  }
+  $('d-queue').addEventListener('change', e => { form.queue = e.target.value; form.queueType = ''; form.qtNew = false; renderDest(); });
+  $('d-qtype').addEventListener('change', e => { form.queueType = e.target.value; renderDest(); });
+  $('d-name').addEventListener('input', e => { form.name = e.target.value; $('d-crumb').textContent = $('d-title').textContent = form.name; });
+  $('d-desc').addEventListener('input', e => { form.desc = e.target.value; $('d-desc-n').textContent = form.desc.length; });
+  $('d-email').addEventListener('input', e => { form.email = e.target.value; $('d-email-n').textContent = form.email.length; $('d-email-e').textContent = ''; });
+  $('d-ftype').addEventListener('change', e => { form.type = e.target.value; renderDesigner(); });
+  document.querySelectorAll('[data-sec]').forEach(b => b.addEventListener('click', () => { const body = document.querySelector(`[data-secb="${b.dataset.sec}"]`); body.hidden = !body.hidden; b.querySelector('span').textContent = body.hidden ? '›' : '⌄'; }));
+  document.querySelectorAll('[data-sw]').forEach(s => s.addEventListener('click', () => s.setAttribute('aria-checked', s.getAttribute('aria-checked') !== 'true')));
+
+  function renderPalette() {
+    $('palette').innerHTML = PALETTE.map(([g, items]) => `<h6>${g}</h6><div class="fd-pal__grid">${items.map(([k, ic]) => `<button class="fd-pal__item" draggable="true" data-kind="${k}" type="button"><i>${ic}</i>${k}</button>`).join('')}</div>`).join('');
+    $('palette').querySelectorAll('[data-kind]').forEach(b => {
+      b.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', 'kind:' + b.dataset.kind); e.dataTransfer.effectAllowed = 'copy'; });
+      b.addEventListener('click', () => addField(b.dataset.kind, form.fields.length));
+    });
+  }
+  function addField(kind, at) { snap(); const f = blank(kind); form.fields.splice(at, 0, f); sel = f.id; renderDesigner(); }
+  const dupSet = () => { const seen = {}, d = new Set(); form.fields.filter(f => f.kind !== 'Divider').forEach(f => { const k = f.label.trim().toLowerCase(); if (seen[k]) { d.add(seen[k]); d.add(f.id); } else seen[k] = f.id; }); return d; };
+  const preview = f => {
+    if (CHOICE.has(f.kind)) return f.linked ? `Linked list: ${esc(f.linked)}` : esc(f.options[0] || 'Option 1');
+    return { Paragraph: '<span class="fd-card__pv fd-card__pv--line" style="display:inline-block">Paragraph</span>', Number: '0', Currency: 'NGN amount', Date: 'dd/mm/yyyy', 'File upload': '⤒ Upload file', 'Image upload': '▨ Upload image', 'Star rating': '☆ ☆ ☆ ☆ ☆', Scale: '1 ─ 2 ─ 3 ─ 4 ─ 5', Contact: 'Name · Phone · Email', Address: 'Street · City · State', Organization: 'Organization name', 'Business sector': 'Select sector', Distance: 'km', Dimension: 'L × W × H', Weight: 'kg', Divider: '<hr style="border:0;border-top:1px solid var(--fd-line);margin:6px 0">' }[f.kind] || '';
+  };
+  function renderCards() {
+    const dups = dupSet(), box = $('cards');
+    if (!form.fields.length) {
+      box.innerHTML = '<div class="fd-drop" data-at="0">⎚<br>Drag a field type here, or click "Add field" below.</div>';
+    } else {
+      box.innerHTML = form.fields.map((f, i) => `<div class="fd-slot" data-at="${i}" title="Insert field here"></div>${card(f, dups.has(f.id))}`).join('') + `<div class="fd-slot" data-at="${form.fields.length}" title="Insert field here">+</div>`;
+    }
+    box.querySelectorAll('[data-at]').forEach(z => {
+      z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('over'); });
+      z.addEventListener('dragleave', () => z.classList.remove('over'));
+      z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('over'); dropAt(e.dataTransfer.getData('text/plain'), +z.dataset.at); });
+      if (z.classList.contains('fd-slot')) z.addEventListener('click', () => openMenu(+z.dataset.at, z));
+    });
+    box.querySelectorAll('.fd-card').forEach(c => wireCard(c));
+  }
+  function dropAt(data, at) {
+    if (data.startsWith('kind:')) return addField(data.slice(5), at);
+    if (data.startsWith('move:')) { const from = form.fields.findIndex(f => f.id === data.slice(5)); if (from < 0) return; snap(); const [f] = form.fields.splice(from, 1); form.fields.splice(at > from ? at - 1 : at, 0, f); sel = f.id; renderDesigner(); }
+  }
+  function card(f, bad) {
+    const s = f.id === sel, lay = LAYOUT.has(f.kind);
+    const head = `<div class="fd-handle" draggable="true" data-drag="${f.id}" title="Drag to reorder">⠿⠿</div>${f.ai ? '<span class="fd-aichip">✦ CICOD-AI</span>' : ''}`;
+    if (!s) return `<div class="fd-card${bad ? ' fd-card--bad' : ''}" data-id="${f.id}">${head}<div class="fd-card__title">${esc(f.label)}${f.required ? ' <span class="fd-req">*</span>' : ''}</div>
+      <div class="fd-card__pv">${preview(f)}</div>${f.rule ? `<div class="fd-card__pv" style="color:var(--ai-600)">✦ ${esc(ruleText(f))}</div>` : ''}${bad ? '<div class="fd-card__err">Two fields cannot have the same label</div>' : ''}</div>`;
+    const opts = CHOICE.has(f.kind) ? `<div class="fd-otabs"><button type="button" class="${f.linked || f._linkedTab ? '' : 'on'}" data-otab="opt">Options</button><button type="button" class="${f.linked || f._linkedTab ? 'on' : ''}" data-otab="linked">Linked list</button></div>
+      ${f.linked !== '' || f._linkedTab ? `<select class="fd-select" data-linked><option value="">Choose a list…</option>${LINKED.map(l => `<option${l === f.linked ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`
+        : f.options.map((o, k) => `<div class="fd-opt"><span>⠿</span><input value="${esc(o)}" data-opt="${k}" aria-label="Option ${k + 1}"><span>⚡ Triggers</span><button type="button" data-optdel="${k}" aria-label="Remove option">✕</button></div>`).join('') + '<button type="button" class="fd-addopt" data-optadd>+ Add option</button>'}` : '';
+    return `<div class="fd-card fd-card--sel${bad ? ' fd-card--bad' : ''}" data-id="${f.id}">${head}
+      <input class="fd-card__title-in" value="${esc(f.label)}" data-title aria-label="Question">
+      ${opts}
+      ${lay ? '' : `<div class="fd-rule">✦ Rule <input value="${esc(f.rule)}" data-rule placeholder="Validation rule (CICOD-AI addition), e.g. Exactly 11 digits"></div>`}
+      <div class="fd-card__foot"><span>${f.kind}</span><span class="r"><button class="x" type="button" data-dup title="Duplicate" aria-label="Duplicate">⧉</button><button class="x del" type="button" data-del title="Delete" aria-label="Delete">🗑</button>${lay ? '' : `Required <button class="fd-toggle" role="switch" aria-checked="${f.required}" type="button" data-req aria-label="Required"></button>`}</span></div>
+      ${bad ? '<div class="fd-card__err">Two fields cannot have the same label</div>' : ''}</div>`;
+  }
+  function wireCard(c) {
+    const f = form.fields.find(x => x.id === c.dataset.id);
+    c.querySelector('[data-drag]').addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', 'move:' + f.id); e.dataTransfer.effectAllowed = 'move'; c.classList.add('fd-card--dragging'); });
+    c.querySelector('[data-drag]').addEventListener('dragend', () => c.classList.remove('fd-card--dragging'));
+    c.addEventListener('dragover', e => e.preventDefault());
+    c.addEventListener('drop', e => { e.preventDefault(); dropAt(e.dataTransfer.getData('text/plain'), form.fields.indexOf(f)); });
+    if (f.id !== sel) { c.addEventListener('click', () => { sel = f.id; renderCards(); }); return; }
+    const t = c.querySelector('[data-title]');
+    t.addEventListener('focus', () => snap(), { once: true });
+    t.addEventListener('input', () => { f.label = t.value; const d = dupSet(); document.querySelectorAll('.fd-card').forEach(el => { const bad = d.has(el.dataset.id); el.classList.toggle('fd-card--bad', bad); const er = el.querySelector('.fd-card__err'); if (bad && !er) el.insertAdjacentHTML('beforeend', '<div class="fd-card__err">Two fields cannot have the same label</div>'); if (!bad && er) er.remove(); }); });
+    t.addEventListener('change', () => renderCards());
+    c.querySelector('[data-rule]')?.addEventListener('input', e => { f.rule = e.target.value; });
+    c.querySelector('[data-req]')?.addEventListener('click', () => { snap(); f.required = !f.required; renderCards(); });
+    c.querySelector('[data-del]').addEventListener('click', e => { e.stopPropagation(); snap(); form.fields = form.fields.filter(x => x !== f); sel = null; renderDesigner(); });
+    c.querySelector('[data-dup]').addEventListener('click', e => { e.stopPropagation(); snap(); const copy = { ...JSON.parse(JSON.stringify(f)), id: newId(), ai: false }; form.fields.splice(form.fields.indexOf(f) + 1, 0, copy); sel = copy.id; renderDesigner(); });
+    c.querySelectorAll('[data-otab]').forEach(b => b.addEventListener('click', () => { if (b.dataset.otab === 'linked') { f._linkedTab = true; } else { f._linkedTab = false; f.linked = ''; if (!f.options.length) f.options = ['Option 1', 'Option 2']; } renderCards(); }));
+    c.querySelector('[data-linked]')?.addEventListener('change', e => { snap(); f.linked = e.target.value; renderCards(); });
+    c.querySelectorAll('[data-opt]').forEach(i => i.addEventListener('input', () => { f.options[+i.dataset.opt] = i.value; }));
+    c.querySelectorAll('[data-optdel]').forEach(b => b.addEventListener('click', () => { snap(); f.options.splice(+b.dataset.optdel, 1); renderCards(); }));
+    c.querySelector('[data-optadd]')?.addEventListener('click', () => { snap(); f.options.push(`Option ${f.options.length + 1}`); renderCards(); });
+    c.querySelectorAll('.fd-opt span').forEach(sp => { if (/Triggers/.test(sp.textContent)) { sp.style.cursor = 'pointer'; sp.addEventListener('click', () => toast('Triggers show or hide other fields based on this answer. The live Triggers panel wasn\'t opened during capture.', true)); } });
+  }
+  function openMenu(at, anchor) {
+    const m = $('d-menu');
+    m.innerHTML = PALETTE.map(([g, items]) => `<h6>${g}</h6>${items.map(([k, ic]) => `<button type="button" data-mk="${k}"><span>${ic}</span>${k}</button>`).join('')}`).join('');
+    m.hidden = false; m.dataset.at = at;
+    m.querySelectorAll('[data-mk]').forEach(b => b.addEventListener('click', () => { m.hidden = true; addField(b.dataset.mk, +m.dataset.at); }));
+    m.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  $('d-add').addEventListener('click', e => { e.stopPropagation(); const m = $('d-menu'); if (!m.hidden) { m.hidden = true; return; } openMenu(form.fields.length); });
+  document.addEventListener('click', e => { if (!e.target.closest('#d-menu') && !e.target.closest('#d-add') && !e.target.closest('.fd-slot')) $('d-menu').hidden = true; });
+  $('d-undo').addEventListener('click', () => { if (!hist.length) return; fut.push(JSON.stringify(form.fields)); form.fields = JSON.parse(hist.pop()); renderDesigner(); });
+  $('d-redo').addEventListener('click', () => { if (!fut.length) return; hist.push(JSON.stringify(form.fields)); form.fields = JSON.parse(fut.pop()); renderDesigner(); });
+
+  /* ---------- Save: the same checks and messages as govtest ---------- */
+  $('d-save').addEventListener('click', () => {
+    const errs = [];
+    if (!form.queue) errs.push('Queue is required');
+    if (!form.queueType) errs.push('Queue type is required');
+    if (!form.email.trim()) { errs.push('Form email response is required'); $('d-email-e').textContent = 'Form email response is required'; }
+    if (dupSet().size) errs.push('Two fields cannot have the same label');
+    renderDest();
+    if (errs.length) { errs.forEach(m => toast(m, true)); return; }
+    if (form.qtNew) { (QTYPES[form.queue] = QTYPES[form.queue] || []).push(form.queueType); form.qtNew = false; }
+    form.saved = true;
+    const row = FORMS.find(f => f.mine); Object.assign(row, { name: form.name, queue: form.queue, qtype: form.queueType, type: form.type });
+    toast('Form saved');
+    if (form.fromAI) { AIGateway.feedback('form-' + form.id, 'ecms.prompt-to-form', 'saved', { fields: form.fields.length, aiFields: form.fields.filter(f => f.ai).length }); aiNote(`Saved. Open 👁 <b>Preview</b> and try <b>✦ Test entry</b>.`); }
+    renderDesigner();
+  });
+
+  /* ---------- Preview (live: Form Preview · Close · Print) + ✦ Test entry ---------- */
+  const STATES = ['Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT', 'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'];
+  const LGAS = { Lagos: ['Agege', 'Alimosho', 'Epe', 'Eti-Osa', 'Ikeja', 'Ikorodu', 'Lagos Island', 'Surulere'], FCT: ['Abaji', 'Abuja Municipal', 'Bwari', 'Gwagwalada', 'Kuje', 'Kwali'], Kano: ['Dala', 'Fagge', 'Gwale', 'Kano Municipal', 'Nassarawa', 'Tarauni'] };
+  const LISTS = { '36 states + FCT': STATES, 'GL 01 – GL 17': Array.from({ length: 17 }, (_, i) => `GL ${String(i + 1).padStart(2, '0')}`), 'From ECMS Departments': ['Works & Maintenance', 'Finance & Accounts', 'Human Resource Management', 'General Services', 'Procurement', 'ICT'], 'CBN list of licensed banks': ['Access Bank', 'Fidelity Bank', 'First Bank of Nigeria', 'GTBank', 'UBA', 'Union Bank', 'Wema Bank', 'Zenith Bank'] };
+  const SECTORS = ['Agriculture', 'Construction', 'Education', 'Health', 'ICT', 'Manufacturing', 'Oil & Gas', 'Trade'];
+  const optsOf = f => f.linked === '774 LGAs' ? [] : f.linked ? LISTS[f.linked] || [] : f.kind === 'Business sector' ? SECTORS : f.options;
+  const ONES = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'], TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  const w3 = n => { const h = Math.floor(n / 100), r = n % 100; return [h ? ONES[h] + ' hundred' : '', r ? (h ? 'and ' : '') + (r < 20 ? ONES[r] : TENS[Math.floor(r / 10)] + (r % 10 ? '-' + ONES[r % 10] : '')) : ''].filter(Boolean).join(' '); };
+  const inWords = n => { n = Math.floor(n); if (!n) return ''; const p = []; [[1e9, 'billion'], [1e6, 'million'], [1e3, 'thousand'], [1, '']].forEach(([u, w]) => { const c = Math.floor(n / u) % 1000; if (c) p.push(w3(c) + (w ? ' ' + w : '')); }); const s = p.join(', ') + ' naira only'; return s[0].toUpperCase() + s.slice(1); };
+  const ageOf = v => { const d = new Date(v), t = new Date(); let a = t.getFullYear() - d.getFullYear(); if (t < new Date(t.getFullYear(), d.getMonth(), d.getDate())) a--; return a; };
+  function checks(f) {
+    // Each rule keeps its own match: the closures run later, when the entry is checked.
+    const v = f.rule || '', out = [];
+    const exact = v.match(/Exactly (\d+) digits/i), digits = v.match(/Digits only, (\d+)[–-](\d+)/i), letters = v.match(/Letters only, (\d+)[–-](\d+)/i), age = v.match(/Age ≥ (\d+)/), after = v.match(/On or after (.+)$/i), max = v.match(/Max ([\d,]+) characters/i);
+    if (f.aiType === 'Email' || /valid email/i.test(v)) out.push(x => /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(x) || 'Enter a valid email address.');
+    if (/^\^/.test(v)) { const re = new RegExp(v); out.push(x => re.test(x.replace(/\s+/g, '')) || (f.aiType === 'Phone' ? 'Use a Nigerian mobile number: 070, 080, 081, 090 or 091, or +234.' : 'Wrong format, e.g. ABC-123DE.')); }
+    if (exact) out.push(x => new RegExp(`^\\d{${exact[1]}}$`).test(x) || `Must be exactly ${exact[1]} digits (you entered ${x.replace(/\D/g, '').length}).`);
+    if (digits) out.push(x => new RegExp(`^\\d{${digits[1]},${digits[2]}}$`).test(x) || `Digits only, ${digits[1]} to ${digits[2]} characters.`);
+    if (letters) out.push(x => new RegExp(`^[A-Za-z .'-]{${letters[1]},${letters[2]}}$`).test(x) || `Letters only, ${letters[1]} to ${letters[2]} characters.`);
+    if (age) out.push(x => ageOf(x) >= +age[1] || `Must be ${age[1]} or older (this date gives ${ageOf(x)}).`);
+    if (after) out.push((x, all) => { const o = all[after[1].trim()]; return !o || x >= o || `Must be on or after ${after[1].trim()} (${o}).`; });
+    if (/> 0/.test(v)) out.push(x => +x > 0 || 'Enter an amount greater than ₦0.');
+    if (max) { const n = +max[1].replace(/,/g, ''); out.push(x => x.length <= n || `Keep it under ${n} characters.`); }
+    return out;
+  }
+  const ruleText = f => !/^\^/.test(f.rule) ? f.rule : f.aiType === 'Phone' ? 'Nigerian mobile number (070/080/081/090/091 or +234)' : 'Nigerian plate number, e.g. ABC-123DE';
+  function control(f, i) {
+    const id = `pv-${i}`;
+    if (f.kind === 'Section title') return `<h5 style="margin:10px 0 0;font-size:14px">${esc(f.label)}</h5>`;
+    if (f.kind === 'Body text') return `<p style="margin:0;font-size:13px;color:var(--text-2)">${esc(f.label)}</p>`;
+    if (f.kind === 'Divider') return '<hr style="border:0;border-top:1px solid var(--fd-line)">';
+    const lab = `<label class="fd-label" for="${id}">${esc(f.label)}${f.required ? ' <span class="fd-req">*</span>' : ''}</label>`;
+    let c;
+    if (f.kind === 'Paragraph' || f.kind === 'Address') c = `<textarea class="fd-input" style="min-height:64px;padding:8px 10px" id="${id}"></textarea>`;
+    else if (f.kind === 'Dropdown' || f.kind === 'Business sector') c = `<select class="fd-select" id="${id}"><option value="">${f.linked === '774 LGAs' ? 'Select a state first' : 'Select ' + esc(f.label)}</option>${optsOf(f).map(o => `<option>${esc(o)}</option>`).join('')}</select>`;
+    else if (f.kind === 'Radio Group' || f.kind === 'Checkboxes') c = `<div class="fd-opts" id="${id}">${optsOf(f).map(o => `<label><input type="${f.kind === 'Radio Group' ? 'radio' : 'checkbox'}" name="${id}" value="${esc(o)}"> ${esc(o)}</label>`).join('')}</div>`;
+    else if (f.kind === 'Star rating') c = `<div class="fd-opts" id="${id}">${[1, 2, 3, 4, 5].map(n => `<label><input type="radio" name="${id}" value="${n}"> ${'★'.repeat(n)}</label>`).join('')}</div>`;
+    else if (f.kind === 'Scale') c = `<input type="range" min="1" max="5" id="${id}" style="width:100%">`;
+    else if (f.kind === 'File upload' || f.kind === 'Image upload') c = `<input class="fd-input" type="file" id="${id}" accept="${f.kind === 'Image upload' ? '.jpg,.jpeg,.png' : '.pdf,.jpg,.jpeg,.png'}" style="padding:5px"><div class="fd-rulehint" id="${id}-demo"></div>`;
+    else if (f.kind === 'Contact') c = `<div class="fd-grid2" id="${id}" style="margin:0"><input class="fd-input" placeholder="Name" data-part><input class="fd-input" placeholder="Phone" data-part><input class="fd-input" placeholder="Email" data-part></div>`;
+    else if (f.kind === 'Date') c = `<input class="fd-input" type="date" id="${id}">`;
+    else if (['Number', 'Currency', 'Distance', 'Dimension', 'Weight'].includes(f.kind)) c = `<input class="fd-input" type="number" id="${id}" placeholder="${{ Currency: '₦ 0.00', Distance: 'km', Weight: 'kg', Dimension: 'cm' }[f.kind] || '0'}">${f.kind === 'Currency' ? `<div class="fd-rulehint" id="${id}-w"></div>` : ''}`;
+    else c = `<input class="fd-input" id="${id}" type="${f.aiType === 'Email' ? 'email' : f.aiType === 'Phone' ? 'tel' : 'text'}" placeholder="${f.aiType === 'Signature' ? 'Type your full name to sign' : ''}">`;
+    return `${lab}${c}${f.rule ? `<div class="fd-rulehint">✦ ${esc(ruleText(f))}</div>` : ''}<div class="fd-err" id="${id}-e"></div>`;
+  }
+  const val = i => { const f = form.fields[i], el = $(`pv-${i}`); if (!el) return '';
+    if (f.kind === 'Radio Group' || f.kind === 'Star rating') return el.querySelector('input:checked')?.value || '';
+    if (f.kind === 'Checkboxes') return [...el.querySelectorAll('input:checked')].map(x => x.value).join(', ');
+    if (f.kind === 'Contact') return [...el.querySelectorAll('[data-part]')].map(x => x.value.trim()).filter(Boolean).join(' · ');
+    if (el.type === 'file') return el.files[0] ? el.files[0].name : (el.dataset.demo || '');
+    return el.value.trim(); };
+  function errorOf(i, all) { const f = form.fields[i]; if (LAYOUT.has(f.kind)) return ''; const x = val(i); if (!x) return f.required ? 'This field is required' : ''; for (const c of checks(f)) { const r = c(x, all); if (r !== true) return r; } return ''; }
+  function checkAll() {
+    const all = Object.fromEntries(form.fields.map((f, i) => [f.label, val(i)]));
+    let bad = 0; form.fields.forEach((f, i) => { const e = $(`pv-${i}-e`); if (!e) return; const m = errorOf(i, all); e.textContent = m; if (m) bad++; });
+    return bad;
+  }
+  function sample(f, bad) {
+    const L = f.label.toLowerCase();
+    if (bad) { if (/nin|bvn/.test(L)) return '1234567'; if (f.aiType === 'Phone') return '0123456'; if (f.aiType === 'Email') return 'amina.bello@'; if (/account number/.test(L)) return '01234'; if (/ippis/.test(L)) return 'IP-77'; if (/date of birth/.test(L)) return '2012-06-01'; if (/end date/.test(L)) return '2026-10-01'; if (f.kind === 'Currency') return '0'; }
+    if (/name|signature|applicant/.test(L) && !/bank|org/.test(L)) return 'Amina Bello';
+    if (/ippis/.test(L)) return '2045118'; if (f.aiType === 'Email' || /e-?mail/.test(L)) return 'amina.bello@govtest.gov.ng'; if (f.aiType === 'Phone' || /phone/.test(L)) return '08031234567';
+    if (/\bnin\b/.test(L)) return '70123456789'; if (/bvn/.test(L)) return '22190345671'; if (/date of birth/.test(L)) return '1998-04-12'; if (/start date|departure/.test(L)) return '2026-10-05'; if (/end date|return/.test(L)) return '2026-10-16';
+    if (/state/.test(L)) return 'Lagos'; if (/lga/.test(L)) return 'Ikeja'; if (/address/.test(L)) return '14 Allen Avenue, Ikeja, Lagos'; if (/destination/.test(L)) return 'Kano'; if (/account number/.test(L)) return '0123456789';
+    if (/approved by/.test(L)) return ''; if (/purpose|details|description/.test(L)) return 'Travel to Kano for the North-West stakeholder workshop, 6 to 15 October.';
+    if (f.kind === 'Currency') return '250000'; if (f.kind === 'Date') return '2026-10-05'; if (['Number', 'Distance', 'Weight', 'Dimension'].includes(f.kind)) return '12';
+    if (f.kind === 'File upload' || f.kind === 'Image upload') return /photo|passport/.test(L) ? 'passport_photo.jpg' : 'supporting_note.pdf';
+    const o = optsOf(f); if (o.length) return o.find(x => /Female|Annual|Zenith|Works|GL 08|4|Delay/.test(x)) || o[0];
+    return f.kind === 'Star rating' ? '4' : 'Sample ' + L;
+  }
+  function fill(bad) {
+    form.fields.forEach((f, i) => { const el = $(`pv-${i}`); if (!el || LAYOUT.has(f.kind)) return; const v = sample(f, bad);
+      if (['Radio Group', 'Checkboxes', 'Star rating'].includes(f.kind)) el.querySelectorAll('input').forEach(x => { x.checked = x.value === v; });
+      else if (f.kind === 'Contact') { const p = el.querySelectorAll('[data-part]'); p[0].value = 'Amina Bello'; p[1].value = '08031234567'; p[2].value = 'amina.bello@govtest.gov.ng'; }
+      else if (el.type === 'file') { el.dataset.demo = v; $(`pv-${i}-demo`).textContent = v ? `📎 ${v} (sample file)` : ''; }
+      else { el.value = v; if (f.linked === '36 states + FCT') lgas(v); el.dispatchEvent(new Event('input')); } });
+    const n = checkAll();
+    result(bad ? `✦ ${n} entr${n === 1 ? 'y' : 'ies'} rejected by the rules. That's what a respondent would see.` : n ? `${n} field${n === 1 ? '' : 's'} still need attention.` : '✦ Sample details filled. Every rule passes.', bad || n);
+  }
+  const result = (html, bad) => { const r = $('pv-result'); r.hidden = false; r.className = 'fd-result' + (bad ? ' fd-result--bad' : ''); r.innerHTML = html; };
+  function lgas(state) { const i = form.fields.findIndex(f => f.linked === '774 LGAs'); if (i < 0) return; const s = $(`pv-${i}`), l = LGAS[state] || []; s.innerHTML = `<option value="">${state ? (l.length ? 'Select LGA' : `LGAs of ${esc(state)} load from the 774-LGA list`) : 'Select a state first'}</option>` + l.map(x => `<option>${esc(x)}</option>`).join(''); }
+  $('d-preview').addEventListener('click', () => {
+    $('pv-body').innerHTML = `<h4>${esc(form.name)}</h4><p>${esc(form.desc)}</p>
+      ${form.fields.some(f => f.rule) ? '<div class="fd-testbar"><span class="ai-badge">CICOD-AI</span> Test entry: <button class="fd-out" type="button" id="pv-sample">Fill sample data</button><button class="fd-out" type="button" id="pv-bad">Try bad data</button><button class="fd-out" type="button" id="pv-check">Check entries</button></div>' : ''}
+      ${form.fields.map((f, i) => `<div class="fd-pf">${control(f, i)}</div>`).join('') || '<p style="color:var(--fd-muted)">No fields yet.</p>'}<div class="fd-result" id="pv-result" hidden></div>`;
+    form.fields.forEach((f, i) => { const el = $(`pv-${i}`); if (!el) return;
+      if (f.linked === '36 states + FCT') el.addEventListener('change', () => lgas(el.value));
+      if (f.kind === 'Currency') el.addEventListener('input', () => { $(`pv-${i}-w`).textContent = +el.value > 0 ? '✦ ' + inWords(+el.value) : ''; });
+      el.addEventListener('change', () => { if (!$('pv-result').hidden) checkAll(); }); });
+    $('pv-sample')?.addEventListener('click', () => fill(false));
+    $('pv-bad')?.addEventListener('click', () => fill(true));
+    $('pv-check')?.addEventListener('click', () => { const n = checkAll(); const cur = form.fields.findIndex(f => f.kind === 'Currency'); const w = cur >= 0 && +val(cur) > 0 ? ` Amount stored with words: "${inWords(+val(cur))}".` : '';
+      result(n ? `${n} field${n === 1 ? '' : 's'} would be rejected on submit.` : `✓ This entry would be accepted.${form.type === 'Internal' ? ` Submitting creates a task in <b>${esc(form.queue)} → ${esc(form.queueType)}</b> and sends the Initial Email Response.` : ' The respondent gets the Initial Email Response.'}${w}`, n); });
+    $('m-preview').showModal();
+  });
+  $('d-share').addEventListener('click', () => { $('sh-link').value = `https://govtest.convergenceondemand.com/forms/f/${form.id}`; $('m-share').showModal(); });
+  $('sh-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('sh-link').value); toast('Link copied'); } catch (e) { $('sh-link').select(); toast('Press Ctrl+C to copy the link'); } $('m-share').close(); });
+  document.querySelectorAll('.fd-modal [data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
+  document.querySelectorAll('.fd-modal').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+  renderList();
 </script>
 </body>
 </html>

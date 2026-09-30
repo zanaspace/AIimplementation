@@ -1,136 +1,154 @@
-/* <ai-smart-routing source="#task-form" auto-threshold="0.9">
-   Watches the task's title and description (and attachment names) and suggests Queue,
-   Queue Type, Priority and Assignee. It never changes the form by itself: the officer
-   accepts each suggestion or all of them together.
-   Events:
-     ai-route-apply  detail: { field, value }   the host page sets the field
-     ai-route-result detail: suggestion payload
-   Gateway: POST /ecms/route-task -> { suggestions:{queue,queueType,priority,assignee}, reasons[], similar[], duplicate? } */
+/* <ai-smart-routing trigger="#ai-route-btn" hidden>
+   Inline Smart Intake & Routing for the ECMS Create Task screen (/ecms/tasks/new).
+   Today the officer must pick Queue and Queue Type before the Form card loads. With this component
+   the officer clicks "✦ Not sure? Describe it" on the Queue label row, describes the request in plain
+   words, and CICOD-AI suggests the Queue, Queue Type, Priority and Assignee. Nothing changes until
+   the officer clicks Apply. The host page then sets the selects and loads the queue's form with
+   Title and Description pre-filled.
+   Attributes:
+     trigger   CSS selector of the ✦ link or button that opens and closes the box (the host places it).
+               Its text switches to the value of its data-close-label (default "Close") while the box is open.
+     hidden    start closed (recommended)
+   Events (the host page owns the form):
+     ai-route-apply   detail: { suggestionId, queue, queueType, priority, assignee, title, description }
+                      (the host sends suggestionId back with the final values on Submit, as the learning signal)
+     ai-route-reject  detail: { text }
+   Gateway:
+     POST /ecms/route-task { text, channel }
+       -> { model, suggestions:{ queue, queueType, priority, assignee }  (each { value, confidence }),
+            title, reasons[], duplicate:{ id, title, by, when } | null } */
 (function () {
   const { request, feedback, esc } = window.AIGateway;
+  const FEATURE = 'ecms.smart-routing';
 
-  // Prototype-only knowledge: queue names and staff are taken from the live cicod tenant.
+  // Prototype-only rules. Queue and staff names come from the live govtest tenant. In production a
+  // classifier trained on the tenant's past tasks makes these predictions.
   const RULES = [
-    { k: /printer|laptop|network|internet|email|password|system|computer|wifi/i, queue: 'IT Support', type: 'Hardware & Network', assignee: 'Eyitayo Abidogun (IT Resource · Daily Shift)', alt: 'Damola Tunde' },
-    { k: /complain|delay|not delivered|refund|poor service|angry|rude/i, queue: 'Complaints', type: 'Application issue', assignee: 'Application Complaints Handlers (workgroup)', alt: 'Adedero Cosmos' },
-    { k: /order|deliver|supply|dispatch|fulfil/i, queue: 'Order Fulfilment', type: 'Delivery', assignee: 'Dispatch riders shift · Nathan Wilson', alt: 'Benita Benita' },
-    { k: /repair|vehicle|car|auto|mechanic/i, queue: 'AUTO MOBILE REPAIR', type: 'REPAIR DETAILS', assignee: 'TESTING ACCOUNT workgroup', alt: 'Fleet officer' },
-    { k: /ai|automat|process|digiti/i, queue: 'CICOD-AI IMPLEMENTATION', type: 'PROCESS GATHERING', assignee: 'Chinwuba Okafor', alt: 'api support' },
+    { k: /printer|laptop|network|internet|email|password|system|computer|wifi|scanner/i, queue: 'IT Support', type: 'Hardware & Network', assignee: 'Eyitayo Abidogun' },
+    { k: /complain|delay|not delivered|refund|poor service|rude|third time/i, queue: 'Complaints', type: 'Application issue', assignee: 'Application Complaints Handlers' },
+    { k: /order|deliver|supply|dispatch|fulfil|stationer/i, queue: 'Order Fulfilment', type: 'Delivery', assignee: 'Nathan Wilson' },
+    { k: /repair|vehicle|car|brake|mechanic|hilux/i, queue: 'AUTO MOBILE REPAIR', type: 'REPAIR DEATAILS', assignee: 'TESTING ACCOUNT workgroup' },
+    { k: /\bai\b|automat|process|digiti/i, queue: 'AI IMPLEMENTATION', type: 'PROCESS GATHERING', assignee: 'Chinwuba Okafor' },
   ];
 
-  function mockRoute({ title = '', description = '' }) {
-    const text = `${title} ${description}`;
-    const rule = RULES.find(r => r.k.test(text)) || { queue: 'Correspondence', type: 'General enquiry', assignee: 'Registry desk', alt: 'Ann Nya' };
+  function mockRoute({ text }) {
+    const rule = RULES.find(r => r.k.test(text)) || { queue: 'Correspondence', type: 'General enquiry', assignee: 'Ann Nya' };
+    const known = RULES.includes(rule);
     const urgent = /urgent|asap|immediately|today|emergency|safety|fire|critical/i.test(text);
     const angry = /angry|unacceptable|third time|again|still/i.test(text);
-    const conf = Math.min(0.97, 0.62 + (text.length > 60 ? 0.2 : 0.05) + (RULES.includes(rule) ? 0.12 : 0));
+    const conf = Math.min(0.96, (known ? 0.74 : 0.55) + (text.length > 50 ? 0.16 : 0.04));
+    const first = text.split(/[.,;\n]/)[0].trim();
     return {
       model: 'cicod-router-v1 (sovereign)',
+      title: first.length > 70 ? first.slice(0, 67) + '…' : first.charAt(0).toUpperCase() + first.slice(1),
       suggestions: {
-        queue: { value: rule.queue, confidence: conf, alt: 'Correspondence' },
-        queueType: { value: rule.type, confidence: conf - 0.06, alt: 'General enquiry' },
-        priority: { value: urgent ? 'High' : angry ? 'Medium' : 'Normal', confidence: urgent ? 0.91 : 0.74, alt: urgent ? 'Critical' : 'Low' },
-        assignee: { value: rule.assignee, confidence: conf - 0.12, alt: rule.alt },
+        queue: { value: rule.queue, confidence: conf },
+        queueType: { value: rule.type, confidence: conf - 0.05 },
+        priority: { value: urgent ? 'High' : angry ? 'Medium' : 'Normal', confidence: urgent || angry ? 0.9 : 0.72 },
+        assignee: { value: rule.assignee, confidence: conf - 0.1 },
       },
       reasons: [
-        `Keywords match ${rule.queue} tasks (${Math.round(conf * 100)}% of similar past tasks went there)`,
-        urgent ? 'The request mentions a deadline or safety terms, so priority was raised' : 'No deadline or safety terms found',
-        angry ? 'Negative sentiment detected: repeat complaint' : 'Neutral sentiment',
-        'Assignee is on shift now and has the lowest open load in that workgroup',
-      ],
-      similar: [
-        { id: '#17569', title: `${rule.queue}: similar request`, outcome: 'Closed in 2d' },
-        { id: '#17492', title: 'Linked request from same contact', outcome: 'In progress' },
+        known ? `Words like these went to ${rule.queue} in ${Math.round(conf * 100)}% of similar past tasks.` : 'No close match with past tasks, so it was sent to Correspondence for triage.',
+        urgent ? 'Mentions a deadline or safety term, so priority was raised.' : angry ? 'Reads as a repeat complaint, so priority was raised to Medium.' : 'No deadline or safety terms found.',
+        `${rule.assignee} is on shift now and has the lowest open load in that queue.`,
       ],
       duplicate: /printer/i.test(text) ? { id: '#17572', title: 'Printer on 2nd floor not working', by: 'Ann Nya', when: '26/09/2026' } : null,
     };
   }
 
-  const FIELDS = [['queue', 'Queue'], ['queueType', 'Queue type'], ['priority', 'Priority'], ['assignee', 'Assign to']];
-  const barClass = c => (c >= 0.85 ? '' : c >= 0.7 ? 'aisr__bar--mid' : 'aisr__bar--low');
+  const ROWS = [['queue', 'Queue'], ['queueType', 'Queue Type'], ['priority', 'Priority'], ['assignee', 'Assign to']];
+  const EXAMPLES = [
+    "Printer on 2nd floor not working, urgent for today's board meeting",
+    'Third time complaining: my order was still not delivered',
+    'Official Hilux FG 214 KJA needs brake repair',
+  ];
 
   class AISmartRouting extends HTMLElement {
     connectedCallback() {
-      this.threshold = parseFloat(this.getAttribute('auto-threshold') || '0.9');
-      this.source = document.querySelector(this.getAttribute('source'));
-      this.renderEmpty();
-      if (!this.source) return;
+      this.trigger = document.querySelector(this.getAttribute('trigger'));
+      this.innerHTML = `<div class="aisr" role="region" aria-label="Describe the request with CICOD-AI">
+        <div class="aisr__top">
+          <label class="aisr__label" for="aisr-text">Describe the request <small>✦ CICOD-AI</small></label>
+          <textarea class="aisr__input" id="aisr-text" data-text placeholder="In your own words, e.g. &quot;Printer on 2nd floor not working, urgent for today's board meeting&quot;"></textarea>
+          <p class="aisr__hint">CICOD-AI picks the queue, queue type, priority and assignee. You confirm before anything is filled in.</p>
+          <div class="aisr__examples">${EXAMPLES.map(e => `<button class="aisr__example" data-example="${esc(e)}" type="button">${esc(e)}</button>`).join('')}</div>
+        </div>
+        <div class="aisr__result" data-result aria-live="polite"></div>
+      </div>`;
+      this.input = this.querySelector('[data-text]');
       let t;
-      this.source.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => this.analyse(), 700); });
+      const box = this.querySelector('.aisr');
+      const typed = () => box.classList.toggle('aisr--typed', this.input.value.trim().length > 0);
+      this.input.addEventListener('input', () => { typed(); clearTimeout(t); t = setTimeout(() => this.analyse(), 700); });
+      this.querySelectorAll('[data-example]').forEach(b => b.addEventListener('click', () => { this.input.value = b.dataset.example; typed(); this.analyse(); }));
+      if (this.trigger) {
+        this.openLabel = this.trigger.textContent;
+        this.trigger.setAttribute('aria-controls', 'aisr-text');
+        this.trigger.setAttribute('aria-expanded', String(!this.hidden));
+        this.trigger.addEventListener('click', () => this.toggle());
+      }
     }
 
-    read() {
-      const f = this.source;
-      return {
-        title: f.querySelector('[name=title]')?.value || '',
-        description: f.querySelector('[name=description]')?.value || '',
-        contact: f.querySelector('[name=contact]')?.value || '',
-        channel: 'ecms-create-task',
-      };
-    }
-
-    renderEmpty() {
-      this.innerHTML = `<section class="aisr" aria-live="polite">
-        <div class="aisr__head"><span class="aisr__title"><span class="ai-badge">CICOD-AI</span> Smart routing</span></div>
-        <div class="aisr__body"><p class="aisr__empty">Start typing the request title or description. CICOD-AI will suggest the queue, queue type, priority and the best person to handle it.</p></div>
-      </section>`;
-    }
-
-    renderLoading() {
-      this.querySelector('.aisr__body').innerHTML = '<div class="ai-skeleton" style="width:80%"></div><div class="ai-skeleton" style="width:60%"></div><div class="ai-skeleton" style="width:70%"></div>';
+    toggle(open = this.hidden) {
+      this.hidden = !open;
+      if (this.trigger) {
+        this.trigger.setAttribute('aria-expanded', String(open));
+        this.trigger.textContent = open ? (this.trigger.dataset.closeLabel || 'Close') : this.openLabel;
+      }
+      if (open) this.input.focus();
     }
 
     async analyse() {
-      const payload = this.read();
-      if ((payload.title + payload.description).trim().length < 12) return this.renderEmpty();
-      this.renderLoading();
-      const res = await request('/ecms/route-task', payload, { mock: mockRoute, feature: 'ecms.smart-routing' });
-      this.result = res;
-      this.render(res);
-      this.dispatchEvent(new CustomEvent('ai-route-result', { detail: res, bubbles: true }));
+      const text = this.input.value.trim();
+      const out = this.querySelector('[data-result]');
+      if (text.length < 12) { out.innerHTML = ''; return; }
+      out.innerHTML = '<div class="ai-skeleton" style="width:75%"></div><div class="ai-skeleton" style="width:55%"></div><div class="ai-skeleton" style="width:65%"></div>';
+      const res = await request('/ecms/route-task', { text, channel: 'ecms-create-task' }, { mock: mockRoute, feature: FEATURE });
+      if (this.input.value.trim() !== text) return; // the officer kept typing; a newer request will render
+      this.res = res;
+      this.render();
     }
 
-    render(res) {
-      const s = res.suggestions;
-      const rows = FIELDS.map(([key, label]) => {
-        const v = s[key];
-        return `<div class="aisr__field" data-field="${key}">
-          <span class="aisr__field-label">${label}</span>
-          <span class="aisr__field-value">${esc(v.value)}<span class="aisr__field-alt">or ${esc(v.alt)}</span></span>
-          <span class="aisr__conf"><span class="aisr__bar ${barClass(v.confidence)}"><i style="width:${Math.round(v.confidence * 100)}%"></i></span>
-            <button class="g-btn g-btn--sm" data-apply="${key}" type="button">Use</button></span>
-        </div>`;
-      }).join('');
-      const minConf = Math.min(...FIELDS.map(([k]) => s[k].confidence));
-      const auto = minConf >= this.threshold;
-      this.innerHTML = `<section class="aisr" aria-live="polite">
-        <div class="aisr__head"><span class="aisr__title"><span class="ai-badge">CICOD-AI</span> Smart routing</span>
-          <span class="ai-confidence">${auto ? 'high confidence' : 'review suggested'} · ${esc(res.model)}</span></div>
-        <div class="aisr__body">
-          ${rows}
-          ${res.duplicate ? `<div class="aisr__dup"><b>Possible duplicate:</b> ${esc(res.duplicate.id)} "${esc(res.duplicate.title)}", raised by ${esc(res.duplicate.by)} on ${esc(res.duplicate.when)}. <a href="#" data-link-dup>Link instead of creating?</a></div>` : ''}
-          <div class="aisr__why"><b>Why these suggestions</b><ul>${res.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul></div>
-          <div class="aisr__similar"><h5>Similar past tasks</h5>${res.similar.map(x => `<div class="aisr__sim"><span>${esc(x.id)} ${esc(x.title)}</span><span>${esc(x.outcome)}</span></div>`).join('')}</div>
-        </div>
+    render() {
+      const r = this.res, s = r.suggestions;
+      this.querySelector('[data-result]').innerHTML = `
+        ${ROWS.map(([k, label]) => `<div class="aisr__row"><span class="aisr__key">${label}</span><span class="aisr__val" data-val="${k}">${esc(s[k].value)}</span>
+          <span class="aisr__bar ${s[k].confidence < 0.8 ? 'aisr__bar--mid' : ''}" title="${Math.round(s[k].confidence * 100)}% confident"><i style="width:${Math.round(s[k].confidence * 100)}%"></i></span></div>`).join('')}
+        ${r.duplicate ? `<div class="aisr__dup"><b>Possible duplicate:</b> ${esc(r.duplicate.id)} "${esc(r.duplicate.title)}", raised by ${esc(r.duplicate.by)} on ${esc(r.duplicate.when)}.</div>` : ''}
+        <details class="aisr__why"><summary>Why these suggestions</summary><ul>${r.reasons.map(x => `<li>${esc(x)}</li>`).join('')}</ul></details>
         <div class="aisr__actions">
-          <button class="g-btn g-btn--ai g-btn--sm" data-apply-all type="button">Apply all</button>
+          <button class="g-btn g-btn--ai g-btn--sm" data-apply type="button">Apply to task</button>
           <button class="g-btn g-btn--sm" data-reject type="button">Not right</button>
-          <span class="aisr__mode">Suggestion only · officer confirms</span>
-        </div>
-      </section>`;
-      this.querySelectorAll('[data-apply]').forEach(b => b.addEventListener('click', () => this.apply(b.dataset.apply)));
-      this.querySelector('[data-apply-all]').addEventListener('click', () => FIELDS.forEach(([k]) => this.apply(k)));
-      this.querySelector('[data-reject]').addEventListener('click', () => { feedback(res.id, 'ecms.smart-routing', 'rejected'); this.renderEmpty(); });
-      this.querySelector('[data-link-dup]')?.addEventListener('click', e => { e.preventDefault(); feedback(res.id, 'ecms.smart-routing', 'linked-duplicate'); e.target.textContent = 'Linked ✓'; });
+          <span class="aisr__model">${esc(r.model)}</span>
+        </div>`;
+      this.querySelector('[data-apply]').addEventListener('click', () => this.apply());
+      this.querySelector('[data-reject]').addEventListener('click', () => {
+        feedback(r.id, FEATURE, 'rejected');
+        this.dispatchEvent(new CustomEvent('ai-route-reject', { detail: { text: this.input.value }, bubbles: true }));
+        this.querySelector('[data-result]').innerHTML = '<p class="aisr__hint">Thanks. Pick the queue yourself below, and your choice will help CICOD-AI learn.</p>';
+      });
     }
 
-    apply(field) {
-      const value = this.result.suggestions[field].value;
-      this.querySelector(`[data-field="${field}"]`)?.classList.add('aisr__field--applied');
-      feedback(this.result.id, 'ecms.smart-routing', 'accepted', { field });
-      this.dispatchEvent(new CustomEvent('ai-route-apply', { detail: { field, value }, bubbles: true }));
+    apply() {
+      const r = this.res, s = r.suggestions;
+      feedback(r.id, FEATURE, 'accepted');
+      this.querySelectorAll('[data-val]').forEach(v => v.classList.add('aisr__val--applied'));
+      this.querySelector('[data-apply]').outerHTML = '<span class="aisr__applied">Applied. Check the form on the right →</span>';
+      this.dispatchEvent(new CustomEvent('ai-route-apply', { detail: {
+        suggestionId: r.id, queue: s.queue.value, queueType: s.queueType.value, priority: s.priority.value, assignee: s.assignee.value,
+        title: r.title, description: this.input.value.trim(),
+      }, bubbles: true }));
     }
   }
+
+  // Clear the box and close it, e.g. after the task is submitted and the officer starts another one.
+  AISmartRouting.prototype.reset = function () {
+    this.input.value = '';
+    this.querySelector('.aisr').classList.remove('aisr--typed');
+    this.querySelector('[data-result]').innerHTML = '';
+    this.res = null;
+    this.toggle(false);
+  };
 
   customElements.define('ai-smart-routing', AISmartRouting);
 })();

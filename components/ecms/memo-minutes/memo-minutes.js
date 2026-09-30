@@ -1,17 +1,19 @@
 /* <ai-minute-summary source="#minutes" subject="…" ref="CICOD/WKS/MEM/2026/118">
-   Reads the minute chain on a memo and gives a senior officer the file at a glance:
-   current status, decisions, open queries and who is holding the file (E-M3). It also pulls
-   out the action items ("pls treat", "for your action by Friday", "within 48 hours"), each with
-   an assignee and due date, and a "Create ECMS task" button (E-M4).
+   Get an instant overview of any memo file. The AI reads the entire chain of minutes to tell you who is holding the file, its current status, and any open queries. It automatically converts written instructions into trackable ECMS tasks with owners and due dates.
+   You can preview this summary directly from the Memos list using the ✦ icon, or view the full summary inside the memo.
    The component never changes the file. The host creates the tasks.
    Attributes:
      source   CSS selector of the minute list. Each minute is an element with [data-minute],
               data-by (role), data-name, data-to (role) and data-date (dd/mm/yyyy); its text is the minute
      subject  memo subject, used in task titles
      ref      memo Ref No, attached to every task
+     open     (optional) show the summary straight away instead of behind "✦ Summarize File"
+     variant  "preview": compact card for the ✦ popover on the Memos & Drafts list (status, holder,
+              open actions) with "Open memo" buttons; no action-item editing
    Events (bubbles):
      ai-minute-create-task  detail: { title, assignee, due, queue, queueType, ref, fromMinute }
      ai-minute-summary      detail: summary payload
+     ai-minute-open         detail: { ref, summary }   (preview) host opens the memo; summary:true = open it expanded
    Gateway: POST /ecms/memo/summarise-minutes
      { ref, subject, minutes:[{by,to,date,text}] }
      -> { model, confidence, status, holder:{role,since,days}, decisions[], queries[{text,by,to,date,open}], amounts[],
@@ -115,14 +117,43 @@
   class AIMinuteSummary extends HTMLElement {
     connectedCallback() {
       this.src = document.querySelector(this.getAttribute('source'));
-      this.innerHTML = `<section class="aims" aria-live="polite">
-        <div class="aims__head"><span class="aims__title"><span class="ai-badge">CICOD-AI</span> File summary</span>
-          <span class="aims__head-r"><span class="ai-confidence" data-model></span><button class="g-btn g-btn--sm" data-refresh type="button">Re-summarise</button></span></div>
-        <div class="aims__body" data-body></div>
-      </section>`;
+      if (this.getAttribute('variant') === 'preview') {
+        this.innerHTML = '<section class="aims aims--preview" aria-live="polite"><div class="aims__head"><span class="aims__title"><span class="ai-badge">CICOD-AI</span> File summary</span><span class="ai-confidence" data-model>reading minutes…</span></div><div class="aims__body" data-body></div></section>';
+        this.run();
+        return;
+      }
+      this.innerHTML = `
+        <button type="button" class="g-btn g-btn--sm" data-toggle style="color: var(--ai-600); border-color: var(--ai-200); background: var(--ai-50); margin-bottom: 12px;">✦ Summarize File</button>
+        <section class="aims" aria-live="polite" style="display: none;">
+          <div class="aims__head">
+            <span class="aims__title"><span class="ai-badge">CICOD-AI</span> File summary</span>
+            <span class="aims__head-r">
+              <span class="ai-confidence" data-model></span>
+              <button class="g-btn g-btn--sm" data-refresh type="button">Re-summarise</button>
+              <button type="button" class="g-btn g-btn--ghost g-btn--sm" data-close title="Close" style="padding: 0 6px;">✕</button>
+            </span>
+          </div>
+          <div class="aims__body" data-body></div>
+        </section>`;
+      
+      const panel = this.querySelector('.aims');
+      const toggle = this.querySelector('[data-toggle]');
+      toggle.addEventListener('click', () => {
+        panel.style.display = 'block';
+        toggle.style.display = 'none';
+        if (!this.hasRun) {
+          this.hasRun = true;
+          this.run();
+        }
+      });
+      this.querySelector('[data-close]').addEventListener('click', () => {
+        panel.style.display = 'none';
+        toggle.style.display = 'inline-flex';
+      });
+
       this.querySelector('[data-refresh]').addEventListener('click', () => this.run());
+      if (this.hasAttribute('open')) toggle.click();
       if (this.src) new MutationObserver(() => this.stale()).observe(this.src, { childList: true });
-      this.run();
     }
 
     read() {
@@ -144,7 +175,7 @@
       const minutes = this.read();
       const res = await request('/ecms/memo/summarise-minutes', { ref: this.getAttribute('ref'), subject: this.getAttribute('subject'), minutes }, { mock: mockSummarise, feature: 'ecms.memo-minutes' });
       this.res = res;
-      this.render(res, minutes.length);
+      if (this.getAttribute('variant') === 'preview') this.renderPreview(res, minutes.length); else this.render(res, minutes.length);
       this.dispatchEvent(new CustomEvent('ai-minute-summary', { detail: res, bubbles: true }));
     }
 
@@ -176,6 +207,24 @@
       this.querySelectorAll('[data-create]').forEach(b => b.addEventListener('click', () => this.create(+b.dataset.create, b)));
       this.querySelector('[data-accept]').addEventListener('click', e => { feedback(res.id, 'ecms.memo-minutes', 'accepted'); e.target.textContent = 'Thanks ✓'; });
       this.querySelector('[data-reject]').addEventListener('click', e => { feedback(res.id, 'ecms.memo-minutes', 'rejected'); e.target.textContent = 'Flagged for review'; });
+    }
+
+    renderPreview(res, n) {
+      const h = res.holder, open = res.actions.filter(a => !a.done), late = open.filter(a => a.overdue);
+      this.querySelector('[data-model]').textContent = `${n} minutes · ${Math.round(res.confidence * 100)}%`;
+      this.querySelector('[data-body]').innerHTML = `
+        <div class="aims__status"><b>Status</b><p>${esc(res.status)}</p></div>
+        <div class="aims__grid">
+          <div class="aims__cell"><h5>Who holds the file</h5><p class="aims__holder">${esc(h.role)}</p><p class="aims__sub">Since ${esc(h.since)} (${h.days} day${h.days === 1 ? '' : 's'})</p></div>
+          <div class="aims__cell"><h5>Action items</h5><p class="aims__holder">${open.length} open of ${res.actions.length}</p><p class="aims__sub">${late.length ? late.length + ' overdue · ' : ''}${res.openQueries} open quer${res.openQueries === 1 ? 'y' : 'ies'}</p></div>
+        </div>
+        <div class="aims__actions">
+          <button class="g-btn g-btn--ai g-btn--sm" data-open-sum type="button">✦ Open with full summary</button>
+          <button class="g-btn g-btn--sm" data-open type="button">Open memo →</button>
+        </div>`;
+      const go = summary => { feedback(res.id, 'ecms.memo-minutes', summary ? 'preview-open-summary' : 'preview-open'); this.dispatchEvent(new CustomEvent('ai-minute-open', { bubbles: true, detail: { ref: this.getAttribute('ref'), summary } })); };
+      this.querySelector('[data-open-sum]').addEventListener('click', () => go(true));
+      this.querySelector('[data-open]').addEventListener('click', () => go(false));
     }
 
     create(i, btn) {

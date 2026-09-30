@@ -20,7 +20,7 @@
   .ta-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
   .ta-tools .g-input { max-width: 320px; flex: 1 1 200px; }
   .ta-tools__spacer { flex: 1; }
-  .ta { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+  .ta { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
   .ta-card { padding: 14px; min-width: 0; }
   .ta-table td { white-space: nowrap; cursor: pointer; }
   .ta-table td.ta-title { white-space: normal; min-width: 220px; }
@@ -29,7 +29,15 @@
   .ta-flash { animation: ta-flash 1.4s ease; }
   @keyframes ta-flash { 0% { background: var(--ai-100); } 100% { background: transparent; } }
   .ta-hist { margin-top: 8px; font-size: 12px; color: var(--text-2); }
-  @media (max-width: 1200px) { .ta { grid-template-columns: 1fr; } }
+  
+  /* Modal styles for Copilot */
+  .ta-modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px); z-index: 100; display: none; align-items: flex-start; justify-content: center; padding-top: 40px; border-radius: var(--radius-lg); }
+  .ta-modal-overlay.is-open { display: flex; }
+  .ta-modal-content { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); width: 95%; max-width: 900px; max-height: 85vh; overflow-y: auto; position: relative; padding: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px; }
+  .ta-modal-close { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-2); z-index: 10; line-height: 1; padding: 0; width: 24px; height: 24px; display: grid; place-items: center; }
+  .ta-modal-close:hover { color: var(--text); }
+  .ta-modal-body { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+  @media (max-width: 768px) { .ta-modal-body { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -39,7 +47,7 @@
     <div>
       <span class="ai-badge">ECMS · E-T7 · Phase 2</span>
       <h1>Approval Copilot</h1>
-      <p>Gives the approver a <b>ready-made digest</b> for each pending approval: what is requested, the amount, a <b>policy check</b> against the Financial Regulations thresholds, prior approvals, anomalies, and a <b>recommended decision</b> with its rationale and the policy document it relies on. <b>Safe bulk approve</b> ticks only the low-risk items and says why each other item was left out. The approver always makes the final click.</p>
+      <p>Provides a <b>quick summary</b> for pending approvals, including request details, a <b>policy check</b>, anomalies, and a <b>recommended decision</b>. <b>Safe bulk approve</b> selects only low-risk items, leaving the final decision to the approver.</p>
       <div class="doc__meta"><span class="g-chip">Screen: ECMS → Tasks → Task Approvals</span><span class="g-chip">Component: &lt;ai-approval-copilot&gt;</span><span class="g-chip">Endpoints: /ecms/approval-digest · /ecms/approval-bulk-screen</span></div>
     </div>
     <div class="doc__toolbar">
@@ -51,7 +59,7 @@
   <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
     <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of the ECMS <b>Task Approvals</b> screen with its real columns. The live tenant had 0 pending approvals, so the nine rows are realistic examples. You are signed in as Prince Ekpenyong, Head of Department, with a ₦500,000 limit. First click <b>Safe bulk approve</b> and read why five items were left out. Then click a row, for example <b>#17603</b> (a cash advance while an older one is unretired) or <b>#17605</b> (a possible split purchase), to open its digest. Accept or override the recommendation.</p>
+    <p class="doc__lede">This demo shows the <b>Task Approvals</b> screen. Click <b>✦ Copilot</b> in the toolbar to open the AI modal, where you can use <b>Safe bulk approve</b> to filter low-risk items, or select a row (e.g., <b>#17603</b>) to view its digest and accept or override the AI recommendation.</p>
     <div id="screen" class="shell" data-app="ecms" data-active="Task Approvals">
       <div class="shell__content">
         <div class="ta-head"><h2>Task Approvals</h2></div>
@@ -62,11 +70,9 @@
             <div class="ta-tools">
               <input class="g-input" placeholder="Search ID, title...">
               <span class="ta-tools__spacer"></span>
+              <button class="g-btn g-btn--sm" type="button" style="color: var(--ai-600); border-color: var(--ai-200); background: var(--ai-50);" onclick="document.getElementById('ai-modal').classList.add('is-open')">✦ Copilot</button>
               <select class="g-select g-btn--sm" style="width:auto" aria-label="Bulk Action"><option>Bulk Action</option><option>Approve selected</option><option>Reject selected</option></select>
               <button class="g-btn g-btn--sm" type="button">Custom View</button><button class="g-btn g-btn--sm" type="button">Filters</button><button class="g-btn g-btn--sm" type="button">Sync</button>
-            </div>
-            <div data-ai-spot="CICOD-AI · Safe bulk approve (next to Bulk Action)" style="margin-bottom:12px">
-              <ai-approval-copilot mode="bulk" table="#appr-table" approver-limit="500000"></ai-approval-copilot>
             </div>
             <div class="g-table-wrap">
               <table class="g-table ta-table" id="appr-table">
@@ -95,14 +101,26 @@
             </div>
             <div class="ta-hist" id="hist">Approval History: 0 decisions today</div>
           </div>
-          <div data-ai-spot="CICOD-AI · Approval digest (right panel)">
-            <ai-approval-copilot mode="digest" table="#appr-table" approver-limit="500000"></ai-approval-copilot>
+        </div>
+
+        <div class="ta-modal-overlay" id="ai-modal">
+          <div class="ta-modal-content">
+            <button class="ta-modal-close" aria-label="Close" onclick="document.getElementById('ai-modal').classList.remove('is-open')">&times;</button>
+            <h3 style="margin: 0; font-size: 16px;">Approval Copilot</h3>
+            <div class="ta-modal-body">
+              <div data-ai-spot="CICOD-AI · Safe bulk approve">
+                <ai-approval-copilot mode="bulk" table="#appr-table" approver-limit="500000"></ai-approval-copilot>
+              </div>
+              <div data-ai-spot="CICOD-AI · Approval digest">
+                <ai-approval-copilot mode="digest" table="#appr-table" approver-limit="500000"></ai-approval-copilot>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
     <div class="doc__where" style="margin-top:12px">
-      <div class="doc__where-item"><b>Primary placement</b>Right panel of <code>/ecms/tasks/approvals</code> for the selected row, and a Safe bulk approve button next to Bulk Action</div>
+      <div class="doc__where-item"><b>Primary placement</b>A <b>✦ Copilot</b> button in the toolbar on <code>/ecms/tasks/approvals</code> that opens a modal combining both bulk tools and the digest</div>
       <div class="doc__where-item"><b>Also appears in</b>The approval step inside a task, the IMS Approval page for asset requests, and the approval email or InMail notification (digest only)</div>
       <div class="doc__where-item"><b>Trigger</b>The digest builds when a row is clicked. Bulk screening runs only when the approver clicks Safe bulk approve</div>
       <div class="doc__where-item"><b>Who sees it</b>The approver and alternate approver for that level. Policy citations only link to documents they can open in Drive</div>

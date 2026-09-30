@@ -2,14 +2,15 @@
    All classes are prefixed `aiwb-` so the component can be dropped into any ECMS page. */
 ai-workflow-builder { display: block; min-width: 0; }
 
-.aiwb { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
-.aiwb__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
-.aiwb__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-.aiwb__body { padding: 12px 14px; }
-.aiwb__prompt { min-height: 70px; font-size: 13px; }
-.aiwb__row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
-.aiwb__muted { color: var(--text-3); font-size: 12px; }
-.aiwb__mode { margin-left: auto; font-size: 11px; }
+.aiwb { background: var(--surface); border: 2px dashed var(--ai-400); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 20px; }
+.aiwb__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.aiwb__title { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 10px; color: var(--text); }
+.aiwb__title .ai-badge { background: var(--ai-50); color: var(--ai-600); padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; border: 1px solid var(--ai-100); }
+.aiwb__body { display: flex; flex-direction: column; gap: 12px; }
+.aiwb__prompt { min-height: 80px; font-size: 14px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); width: 100%; box-sizing: border-box; }
+.aiwb__prompt:focus { outline: none; border-color: var(--ai-400); box-shadow: 0 0 0 3px var(--ai-50); }
+.aiwb__row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.aiwb__muted { color: var(--text-3); font-size: 13px; }
 
 .aiwb__res { margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; background: var(--surface-2); }
 .aiwb__res-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-bottom: 8px; }

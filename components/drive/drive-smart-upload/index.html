@@ -45,7 +45,7 @@
     <div>
       <span class="ai-badge">CICOD · D4 · D5 · Phase 2</span>
       <h1>Smart Upload: Classification &amp; Filing</h1>
-      <p>When a file is uploaded to Drive, CICOD-AI reads it and suggests the <b>classification level</b> (Official, Confidential, Secret or Top Secret) with the reason. It counts the <b>personal data</b> it finds (NIN, BVN, phone numbers) and offers to redact it before sharing. It also proposes the <b>destination folder, document type, tags and retention period</b>. The officer accepts or edits every value before the file is filed.</p>
+      <p>Smart Upload automatically classifies files, redacts personal data, and suggests the correct destination folder and tags. Review and accept the AI's suggestions before filing.</p>
       <div class="doc__meta"><span class="g-chip">Screen: Drive → My Documents → NEW → Upload File(s)</span><span class="g-chip">Component: &lt;ai-smart-upload&gt;</span><span class="g-chip">Endpoint: /drive/classify-upload</span></div>
     </div>
     <div class="doc__toolbar">
@@ -57,29 +57,30 @@
   <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
     <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of Drive <b>My Documents</b> with the <b>Upload File(s)</b> dialog open (it opens from <b>NEW</b>). Pick a sample file, for example <i>Staff list with NINs</i> to see personal-data detection, or <i>Budget memo</i> to see a Secret file processed on the sovereign model. You can also type any file name, such as <i>"Vendor_Service_Agreement_2026.pdf"</i>. Edit anything you disagree with, then click <b>Accept &amp; upload</b> and the file appears in the table with its classification.</p>
+    <p class="doc__lede">Click <b>+ NEW &rarr; Upload File(s)</b> or <b>✦ Smart Upload</b> below to see the AI file analyzer in action. Select a sample file to see auto-classification, metadata tagging, and PII detection.</p>
     <div id="screen" class="shell" data-app="drive" data-active="My Documents">
       <div class="shell__content">
         <div class="dmd-head">
           <div>
             <h2>My Documents</h2>
             <a href="#" onclick="return false">↗ Visit the old CICOD Drive app</a>
-            <div class="dmd-new">
-              <button class="g-btn dmd-new__btn" type="button" id="dmd-new-btn" aria-expanded="false">+ NEW</button>
-              <div class="dmd-menu" id="dmd-menu" hidden>
-                <button type="button" id="dmd-upload">Upload File(s)</button>
-                <button type="button" id="dmd-folder">Create Folder</button>
+            <div style="display:flex; gap: 8px; align-items: flex-start;">
+              <div class="dmd-new">
+                <button class="g-btn dmd-new__btn" type="button" id="dmd-new-btn" aria-expanded="false">+ NEW</button>
+                <div class="dmd-menu" id="dmd-menu" hidden>
+                  <button type="button" id="dmd-upload">Upload File(s)</button>
+                  <button type="button" id="dmd-folder">Create Folder</button>
+                </div>
               </div>
+              <button class="g-btn g-btn--ai" id="top-smart-upload-btn" type="button" style="box-shadow: 0 4px 12px rgba(131, 88, 255, 0.2); margin-top: 10px;">✦ Smart Upload</button>
             </div>
           </div>
         </div>
 
-        <div class="g-card dmd-dialog" id="dmd-dialog" role="dialog" aria-label="Upload File(s)">
+        <div class="g-card dmd-dialog" id="dmd-dialog" role="dialog" aria-label="Upload File(s)" hidden>
           <div class="dmd-dialog__head"><h3>Upload File(s)</h3><button class="g-btn g-btn--ghost g-btn--sm" type="button" id="dmd-close" aria-label="Close">✕</button></div>
           <div class="dmd-dialog__body">
-            <div data-ai-spot="CICOD-AI · Classification, PII &amp; filing">
-              <ai-smart-upload owner="Prince Ekpenyong" sovereign-levels="Secret,Top Secret"></ai-smart-upload>
-            </div>
+            <ai-smart-upload owner="Prince Ekpenyong" sovereign-levels="Secret,Top Secret"></ai-smart-upload>
           </div>
         </div>
 
@@ -220,6 +221,7 @@ document.addEventListener('ai-upload-accept', e =&gt; {
   const menu = document.getElementById('dmd-menu'), newBtn = document.getElementById('dmd-new-btn'), dialog = document.getElementById('dmd-dialog');
   newBtn.addEventListener('click', () => { menu.hidden = !menu.hidden; newBtn.setAttribute('aria-expanded', String(!menu.hidden)); });
   document.getElementById('dmd-upload').addEventListener('click', () => { menu.hidden = true; dialog.hidden = false; dialog.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+  document.getElementById('top-smart-upload-btn').addEventListener('click', () => { dialog.hidden = false; dialog.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
   document.getElementById('dmd-folder').addEventListener('click', () => { menu.hidden = true; });
   document.getElementById('dmd-close').addEventListener('click', () => { dialog.hidden = true; });
 

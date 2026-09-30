@@ -1,6 +1,6 @@
 /* <ai-mail-assist>: InMail summaries, draft-from-notes and pre-send check.
    All classes are prefixed `aima-`. */
-ai-mail-assist { display: block; }
+ai-mail-assist { display: contents; }
 
 .aima--inline { position: relative; display: inline-block; max-width: 100%; }
 .aima__pop { position: absolute; z-index: 20; top: calc(100% + 6px); right: 0; width: min(440px, calc(100vw - 48px)); background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 40%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 12px 14px; }
@@ -14,7 +14,7 @@ ai-mail-assist { display: block; }
 .aima__rate { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
 .aima__rate .ai-confidence { margin-right: auto; }
 
-.aima__tl { margin: 10px 0; padding: 12px 14px; background: var(--ai-50); border: 1px solid color-mix(in srgb, var(--ai-500) 30%, var(--border)); border-radius: var(--radius); font-size: 13px; }
+.aima__tl { margin: 10px 0; padding: 12px 14px; background: var(--ai-50); border: 1px solid color-mix(in srgb, var(--ai-500) 30%, var(--border)); border-radius: var(--radius); font-size: 13px; flex-basis: 100%; }
 .aima__tl[hidden] { display: none; }
 .aima__tl-head { display: flex; justify-content: space-between; align-items: center; }
 .aima__tldr { margin: 6px 0; font-weight: 500; }

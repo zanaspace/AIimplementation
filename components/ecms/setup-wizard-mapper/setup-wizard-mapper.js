@@ -1,17 +1,21 @@
-/* <ai-org-mapper tenant-roles="192">
-   CICOD-AI mapper for ECMS → Settings → Setup Wizard. The admin uploads any nominal roll, staff list
-   or org chart (Excel/CSV/PDF), however messy. The mapper:
+/* <ai-org-mapper tenant-roles="195" tenant-departments="106">
+   CICOD-AI mapper for ECMS → Settings → Setup Wizard. The live wizard only accepts the official
+   1Gov configuration sheet (Departments / Roles / Users / Workflow tabs). This turns ANY nominal roll,
+   staff list or org chart (Excel/CSV/PDF), however messy, into that sheet. The mapper:
      - maps the file's columns to CICOD fields (Full name, IPPIS, Role, Department, Grade level, Line manager)
      - normalises department spellings ("Fin & Accts", "FINANCE AND ACCOUNTS" → Finance & Accounts)
      - clusters duplicate roles across the roll AND the tenant's existing 192 roles
        (e.g. the "Assistant Director Accounts Admin" variants) and proposes merges
      - infers each person's line manager (from a "Reports To" column, or from grade level within the department)
      - gives a confidence per row, so the admin can Import the good rows and Fix the rest.
-   Nothing is written until the admin clicks Import; the host page performs the import.
+   Nothing is imported here: the host puts the generated sheet into the wizard's upload box, and the
+   admin continues with the live Choose Functionality → Confirm import steps.
    Attributes:
-     tenant-roles   current number of roles in the tenant (default 192)
+     tenant-roles        current number of roles in the tenant (default 195, govtest 29 Sep 2026)
+     tenant-departments  current number of departments (default 106)
    Events (bubbles):
-     ai-org-import  detail: { departments[], roles[], merges[], users[], counts }
+     ai-org-import  detail: { departments[], roles[], merges[], users[], counts,
+                              sheet:{ Departments:[[SN,DEPARTMENTS]], Roles:[[SN,ROLE]], Users:[[SN,FIRST NAME,…,REGION]] } }
      ai-org-result  detail: gateway response
    Gateway: POST /ecms/setup/map-org { fileName, rows[][] (header first), tenant:{ roles[], departments[] } }
      -> { model, columns:[{source,sample,field,confidence}], departments:[{name,variants[],existing}],
@@ -33,10 +37,12 @@
     { canonical: 'Assistant Chief Program Analyst', members: ['Assistant Chief Program Analyst'] },
     { canonical: 'Assistant Chief Store Officer', members: ['Assistant Chief Store Officer'] },
   ];
+  // First page of govtest ECMS → Users → Departments (106 in total). Anything else is proposed as new.
+  const TENANT_DEPTS = ['1Gov Scanner', 'ABC', 'Admin office', 'Administration', 'Administration and Supplies Department', 'ai', 'Anti-Corruption and Transparency Unit', 'Billing Department', 'Business Analysis', 'Business Development', 'Charity', 'Civil Service Commission', 'Civil Service Transformation', 'Cloud Department', 'Commercial', 'Communications', 'Compliance Department', 'Cooperate Communications', 'CRS', 'Customer Service'];
   const DEPTS = [
-    { name: 'Finance & Accounts', k: /fin|acct|account/i, existing: true },
-    { name: 'Human Resource Management', k: /\bhr\b|human|admin|personnel/i, existing: false },
-    { name: 'IT Support', k: /i\.?\s?c\.?\s?t|information|\bit\b|technology/i, existing: true },
+    { name: 'Finance & Accounts', k: /fin|acct|account/i, existing: false },
+    { name: 'Administration', k: /\bhr\b|human|admin|personnel/i, existing: true },
+    { name: 'ICT', k: /i\.?\s?c\.?\s?t|information|\bit\b|technology/i, existing: false },
     { name: 'Stores & Supplies', k: /store|suppl/i, existing: false },
     { name: 'Procurement', k: /procure/i, existing: false },
     { name: 'Works & Maintenance', k: /works|mainten/i, existing: false },
@@ -50,23 +56,24 @@
     { k: /^gl$|grade|level|salary/i, field: 'User · Grade level', c: 0.88 },
     { k: /report|supervisor|line ?manager|manager/i, field: 'User · Line manager', c: 0.91 },
     { k: /mail/i, field: 'User · Email', c: 0.96 },
-    { k: /phone|gsm|mobile/i, field: 'User · Phone (redacted in CICOD-AI)', c: 0.94 },
+    { k: /phone|gsm|mobile/i, field: 'User · Phone number', c: 0.94 },
+    { k: /region|zone|state|location|station/i, field: 'User · Region', c: 0.9 },
   ];
   const FIELDS = [...new Set(COLS.map(c => c.field)), 'Ignore'];
 
-  const SAMPLE = `S/N,Staff Name,IPPIS,Desig.,Dept/Unit,GL,Reports To
-1,OKONKWO Adaeze N., 218734,Asst. Dir. Accounts (Admin),Fin & Accts,15,
-2,Musa Ibrahim,219011,Assistant Director Accounts Admin./Fiscal & Financial Reporting,FINANCE AND ACCOUNTS,15,Okonkwo Adaeze
-3,Bello Tunde,220145,Admin. Officer,Admin & HR,08,
-4,Nkechi Eze,220388,Administrative Officer II,Admin/HR,08,Bello Tunde
-5,Yusuf Garba,221002,Asst Director Technical Support Services,ICT Unit,15,
-6,Funmi Adebayo,221117,"Assistant Director, Technical Support",I.C.T,14,
-7,CHIDI Obi,222310,Chief Store Officer,Stores,13,
-8,Aisha Lawal,222455,Asst. Chief Store Officer,STORES & SUPPLIES,12,Chidi Obi
-9,Emeka Nwosu,223001,Director Finance,Finance & Accounts,17,
-10,Hauwa Sani,223190,Programme Analyst,ICT,10,
-11,Ibrahim Danladi,223344,Asst. Chief Programme Analyst,I.C.T Unit,12,
-12,Grace Okoro,223344,Director (Admin & HR),Human Resources,17,`;
+  const SAMPLE = `S/N,Staff Name,IPPIS,Desig.,Dept/Unit,GL,Reports To,E-mail,Station
+1,OKONKWO Adaeze N., 218734,Asst. Dir. Accounts (Admin),Fin & Accts,15,,adaeze.okonkwo@mda.gov.ng,Abuja HQ
+2,Musa Ibrahim,219011,Assistant Director Accounts Admin./Fiscal & Financial Reporting,FINANCE AND ACCOUNTS,15,Okonkwo Adaeze,musa.ibrahim@mda.gov.ng,Abuja HQ
+3,Bello Tunde,220145,Admin. Officer,Admin & HR,08,,tunde.bello@mda.gov.ng,Abuja HQ
+4,Nkechi Eze,220388,Administrative Officer II,Admin/HR,08,Bello Tunde,nkechi.eze@mda.gov.ng,Lagos Office
+5,Yusuf Garba,221002,Asst Director Technical Support Services,ICT Unit,15,,yusuf.garba@mda.gov.ng,Abuja HQ
+6,Funmi Adebayo,221117,"Assistant Director, Technical Support",I.C.T,14,,,Lagos Office
+7,CHIDI Obi,222310,Chief Store Officer,Stores,13,,chidi.obi@mda.gov.ng,Kano Office
+8,Aisha Lawal,222455,Asst. Chief Store Officer,STORES & SUPPLIES,12,Chidi Obi,aisha.lawal@mda.gov.ng,Kano Office
+9,Emeka Nwosu,223001,Director Finance,Finance & Accounts,17,,emeka.nwosu@mda.gov.ng,Abuja HQ
+10,Hauwa Sani,223190,Programme Analyst,ICT,10,,hauwa.sani@mda.gov.ng,Abuja HQ
+11,Ibrahim Danladi,223344,Asst. Chief Programme Analyst,I.C.T Unit,12,,ibrahim.danladi@mda.gov.ng,Abuja HQ
+12,Grace Okoro,223344,Director (Admin & HR),Human Resources,17,,grace.okoro@mda.gov.ng,Abuja HQ`;
 
   /* ---------- helpers ---------- */
   function parseCsv(text) {
@@ -96,14 +103,14 @@
       return { source: h, sample: (data[0] || [])[i] || '', field: c ? c.field : 'Ignore', confidence: c ? c.c : 0.4 };
     });
     const col = f => columns.findIndex(c => c.field === f);
-    const iName = col('User · Full name'), iId = col('User · Staff ID (IPPIS)'), iRole = col('Role'), iDept = col('Department'), iGl = col('User · Grade level'), iMgr = col('User · Line manager');
+    const iName = col('User · Full name'), iId = col('User · Staff ID (IPPIS)'), iRole = col('Role'), iDept = col('Department'), iGl = col('User · Grade level'), iMgr = col('User · Line manager'), iMail = col('User · Email'), iPhone = col('User · Phone number'), iRegion = col('User · Region');
     const get = (r, i) => (i >= 0 ? (r[i] || '').trim() : '');
 
     // Departments
     const deptMap = {}; const departments = [];
     data.forEach(r => {
       const raw = get(r, iDept); if (!raw) return;
-      const d = DEPTS.find(x => x.k.test(raw)) || { name: raw.replace(/\b\w/g, c => c.toUpperCase()), existing: false };
+      const d = DEPTS.find(x => x.k.test(raw)) || { name: raw.replace(/\b\w/g, c => c.toUpperCase()), existing: TENANT_DEPTS.some(t => t.toLowerCase() === raw.toLowerCase()) };
       deptMap[raw] = d.name;
       let entry = departments.find(x => x.name === d.name);
       if (!entry) departments.push(entry = { name: d.name, variants: [], existing: !!d.existing, confidence: DEPTS.includes(d) ? 0.92 : 0.6 });
@@ -134,7 +141,9 @@
       department: deptMap[get(r, iDept)] || '(unmapped)', rawDept: get(r, iDept),
       role: (roleMap[get(r, iRole)] || {}).role || '(no role)', rawRole: get(r, iRole), roleConf: (roleMap[get(r, iRole)] || {}).confidence || 0.3,
       gl: parseInt(get(r, iGl), 10) || null, given: get(r, iMgr),
+      email: get(r, iMail), phone: get(r, iPhone), region: get(r, iRegion),
     }));
+    users.forEach(u => { const parts = u.name.split(' '); u.last = parts.length > 1 ? parts.pop() : ''; u.first = parts.join(' '); });
     const ids = {}; users.forEach(u => { if (u.ippis) ids[u.ippis] = (ids[u.ippis] || 0) + 1; });
     users.forEach(u => {
       const issues = [];
@@ -151,10 +160,11 @@
       if (u.ippis && ids[u.ippis] > 1) issues.push(`IPPIS ${u.ippis} appears ${ids[u.ippis]} times`);
       if (!/^\d{6,7}$/.test(u.ippis)) issues.push('IPPIS should be 6–7 digits');
       if (u.department === '(unmapped)') issues.push('No department');
+      if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(u.email || '')) issues.push('Email needed to create the account');
       if (u.mgrConf < 0.7) issues.push('Line manager uncertain');
       if (u.roleConf < 0.7) issues.push('Role match uncertain');
       u.issues = issues;
-      u.confidence = Math.min(u.roleConf, u.mgrConf, issues.some(i => /IPPIS/.test(i)) ? 0.5 : 1, u.department === '(unmapped)' ? 0.4 : 0.95);
+      u.confidence = Math.min(u.roleConf, u.mgrConf, issues.some(i => /IPPIS|Email/.test(i)) ? 0.5 : 1, u.department === '(unmapped)' ? 0.4 : 0.95);
     });
 
     const tenantMerged = shown.reduce((n, c) => n + Math.max(0, c.members.filter(m => m.source === 'tenant').length - 1), 0);
@@ -177,9 +187,9 @@
 
   class AIOrgMapper extends HTMLElement {
     connectedCallback() {
-      this.tenantRoles = +(this.getAttribute('tenant-roles') || 192);
+      this.tenantRoles = +(this.getAttribute('tenant-roles') || 195);
       this.innerHTML = `<section class="aiom" aria-live="polite">
-        <div class="aiom__head"><span class="aiom__title"><span class="ai-badge">CICOD-AI</span> Import with CICOD-AI mapper</span><span class="ai-confidence">Nominal roll · staff list · org chart</span></div>
+        <div class="aiom__head"><span class="aiom__title"><span class="ai-badge">CICOD-AI</span> Build the configuration sheet</span><span class="ai-confidence">From any staff list</span></div>
         <div class="aiom__body">
           <label class="aiom__drop"><input type="file" accept=".csv,.txt,.xlsx,.xls,.pdf" data-file hidden><span>⤒ Drop a nominal roll (Excel, CSV or PDF) or click to choose</span><span class="aiom__muted">Any column names or order. Messy spellings are fine.</span></label>
           <div class="aiom__row"><button class="g-btn g-btn--ai g-btn--sm" data-sample type="button">Use sample nominal roll</button><span class="aiom__muted">Nominal_Roll_Sept2026.xlsx · 12 staff</span></div>
@@ -254,10 +264,10 @@
         </tbody></table></div>
 
         <div class="aiom__row aiom__actions">
-          <button class="g-btn g-btn--ai g-btn--sm" data-import type="button">Import ${r.users.length - needFix.length} ready rows</button>
+          <button class="g-btn g-btn--ai g-btn--sm" data-import type="button">Use ${r.users.length - needFix.length} rows in the configuration sheet</button>
           <button class="g-btn g-btn--sm" data-fixall type="button" ${needFix.length ? '' : 'disabled'}>Fix ${needFix.length} rows</button>
           <button class="g-btn g-btn--ghost g-btn--sm" data-discard type="button">Discard</button>
-          <span class="aiom__muted aiom__mode">Rows under 80% are held back until fixed</span>
+          <span class="aiom__muted aiom__mode">Rows under 80% stay out of the sheet until fixed</span>
         </div>
       </div>`;
       this.wire(allRoles);
@@ -269,7 +279,7 @@
       const ok = u.confidence >= 0.8 || u.fixed;
       if (this.editing === i) {
         const names = ['—', ...this.res.users.filter(x => x !== u).map(x => x.name)];
-        return `<tr class="aiom__editing" data-u="${i}"><td><b>${esc(u.name)}</b></td><td><input class="g-input" data-ed="ippis" value="${esc(u.ippis)}"></td>
+        return `<tr class="aiom__editing" data-u="${i}"><td><b>${esc(u.name)}</b><input class="g-input" data-ed="email" value="${esc(u.email || '')}" placeholder="email" style="margin-top:4px"></td><td><input class="g-input" data-ed="ippis" value="${esc(u.ippis)}"></td>
           <td>${esc(u.department)}</td><td><select class="g-select" data-ed="role">${roles.map(r => `<option${r === u.role ? ' selected' : ''}>${esc(r)}</option>`).join('')}</select></td><td>${u.gl ?? '—'}</td>
           <td><select class="g-select" data-ed="manager">${names.map(n => `<option${n === u.manager ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></td>
           <td colspan="2"><button class="g-btn g-btn--primary g-btn--sm" data-save="${i}" type="button">Save</button></td></tr>`;
@@ -293,7 +303,7 @@
       q('[data-fix]').forEach(b => b.addEventListener('click', () => { this.editing = +b.dataset.fix; this.render(); }));
       q('[data-save]').forEach(b => b.addEventListener('click', () => {
         const u = r.users[+b.dataset.save], row = b.closest('tr');
-        u.ippis = row.querySelector('[data-ed=ippis]').value.trim(); u.role = row.querySelector('[data-ed=role]').value; u.manager = row.querySelector('[data-ed=manager]').value;
+        u.email = row.querySelector('[data-ed=email]').value.trim(); u.ippis = row.querySelector('[data-ed=ippis]').value.trim(); u.role = row.querySelector('[data-ed=role]').value; u.manager = row.querySelector('[data-ed=manager]').value;
         u.managerSource = 'set by admin'; u.fixed = true; this.editing = null;
         feedback(r.id, 'ecms.setup-wizard-mapper', 'row-fixed', { row: +b.dataset.save });
         this.render();
@@ -310,9 +320,15 @@
           departments: r.departments.map(d => ({ name: d.name, existing: d.existing })),
           roles: [...new Set(ready.map(u => u.role))], merges,
           users: ready.map(u => ({ name: u.name, ippis: u.ippis, department: u.department, role: u.role, gradeLevel: u.gl, lineManager: u.manager })),
-          counts: { users: ready.length, heldBack: r.users.length - ready.length, departments: r.departments.length, newDepartments: r.departments.filter(d => !d.existing).length, rolesBefore: this.tenantRoles, rolesAfter: tenantAfter, merges: merges.length },
+          counts: { users: ready.length, heldBack: r.users.length - ready.length, departments: r.departments.length, newDepartments: r.departments.filter(d => !d.existing).length, rolesBefore: this.tenantRoles, rolesAfter: tenantAfter, merges: merges.length, newRoles: [...new Set(ready.map(u => u.role))].filter(x => !TENANT_ROLES.includes(x)).length },
+          // Exactly the tabs and columns of 1Gov_ECMS_WORKFLOW_PLANNING_TEMPLATE.xlsx
+          sheet: {
+            Departments: r.departments.filter(d => !d.existing).map((d, i) => [i + 1, d.name]),
+            Roles: [...new Set(ready.map(u => u.role))].filter(x => !TENANT_ROLES.includes(x)).map((x, i) => [i + 1, x]),
+            Users: ready.map((u, i) => [i + 1, u.first, u.last, u.email, u.phone || '', u.department, u.role, u.manager === '—' ? '' : u.manager, u.ippis, u.region || '']),
+          },
         } }));
-        e.target.textContent = `Imported ${ready.length} ✓`; e.target.disabled = true;
+        e.target.textContent = `Added ${ready.length} rows ✓`; e.target.disabled = true;
       });
     }
   }

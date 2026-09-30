@@ -6,10 +6,15 @@
    The output is an editable field list (label, type, required, validation, options) with a live
    preview, plus smart validation suggestions (Nigerian phone format, NIN 11 digits, NUBAN 10 digits…).
    The component never creates the form. "Use these fields" hands everything to the host page.
+   UI: a "✦ Build with CICOD-AI" button; the builder opens in a modal dialog and closes after "Use these fields".
    Attributes:
      max-description  maximum description length (default 1500, same as the Create Form screen)
+     label            button text (default "✦ Build with CICOD-AI")
+   Methods: open(), close()
    Events (bubbles):
-     ai-form-apply   detail: { name, formType, description, fields:[{label,type,required,validation,options}] }
+     ai-form-apply   detail: { name, formType, description, queue, queueType, queueTypeIsNew, emailResponse,
+                               fields:[{label,type,required,validation,options}] }
+                     queue/queueType/emailResponse are what the live designer needs before Save is allowed.
      ai-form-result  detail: gateway response
    Gateway:
      POST /ecms/form/draft      { description }            -> { model, confidence, name, formType, description, fields[], suggestions[] }
@@ -57,6 +62,22 @@
     return 'Internal';
   }
 
+  // Destination proposal. Queue names are real govtest queues; queue types are only known for TEST AUTOMATION,
+  // so for other queues a new queue type is proposed (created on Save, as Workflows → "+ Create Queue Type" does).
+  const DEST = [
+    [/expense|advance|imprest|refund|payment|claim/i, 'Finance', 'Expense Request'],
+    [/scholarship|bursary|student|school/i, 'Education', 'Scholarship Application'],
+    [/complain|grievance|petition/i, 'Complaints', 'Complaint Form'],
+    [/leave|vacation|annual leave/i, 'Department', 'Leave Application'],
+    [/vehicle|car\b|fleet/i, 'AUTO MOBILE REPAIR', 'Vehicle Request'],
+    [/test|qa\b|automation/i, 'TEST AUTOMATION', 'Testiing'],
+  ];
+  function destinationFor(text, name) {
+    const d = DEST.find(([re]) => re.test(text + ' ' + name));
+    if (!d) return { queue: 'Correspondence', queueType: name.replace(/ Form$/, ''), queueTypeIsNew: true };
+    return { queue: d[1], queueType: d[2], queueTypeIsNew: d[1] !== 'TEST AUTOMATION' };
+  }
+
   function build(text, nameHint) {
     const fields = []; const suggestions = [];
     DICT.forEach(d => {
@@ -67,7 +88,10 @@
     if (!fields.length) fields.push({ label: 'Full name', type: 'Text', required: true, validation: '', options: '' }, { label: 'Email address', type: 'Email', required: true, validation: '', options: '' }, { label: 'Purpose / details', type: 'Long text', required: true, validation: '', options: '' });
     const formType = formTypeFor(text);
     const name = nameHint || (text.match(/^(?:a |an |the )?(.{3,60}?)(?: form)?(?:[:.,]| for | to | that | with |$)/i) || [, 'New form'])[1].replace(/\b(\w)(\w*)/g, (m, a, b) => /^(of|and|for|the|to)$/i.test(m) ? m.toLowerCase() : a.toUpperCase() + b);
-    return { name: /form$/i.test(name) ? name : name + ' Form', formType, fields, suggestions,
+    const fullName = /form$/i.test(name) ? name : name + ' Form';
+    const dest = destinationFor(text, fullName);
+    return { name: fullName, formType, fields, suggestions, ...dest,
+      emailResponse: `Thank you. Your ${fullName.replace(/ Form$/, '').toLowerCase()} has been received${formType === 'Internal' ? ' and a task has been created in ' + dest.queue : ''}. We will contact you if we need anything else.`,
       description: `${formType} form. Collects ${fields.slice(0, 5).map(f => f.label.toLowerCase()).join(', ')}${fields.length > 5 ? ` and ${fields.length - 5} more field${fields.length - 5 > 1 ? 's' : ''}` : ''}. Generated with CICOD-AI from ${nameHint ? 'a scanned paper form' : 'a description'} and reviewed by the form owner.` };
   }
 
@@ -97,25 +121,45 @@
   class AIFormBuilder extends HTMLElement {
     connectedCallback() {
       this.max = +(this.getAttribute('max-description') || 1500);
-      this.innerHTML = `<section class="aifb" aria-live="polite">
-        <div class="aifb__head"><span class="aifb__title"><span class="ai-badge">CICOD-AI</span> Build this form with CICOD-AI</span><span class="ai-confidence">CICOD-AI Form Builder</span></div>
+      this.innerHTML = `
+        <button type="button" class="aifb-trigger" data-open>${esc(this.getAttribute('label') || '✦ Build with CICOD-AI')}</button>
+        <dialog class="aifb-modal" aria-labelledby="aifb-title">
+        <section class="aifb" aria-live="polite">
+        <div class="aifb__head">
+          <span class="aifb__title" id="aifb-title"><span class="ai-badge">CICOD-AI</span> Build this form</span>
+          <span style="display: flex; gap: 12px; align-items: center;">
+            <span class="aifb__mode">Prompt-to-Form</span>
+            <button type="button" class="aifb-x" data-close aria-label="Close">✕</button>
+          </span>
+        </div>
+        <p class="aifb__muted" style="margin:-8px 0 12px">Describe the form or upload a photo of the paper version. You get fields with Nigerian validation rules to review. Nothing is added until you click <b>Use these fields</b>.</p>
         <div class="aifb__tabs" role="tablist">
-          <button class="aifb__tab aifb__tab--on" data-mode="describe" type="button">Describe the form</button>
-          <button class="aifb__tab" data-mode="upload" type="button">Upload paper form (photo/PDF)</button>
+          <button class="aifb__tab aifb__tab--on" data-mode="describe" type="button">Describe</button>
+          <button class="aifb__tab" data-mode="upload" type="button">Upload paper form</button>
         </div>
         <div class="aifb__body">
           <div data-pane="describe">
             <textarea class="g-textarea aifb__desc" rows="3" placeholder="e.g. Staff leave application: name, IPPIS number, department, leave type, start and end date, phone number"></textarea>
-            <div class="aifb__row"><button class="g-btn g-btn--ai g-btn--sm" data-gen type="button">✦ Generate fields</button>
-              <span class="aifb__muted">Examples:</span><button class="g-btn g-btn--ghost g-btn--sm" data-ex="0" type="button">Leave application</button><button class="g-btn g-btn--ghost g-btn--sm" data-ex="1" type="button">Scholarship (public)</button></div>
+            <div class="aifb__row">
+              <button class="g-btn g-btn--ai" data-gen type="button">✦ Generate draft</button>
+              <span class="aifb__muted" style="margin-left:8px">Examples:</span>
+              <button class="g-btn g-btn--ghost g-btn--sm" data-ex="0" type="button">Leave application</button>
+              <button class="g-btn g-btn--ghost g-btn--sm" data-ex="1" type="button">Scholarship (public)</button>
+            </div>
           </div>
           <div data-pane="upload" hidden>
             <label class="aifb__drop"><input type="file" accept="image/*,application/pdf" data-file hidden><span>⤒ Drop a photo or PDF of the paper form, or click to choose</span><span class="aifb__muted">JPG, PNG or PDF · up to 10 MB · processed in-country</span></label>
-            <div class="aifb__row"><button class="g-btn g-btn--ai g-btn--sm" data-sample type="button">Use sample paper form</button><span class="aifb__muted">Expense Request form (scan)</span></div>
+            <div class="aifb__row"><button class="g-btn g-btn--ai g-btn--sm" data-sample type="button">✦ Use sample paper form</button><span class="aifb__muted">Expense Request form (scan)</span></div>
           </div>
           <div data-out></div>
         </div>
-      </section>`;
+      </section>
+      </dialog>`;
+      this.dialog = this.querySelector('dialog');
+      this.querySelector('[data-open]').addEventListener('click', () => this.open());
+      this.querySelector('[data-close]').addEventListener('click', () => this.close());
+      this.dialog.addEventListener('click', e => { if (e.target === this.dialog) this.close(); }); // click on the backdrop
+
       this.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
         this.querySelectorAll('[data-mode]').forEach(x => x.classList.toggle('aifb__tab--on', x === b));
         this.querySelectorAll('[data-pane]').forEach(p => { p.hidden = p.dataset.pane !== b.dataset.mode; });
@@ -125,6 +169,9 @@
       this.querySelector('[data-sample]').addEventListener('click', () => this.scan('CASH_ADVANCE_FORM_scan.jpg'));
       this.querySelector('[data-file]').addEventListener('change', e => { const f = e.target.files[0]; if (f) this.scan(f.name); });
     }
+
+    open() { if (!this.dialog.open) this.dialog.showModal(); this.querySelector('.aifb__desc').focus(); }
+    close() { if (this.dialog.open) this.dialog.close(); }
 
     loading(msg) {
       this.querySelector('[data-out]').innerHTML = `<div class="aifb__res"><p class="aifb__muted">${esc(msg)}</p><div class="ai-skeleton" style="width:60%"></div><div class="ai-skeleton" style="width:90%"></div><div class="ai-skeleton" style="width:80%"></div><div class="ai-skeleton" style="width:70%"></div></div>`;
@@ -147,7 +194,7 @@
     show(res) {
       this.res = res;
       this.fields = res.fields.map(f => ({ ...f }));
-      this.meta = { name: res.name, formType: res.formType, description: res.description.slice(0, this.max) };
+      this.meta = { name: res.name, formType: res.formType, description: res.description.slice(0, this.max), queue: res.queue, queueType: res.queueType, queueTypeIsNew: res.queueTypeIsNew, emailResponse: res.emailResponse };
       this.edited = false;
       this.render();
       this.dispatchEvent(new CustomEvent('ai-form-result', { detail: res, bubbles: true }));
@@ -171,6 +218,7 @@
         ${ocr}
         <div class="aifb__meta"><label><span>Form name</span><input class="g-input" data-m="name" value="${esc(this.meta.name)}"></label>
           <label><span>Form type</span><select class="g-select" data-m="formType">${['Internal', 'External', 'Capture', 'Inter MDA', 'Status'].map(t => `<option${t === this.meta.formType ? ' selected' : ''}>${t}</option>`).join('')}</select></label></div>
+        <div class="aifb__dest"><span><b>Destination</b> ${esc(this.meta.queue)} → ${esc(this.meta.queueType)}${this.meta.queueTypeIsNew ? ' <em class="g-chip g-chip--ai">new queue type</em>' : ''}</span><span><b>Initial email response</b> ${esc(this.meta.emailResponse)}</span></div>
         ${sugg.length ? `<div class="aifb__sugg"><h5>Smart validation suggestions (${sugg.length})</h5>${sugg.map(s => `<div class="aifb__sugg-row"><span><b>${esc(s.label)}:</b> ${esc(s.text)}</span><button class="g-btn g-btn--sm" data-sugg="${esc(s.label)}" type="button">Apply</button></div>`).join('')}<button class="g-btn g-btn--ghost g-btn--sm" data-sugg-all type="button">Apply all</button></div>` : '<p class="aifb__muted">All validation suggestions applied ✓</p>'}
         <div class="aifb__split">
           <div class="aifb__edit"><h5>Fields (edit before use)</h5>
@@ -201,6 +249,7 @@
         feedback(res.id, 'ecms.prompt-to-form', this.edited ? 'edited' : 'accepted', { fields: this.fields.length });
         this.dispatchEvent(new CustomEvent('ai-form-apply', { bubbles: true, detail: { ...this.meta, fields: this.fields.map(f => ({ ...f })) } }));
         e.target.textContent = 'Fields added to the form ✓';
+        setTimeout(() => this.close(), 450);
       });
       out.querySelector('[data-discard]').addEventListener('click', () => { feedback(res.id, 'ecms.prompt-to-form', 'rejected'); out.innerHTML = ''; });
     }

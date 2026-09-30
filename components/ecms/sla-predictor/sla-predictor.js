@@ -59,11 +59,35 @@
       this.horizon = parseFloat(this.getAttribute('horizon-hours') || '48');
       this.byRisk = false;
       this.done = new Set();
-      this.innerHTML = `<div class="aisl__bar"><span class="ai-badge">CICOD-AI</span><span class="aisl__sum" data-sum><span class="ai-skeleton" style="width:220px;display:inline-block;margin:0"></span></span>
-        <button class="g-btn g-btn--sm" data-sort type="button" disabled>⇅ Sort by risk</button></div>`;
-      this.querySelector('[data-sort]').addEventListener('click', () => this.sort());
-      this.slots().forEach(s => { s.innerHTML = '<span class="ai-skeleton" style="width:64px;margin:2px 0"></span>'; });
-      this.score();
+      this.innerHTML = `<button class="g-btn g-btn--sm" data-analyze type="button" style="color: var(--ai-600); border-color: var(--ai-200); background: var(--ai-50);">✦ Analyze SLA Risks</button>`;
+      this.isShowing = false;
+      this.querySelector('[data-analyze]').addEventListener('click', () => this.toggleView());
+    }
+
+    async toggleView() {
+      const btn = this.querySelector('[data-analyze]');
+      if (!this.result) {
+        btn.textContent = 'Scanning...';
+        btn.disabled = true;
+        this.slots().forEach(s => { s.innerHTML = '<span class="ai-skeleton" style="width:64px;margin:2px 0"></span>'; });
+        await this.score();
+        btn.disabled = false;
+      }
+      this.isShowing = !this.isShowing;
+      btn.textContent = this.isShowing ? '✕ Close Risk View' : '✦ Analyze SLA Risks';
+      if (this.table) this.table.classList.toggle('show-risks', this.isShowing);
+      
+      if (this.isShowing) {
+        this.rows().forEach(r => {
+          const s = this.byId[r.dataset.task];
+          if (s && s.level === 'low') r.classList.add('is-safe');
+          else r.classList.remove('is-safe');
+        });
+        this.sort(true);
+      } else {
+        this.rows().forEach(r => r.classList.remove('is-safe'));
+        this.sort(false);
+      }
     }
 
     rows() { return this.table ? [...this.table.querySelectorAll('tbody tr[data-task]')] : []; }
@@ -83,10 +107,6 @@
       this.result = res;
       this.byId = Object.fromEntries(res.scores.map(s => [s.id, s]));
       this.renderBadges();
-      const soon = res.scores.filter(s => s.level === 'high' && s.hoursLeft <= this.horizon).length;
-      const med = res.scores.filter(s => s.level === 'medium').length;
-      this.querySelector('[data-sum]').innerHTML = `<b>${soon} task${soon === 1 ? '' : 's'}</b> likely to breach in the next ${this.horizon} h · ${med} at medium risk <span class="ai-confidence">${esc(res.model)}</span>`;
-      this.querySelector('[data-sort]').disabled = false;
       this.renderDrawerIdle();
       this.dispatchEvent(new CustomEvent('ai-sla-result', { detail: res, bubbles: true }));
     }
@@ -103,15 +123,10 @@
       });
     }
 
-    sort() {
-      this.byRisk = !this.byRisk;
+    sort(byRisk) {
       const ids = this.tasks.map(t => t.id);
-      const order = this.byRisk ? [...ids].sort((a, b) => this.byId[b].risk - this.byId[a].risk) : ids;
-      const btn = this.querySelector('[data-sort]');
-      btn.textContent = this.byRisk ? '✓ Sorted by risk' : '⇅ Sort by risk';
-      btn.classList.toggle('g-btn--ai', this.byRisk);
-      feedback(this.result.id, 'ecms.sla-risk', this.byRisk ? 'sorted-by-risk' : 'sort-cleared');
-      this.dispatchEvent(new CustomEvent('ai-sla-sort', { detail: { byRisk: this.byRisk, order }, bubbles: true }));
+      const order = byRisk ? [...ids].sort((a, b) => this.byId[b].risk - this.byId[a].risk) : ids;
+      this.dispatchEvent(new CustomEvent('ai-sla-sort', { detail: { byRisk, order }, bubbles: true }));
     }
 
     renderDrawerIdle() {

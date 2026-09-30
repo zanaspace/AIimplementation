@@ -44,3 +44,7 @@ ai-minute-summary { display: block; min-width: 0; }
   .aims__mini, .aims__mini .g-input, .aims__mini--date .g-input { width: 100%; }
   .aims__mini { flex: 1 1 140px; }
 }
+
+/* Preview variant: ✦ popover on the Memos & Drafts list */
+.aims--preview { box-shadow: var(--shadow-lg); }
+.aims--preview .aims__actions { margin-top: 10px; }

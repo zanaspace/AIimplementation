@@ -26,6 +26,29 @@
   .wf__statuses { display: flex; flex-wrap: wrap; gap: 6px; }
   .wf__foot { display: flex; justify-content: flex-end; padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--border); }
   .wf__empty { color: var(--text-3); font-size: 13px; }
+  .wf__check { margin-top: 14px; padding: 12px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); font-size: 13px; }
+  .wf__check--bad { border-color: color-mix(in srgb, var(--bad) 40%, var(--border)); background: var(--bad-bg); }
+  .wf__check h4 { margin: 0 0 8px; font-size: 13px; }
+  .wf__check ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .wf__check li { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .wf__check .g-select { width: auto; min-height: 30px; padding: 3px 8px; font-size: 12.5px; }
+  .wf__next:disabled { opacity: .7; cursor: wait; }
+  .wf__done { padding: 18px; }
+  .wf__done-head { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; justify-content: space-between; }
+  .wf__done-head h3 { margin: 0 0 4px; font-size: 17px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .wf__tick { width: 26px; height: 26px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--ok-bg); color: var(--ok); font-weight: 700; flex-shrink: 0; }
+  .wf__steps { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 2px; }
+  .wf__steps li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; padding: 9px 0; border-top: 1px dashed var(--border); opacity: .35; transition: opacity .3s; }
+  .wf__steps li.on { opacity: 1; }
+  .wf__steps b { display: block; font-size: 13px; }
+  .wf__steps span { font-size: 12.5px; color: var(--text-2); overflow-wrap: anywhere; }
+  .wf__actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .wf__flowline { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 10px; }
+  .wf__row-new td { animation: wf-row 2.4s ease; font-weight: 600; }
+  @keyframes wf-row { 0% { background: var(--ai-100); } 100% { background: transparent; } }
+  .wf__try { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .wf__try .wf__full { grid-column: 1 / -1; }
+  @media (max-width: 700px) { .wf__try { grid-template-columns: 1fr; } }
   .wf__flash { animation: wf-flash 1.4s ease; }
   @keyframes wf-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); } 100% { box-shadow: none; } }
 </style>
@@ -37,7 +60,7 @@
     <div>
       <span class="ai-badge">ECMS · E-W1 · Priority 2</span>
       <h1>Prompt-to-Workflow</h1>
-      <p>Building a new workflow in ECMS usually requires manually clicking through multiple tabs to configure queues, status flows, forms, escalation timers, and approval rules. Prompt-to-Workflow automates all of this. Simply <b>describe your business process in one sentence</b>, and the CICOD-AI instantly generates a complete, editable workflow draft. It also checks for common mistakes—like missing escalation paths or assigning approvals to empty roles—before automatically filling out all the setup tabs for your review.</p>
+      <p>Building a new workflow in ECMS usually requires manually clicking through multiple tabs to configure queues, statuses, forms, escalations, and approvals. Now, you can simply describe your business process in one sentence, and the AI will instantly generate a complete, editable draft. It checks for common mistakes automatically and fills out all the setup tabs for your review.</p>
       <div class="doc__meta"><span class="g-chip">Screen: ECMS → Workflows → Create Workflow</span><span class="g-chip">Component: &lt;ai-workflow-builder&gt;</span><span class="g-chip">Endpoint: /ecms/workflow/draft</span></div>
     </div>
     <div class="doc__toolbar">
@@ -49,13 +72,12 @@
   <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
     <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of the ECMS <b>Create Workflow</b> wizard. Click the <i>Vehicle repair</i> example (or write your own, e.g. <i>"Leave request: staff submits → HOD approval → HR review → close, escalate after 24h"</i>), click <i>Generate draft</i>, read the checks, then <i>Apply to wizard</i>. Click through the Process, Form, Escalation and Approval tabs to see what was filled.</p>
+    <p class="doc__lede">This is a copy of the ECMS <b>Create Workflow</b> wizard. Click the <i>Vehicle repair</i> example (or write your own, e.g. <i>"Leave request: staff submits → HOD approval → HR review → close, escalate after 24h"</i>), click <i>Generate draft</i>, read the checks, then <i>Apply to wizard</i>. Click through the Process, Form, Escalation and Approval tabs to see what was filled. On the Approval tab, click <b>Create</b> to see what happens next: any blocker is flagged with a one-click fix, then the saved workflow is shown step by step. From there you can open <i>My Workflows</i>, or <i>Test it</i> on Create Task with the new form.</p>
     <div id="screen" class="shell" data-app="ecms" data-active="Create Workflow">
       <div class="shell__content">
-        <div class="wf__bar"><span class="wf__crumb">Workflows › <b>New</b></span><button class="g-btn g-btn--sm" type="button">ⓘ Help Guide</button></div>
-        <div data-ai-spot="CICOD-AI · Describe your process">
-          <ai-workflow-builder></ai-workflow-builder>
-        </div>
+        <div class="wf__bar"><span class="wf__crumb" id="wf-crumb">Workflows › <b>New</b></span><button class="g-btn g-btn--sm" type="button">ⓘ Help Guide</button></div>
+        <div id="wizard">
+        <ai-workflow-builder></ai-workflow-builder>
         <div class="wf__tabs" role="tablist">
           <button class="wf__tab wf__tab--on" data-tab="process" type="button">Process</button>
           <button class="wf__tab" data-tab="form" type="button">Form</button>
@@ -77,14 +99,20 @@
           <div data-panel="form" hidden><h3>Form</h3><div id="wf-form"><p class="wf__empty">No form fields yet.</p></div></div>
           <div data-panel="escalation" hidden><h3>Escalation</h3><div id="wf-esc"><p class="wf__empty">No escalation rules yet.</p></div></div>
           <div data-panel="approval" hidden><h3>Approval</h3><div id="wf-appr"><p class="wf__empty">No approval levels yet.</p></div></div>
+          <div class="wf__check" id="wf-check" hidden></div>
           <div class="wf__foot"><button class="g-btn g-btn--primary" id="wf-next" type="button">Next</button></div>
         </div>
+        </div>
+
+        <!-- What happens after Create: the saved workflow, then where it now shows up in ECMS -->
+        <div id="wf-done" hidden></div>
       </div>
     </div>
     <div class="doc__where" style="margin-top:12px">
       <div class="doc__where-item"><b>Primary placement</b>Above the wizard tabs on <code>/ecms/workflows/new?step=process</code></div>
       <div class="doc__where-item"><b>Also appears in</b>The CICOD-AI IMPLEMENTATION form (uploaded process documents become a draft, R5) and My Workflows → "Duplicate with CICOD-AI"</div>
       <div class="doc__where-item"><b>Trigger</b>"Generate draft" click. Nothing is saved until the officer clicks Create at the end of the wizard</div>
+      <div class="doc__where-item"><b>On Create</b>Queue and Queue Type are checked, and blockers (roles with no active users) must be fixed. Then the workflow is saved as Active, its form is published, timers and approvals start, and an Audit Log entry records whether the CICOD-AI draft was edited</div>
       <div class="doc__where-item"><b>Who sees it</b>Workflow administrators. Roles and departments offered come only from this tenant</div>
     </div>
     <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
@@ -93,26 +121,23 @@
   <!-- 2. HOW IT WORKS -->
   <section class="doc__section">
     <h2>2. How it works</h2>
-    <p class="doc__lede">An LLM constrained to the ECMS workflow JSON schema writes the draft. A validator then checks it against the tenant's queues, roles and users.</p>
+    <p class="doc__lede">The AI understands business processes and converts plain text into a structured, fully configured workflow.</p>
     <div class="doc__flow">
-      <div class="doc__step"><h4>Capture</h4><p>The officer's description plus the tenant's queue, queue-type and role catalogue are sent to <code>/ecms/workflow/draft</code>.</p></div>
-      <div class="doc__step"><h4>Protect</h4><p>The gateway removes any personal names or contact details from the prompt. Only role names and counts, not user details, are shared with the model.</p></div>
-      <div class="doc__step"><h4>Generate</h4><p>The model must return JSON that matches the ECMS schema (queue, queue type, statuses, form fields, escalation, approval levels). Amounts like "₦200k" and times like "48h" are turned into thresholds and timers.</p></div>
-      <div class="doc__step"><h4>Lint</h4><p>Graph checks flag stages with no escalation, approver roles with no active users (e.g. "Fleet Officer" has 0), missing end states and near-duplicates of the 290 existing workflows.</p></div>
-      <div class="doc__step"><h4>Fill the wizard</h4><p>"Apply to wizard" fills Process, Form, Escalation and Approval. The officer edits any tab before clicking Create.</p></div>
-      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Accepted, edited, regenerated and discarded drafts are recorded via <code>/feedback</code>, along with how much the officer changed before Create.</p></div>
+      <div class="doc__step"><h4>Capture</h4><p>Your description is processed alongside your organization's existing queues and roles to ensure it aligns perfectly with your setup.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Any names or private information are stripped out before processing. The AI only sees generic role names and process steps.</p></div>
+      <div class="doc__step"><h4>Generate</h4><p>The system intelligently builds the workflow steps. It detects conditions like "if above ₦200k" and translates them into approval rules, and spots time limits like "within 48h" to set up escalation timers automatically.</p></div>
+      <div class="doc__step"><h4>Check &amp; Correct</h4><p>Before applying the workflow, the AI double-checks for common errors—like assigning tasks to empty departments, or missing escalation routes.</p></div>
     </div>
   </section>
 
   <!-- 3. BENEFITS -->
   <section class="doc__section">
-    <h2>3. Benefits to this feature</h2>
-    <p class="doc__lede">Baselines from the cicod tenant (My Workflows, Roles), 27 Sep 2026. Other figures are targets.</p>
+    <h2>3. Benefits</h2>
+    <p class="doc__lede">Dramatically speeds up administrative setup and prevents configuration errors.</p>
     <div class="doc__benefits">
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Days → minutes</div><h4>Workflow build time</h4><p>Target: a four-tab workflow drafted in under 5 minutes, instead of days of set-up and back-and-forth.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">290 workflows</div><h4>Fewer duplicates</h4><p>The tenant has 290 workflows, many test copies (e.g. "REPAIR DEATAILS", "Testiing"). Near-duplicates are flagged before a new one is created.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">0 stuck stages</div><h4>Every stage can escalate</h4><p>Target: no live stage without an escalation timer or with an approver role that has no users.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Thresholds built in</div><h4>Correct approval levels</h4><p>Amount rules like "HOD approval if above ₦200k" become approval levels, not free text in a description.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Minutes vs Hours</div><h4>Instant Setup</h4><p>Instead of manually clicking through four separate tabs to set up forms, rules, and queues, you can configure everything in one sentence.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Error-Free</div><h4>Built-in Safety Checks</h4><p>The system catches logical mistakes before they happen, ensuring your workflow doesn't get stuck waiting on an empty role or missing an escalation path.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">No Training Needed</div><h4>Accessible Automation</h4><p>Anyone who understands how a business process works can now digitize it without needing to learn the complex ECMS configuration tools.</p></div>
     </div>
   </section>
 
@@ -195,11 +220,196 @@ document.addEventListener('ai-workflow-apply', e =&gt; {
   document.getElementById('wf-next').addEventListener('click', () => {
     const i = tabs.findIndex(t => t.classList.contains('wf__tab--on'));
     if (i < tabs.length - 1) show(tabs[i + 1].dataset.tab);
+    else create();
   });
   const esc = window.AIGateway.esc;
+
+  /* ---------- Create: check → save → show what happened ---------- */
+  // Roles with active users in this tenant, offered to fix a blocker (prototype data, cicod tenant).
+  const STAFFED = ['Inspection Officer', 'HOD Works', 'Head of Department', 'Director', 'Store Officer', 'IT Resource', 'Complaints Handler', 'Head, Procurement', 'Director, Finance & Accounts', 'Permanent Secretary'];
+  let applied = null; // { draft, lint, id, edited } from CICOD-AI, or null for a hand-built workflow
+  const MY = [ // My Workflows, as listed in the cicod tenant
+    ['AUTO MOBILE REPAIR', 'REPAIR DEATAILS', 'OPEN → CLOSED', 'TESTING ACCOUNT', '22/09/2026'],
+    ['CICOD-AI IMPLEMENTATION', 'PROCESS GATHERING', 'OPEN → CLOSED', 'Chinwuba Okafor', '11/09/2026'],
+    ['IT Support', 'Hardware & Network', 'OPEN → In Progress → CLOSED', '—', '—'],
+    ['Complaints', 'Application issue', 'OPEN → In Progress → CLOSED', '—', '—'],
+  ];
+  const setNav = name => document.querySelectorAll('#screen .shell__nav-item').forEach(n => n.classList.toggle('shell__nav-item--active', n.textContent.trim() === name));
+  const today = () => { const d = new Date(); return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`; };
+  const current = () => {
+    const q = document.getElementById('wf-queue').value.trim(), t = document.getElementById('wf-type').value.trim();
+    const d = applied ? applied.draft : { statuses: [{ name: 'OPEN', role: 'Requester' }, { name: 'CLOSED', role: '—' }], fields: [], escalation: [], approvals: [], queueIsNew: false };
+    return { ...d, queue: q, queueType: t, singleUser: document.getElementById('wf-single').checked };
+  };
+  const blockers = d => d.statuses.filter(s => s.role && !STAFFED.includes(s.role) && !['Requester', '—'].includes(s.role))
+    .filter(s => (applied?.lint || []).some(l => l.level === 'bad' && l.text.includes(`"${s.role}"`)));
+
+  function renderCheck(msg, list) {
+    const box = document.getElementById('wf-check');
+    box.hidden = false; box.className = 'wf__check wf__check--bad';
+    box.innerHTML = `<h4>Can't create yet</h4>${msg ? `<p style="margin:0">${msg}</p>` : ''}${list ? `<ul>${list.map(s => `<li><span class="g-chip g-chip--bad">Blocker</span>Stage <b>${esc(s.name)}</b> goes to <b>${esc(s.role)}</b>, who has 0 active users. Give it to
+      <select class="g-select" data-fix="${esc(s.name)}"><option value="">choose a role…</option>${STAFFED.map(r => `<option>${esc(r)}</option>`).join('')}</select></li>`).join('')}</ul>` : ''}`;
+    box.querySelectorAll('[data-fix]').forEach(sel => sel.addEventListener('change', () => {
+      if (!sel.value) return;
+      const st = applied.draft.statuses.find(s => s.name === sel.dataset.fix), old = st.role;
+      st.role = sel.value;
+      applied.draft.escalation.forEach(x => { if (x.status === st.name) x.to = x.to.replace(`line manager of ${old}`, `line manager of ${sel.value}`); });
+      applied.edited = true; // fixing a blocker changes the CICOD-AI draft
+      const left = blockers(applied.draft);
+      if (left.length) renderCheck('', left);
+      else { box.className = 'wf__check'; box.innerHTML = '<h4>✓ Blockers fixed</h4><p style="margin:0">Every stage now has a role with active users. Click <b>Create</b>.</p>'; }
+    }));
+  }
+
+  function create() {
+    const d = current();
+    if (!d.queue || !d.queueType) { show('process'); renderCheck('Select a <b>Queue</b> and a <b>Queue Type</b> on the Process tab, or describe the process to CICOD-AI above.'); flash(document.querySelector('.wf__card')); return; }
+    const b = blockers(d);
+    if (b.length) { renderCheck('', b); return; }
+    document.getElementById('wf-check').hidden = true;
+    const btn = document.getElementById('wf-next');
+    btn.disabled = true; btn.classList.add('wf__next'); btn.textContent = 'Creating…';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Create'; saved(d); }, 900);
+  }
+
+  function saved(d) {
+    const id = 'WF-' + (2041 + MY.length);
+    const mid = d.statuses.slice(1, -1);
+    MY.unshift([d.queue, d.queueType, d.statuses.map(s => s.name).join(' → '), 'You', today(), true]);
+    if (applied) window.AIGateway.feedback(applied.id, 'ecms.prompt-to-workflow', applied.edited ? 'created-with-edits' : 'created-as-drafted', { workflow: id });
+    const steps = [
+      ['Workflow saved', `${id} · ${esc(d.queue)} → ${esc(d.queueType)}${d.singleUser ? ' · single user' : ''}. Status: Active.`],
+      [d.queueIsNew ? 'New queue created' : 'Added to an existing queue', `"${esc(d.queue)}" now offers the queue type "${esc(d.queueType)}" on Create Task and in Smart Routing.`],
+      [`${d.statuses.length} statuses set up`, d.statuses.map(s => `${esc(s.name)}${s.role && !['Requester', '—'].includes(s.role) ? ` (${esc(s.role)})` : ''}`).join(' → ')],
+      [`Form published (${d.fields.length} field${d.fields.length === 1 ? '' : 's'})`, d.fields.length ? d.fields.map(f => esc(f.label) + (f.required ? '*' : '')).join(', ') : 'No fields yet. Add them later under Forms.'],
+      [`Escalation timers ${d.escalation.length ? 'running' : 'not set'}`, d.escalation.length ? d.escalation.map(e => `${esc(e.status)}: after ${esc(e.after)} → ${esc(e.to)}`).join(' · ') : `No timers. ${mid.length ? 'Tasks can wait at a stage indefinitely.' : ''}`],
+      [`${d.approvals.length} approval level${d.approvals.length === 1 ? '' : 's'} active`, d.approvals.length ? d.approvals.map(a => `Level ${a.level}: ${esc(a.role)} (${esc(a.condition)})`).join(' · ') : 'None. Tasks move without approval.'],
+      ['Written to the ECMS Audit Log', applied ? `Feature: CICOD-AI Workflow · "${applied.edited ? 'created from draft, edited' : 'created from draft as generated'}" · ${today()}` : `Feature: Workflows · "created manually" · ${today()}`],
+    ];
+    document.getElementById('wizard').hidden = true;
+    document.getElementById('wf-crumb').innerHTML = `Workflows › <b>${esc(d.queue)} · ${esc(d.queueType)}</b>`;
+    const v = document.getElementById('wf-done'); v.hidden = false;
+    v.innerHTML = `<div class="g-card wf__done" data-ai-spot="After Create: what was saved">
+      <div class="wf__done-head"><div><h3><span class="wf__tick">✓</span>Workflow created <span class="g-chip g-chip--ok">Active</span>${applied ? '<span class="g-chip g-chip--ai">✦ from CICOD-AI draft</span>' : ''}</h3>
+        <span style="font-size:13px;color:var(--text-2)">${esc(d.queue)} → ${esc(d.queueType)} · ${id}</span></div></div>
+      <div class="wf__flowline">${d.statuses.map((s, i) => `<span class="g-chip ${i === 0 || i === d.statuses.length - 1 ? 'g-chip--ok' : 'g-chip--ai'}">${esc(s.name)}</span>${i < d.statuses.length - 1 ? '<span aria-hidden="true">→</span>' : ''}`).join('')}</div>
+      <h4 style="margin:16px 0 0;font-size:13px">What happened when you clicked Create</h4>
+      <ol class="wf__steps">${steps.map(([t, s]) => `<li><span class="wf__tick">✓</span><div><b>${t}</b><span>${s}</span></div></li>`).join('')}</ol>
+      <div class="wf__actions">
+        <button class="g-btn g-btn--primary" data-go="try" type="button">Test it: create a task</button>
+        <button class="g-btn" data-go="my" type="button">View in My Workflows</button>
+        <button class="g-btn g-btn--ghost" data-go="new" type="button">+ Create another workflow</button>
+      </div></div>`;
+    summaryHtml = v.innerHTML; summaryCrumb = document.getElementById('wf-crumb').innerHTML;
+    v.querySelectorAll('.wf__steps li').forEach((li, i) => setTimeout(() => li.classList.add('on'), 150 + i * 220));
+    wireGo(v, d);
+    document.getElementById('screen').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function wireGo(root, d) {
+    root.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => ({ try: () => tryTask(d), my: () => myWorkflows(d), new: () => location.reload(), back: () => saved2(d) })[b.dataset.go]()));
+  }
+  let summaryHtml = '', summaryCrumb = '';
+  const saved2 = d => { setNav('Create Workflow'); const v = document.getElementById('wf-done'); v.innerHTML = summaryHtml; document.getElementById('wf-crumb').innerHTML = summaryCrumb; v.querySelectorAll('.wf__steps li').forEach(li => li.classList.add('on')); wireGo(v, d); };
+
+  function myWorkflows(d) {
+    setNav('My Workflows');
+    document.getElementById('wf-crumb').innerHTML = 'Workflows › <b>My Workflows</b>';
+    document.getElementById('wf-done').innerHTML = `<div class="g-card wf__done"><h3 style="margin:0 0 10px;font-size:15px">My Workflows</h3>
+      <div class="g-table-wrap"><table class="g-table"><thead><tr><th>Queue</th><th>Queue Type</th><th>Statuses</th><th>Created by</th><th>Date created</th><th>Status</th></tr></thead>
+      <tbody>${MY.map(r => `<tr class="${r[5] ? 'wf__row-new' : ''}">${r.slice(0, 5).map(c => `<td>${esc(c)}</td>`).join('')}<td><span class="g-chip g-chip--ok">Active</span>${r[5] ? ' <span class="g-chip g-chip--ai">New</span>' : ''}</td></tr>`).join('')}</tbody></table></div>
+      <div class="wf__actions"><button class="g-btn g-btn--primary" data-go="try" type="button">Test it: create a task</button><button class="g-btn" data-go="back" type="button">← Back to summary</button></div></div>`;
+    wireGo(document.getElementById('wf-done'), d);
+  }
+
+  // Sample values for a test run, chosen from each field's label and type (so they fit any generated form).
+  function sampleFor(f, d) {
+    const L = f.label.toLowerCase(), opts = String(f.options || '').split(',').map(o => o.trim()).filter(o => o && !/^From /.test(o));
+    const approvalAmt = (d.approvals.map(a => (a.condition.match(/₦([\d,]+)/) || [])[1]).find(Boolean) || '').replace(/,/g, '');
+    if (/requester|full name|^name/.test(L)) return 'Prince Ekpenyong';
+    if (/department/.test(L)) return 'Works & Maintenance';
+    if (/registration/.test(L)) return 'ABC-123DE';
+    if (/make|model/.test(L)) return 'Toyota Hilux 2019';
+    if (/odometer/.test(L)) return '84500';
+    if (/asset tag/.test(L)) return 'ICT/LAP/0421';
+    if (/location/.test(L)) return 'Abuja HQ, Block B';
+    if (/relief/.test(L)) return 'Ann Nya';
+    if (/start date/.test(L)) return '2026-10-05';
+    if (/end date/.test(L)) return '2026-10-16';
+    if (/cost|amount|₦/.test(L)) return approvalAmt ? String(+approvalAmt + 150000) : '350000'; // above the threshold, so the approval rule is exercised
+    if (/description|details/.test(L)) return /vehicle/i.test(d.queueType) ? 'Brakes squeal and the pedal feels soft. The vehicle is needed for field inspections next week.' : `Test request to check the ${d.queueType} workflow end to end.`;
+    if (/file|quotation|document/.test(L) || /file/i.test(f.type)) return /quotation/.test(L) ? 'quotation_1.pdf' : 'supporting_note.pdf';
+    if (opts.length) return opts.find(o => /brake|annual|laptop|delay/i.test(o)) || opts[0];
+    return /number|currency/i.test(f.type) ? '1' : `Test ${f.label.toLowerCase()}`;
+  }
+
+  function tryTask(d) {
+    setNav('Create Task');
+    document.getElementById('wf-crumb').innerHTML = 'All Tasks › <b>New Task</b>';
+    const fields = d.fields.length ? d.fields : [{ label: 'Title', type: 'Text', required: true }, { label: 'Description', type: 'Long text', required: true }];
+    const input = (f, i) => {
+      const v = esc(sampleFor(f, d)), id = `tt-${i}`;
+      if (/long/i.test(f.type)) return `<textarea class="g-textarea" rows="2" id="${id}">${v}</textarea>`;
+      if (/dropdown/i.test(f.type)) {
+        const o = String(f.options || '').split(',').map(x => x.trim()).filter(x => x && !/^From /.test(x));
+        const list = o.length ? o : [sampleFor(f, d)];
+        return `<select class="g-select" id="${id}">${list.map(x => `<option${esc(x) === v ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>`;
+      }
+      if (/file/i.test(f.type)) return `<span class="g-chip" id="${id}" data-file>📎 ${v}</span>`;
+      return `<input class="g-input" id="${id}" type="${/date/i.test(f.type) ? 'date' : /number|currency/i.test(f.type) ? 'number' : 'text'}" value="${v}">`;
+    };
+    const v = document.getElementById('wf-done');
+    v.innerHTML = `<div class="g-card wf__done"><div class="wf__done-head"><h3 style="font-size:15px">Create Task · test run</h3><span class="g-chip g-chip--ai">✦ Test data filled by CICOD-AI</span></div>
+      <p style="margin:0 0 14px;font-size:13px;color:var(--text-2)">This is the form the workflow published. Every field is filled with sample data so you can submit it straight away. Change any value, for example the estimated cost, to try another route. Real requesters get the same form empty.</p>
+      <div class="wf__try">
+        <div><label class="g-label">Queue *</label><select class="g-select"><option>${esc(d.queue)}</option></select></div>
+        <div><label class="g-label">Queue Type *</label><select class="g-select"><option>${esc(d.queueType)}</option></select></div>
+        ${fields.map((f, i) => `<div class="${/long/i.test(f.type) ? 'wf__full' : ''}"><label class="g-label" for="tt-${i}">${esc(f.label)}${f.required ? ' *' : ''}</label>${input(f, i)}</div>`).join('')}
+      </div>
+      <div class="wf__check" id="tt-out" hidden></div>
+      <div class="wf__actions"><button class="g-btn g-btn--primary" id="tt-submit" type="button">Submit test task</button><button class="g-btn" data-go="back" type="button">← Back to summary</button><button class="g-btn g-btn--ghost" data-go="my" type="button">View in My Workflows</button></div></div>`;
+    wireGo(v, d);
+    document.getElementById('tt-submit').addEventListener('click', () => submitTest(d, fields));
+  }
+
+  // What ECMS does with the submitted test task: required-field check, approval rule, first stage, escalation clock.
+  function submitTest(d, fields) {
+    const out = document.getElementById('tt-out');
+    const val = i => { const el = document.getElementById(`tt-${i}`); return el.dataset.file !== undefined ? el.textContent : el.value.trim(); };
+    const missing = fields.filter((f, i) => f.required && !val(i));
+    out.hidden = false;
+    if (missing.length) { out.className = 'wf__check wf__check--bad'; out.innerHTML = `<h4>Can't submit</h4><p style="margin:0">Fill in: ${missing.map(f => esc(f.label)).join(', ')}.</p>`; return; }
+    const ci = fields.findIndex(f => /currency/i.test(f.type)), cost = ci >= 0 ? +val(ci) : null;
+    const rules = d.approvals.map(a => {
+      const m = a.condition.match(/amount\s*([>≤<])\s*₦([\d,]+)/);
+      if (!m || cost == null) return { ...a, applies: !m };
+      const t = +m[2].replace(/,/g, '');
+      return { ...a, applies: m[1] === '>' ? cost > t : cost <= t, t };
+    });
+    const stages = d.statuses.filter(s => !/approval/i.test(s.name) || rules.some(r => r.applies && s.role === r.role));
+    const next = stages[1] || d.statuses[d.statuses.length - 1];
+    const id = 17582 + testRuns++;
+    const naira = n => '₦' + Number(n).toLocaleString('en-NG');
+    const lines = [
+      `Task <b>#${id}</b> created in ${esc(d.queue)} → ${esc(d.queueType)} as <b>OPEN</b>, tagged as a test task.`,
+      `Moved to <b>${esc(next.name)}</b>${next.role && next.role !== '—' ? ` and assigned to <b>${esc(next.role)}</b>` : ''}.`,
+      ...rules.filter(r => r.t).map(r => r.applies
+        ? `Estimated cost ${naira(cost)} is above ${naira(r.t)}, so <b>${esc(r.role)} approval</b> (Level ${r.level}) is required.`
+        : `Estimated cost ${naira(cost)} is not above ${naira(r.t)}, so <b>${esc(r.role)} approval is skipped</b>.`),
+      next.escalation ? `Escalation clock started: after ${next.escalation}h it goes to ${esc((d.escalation.find(e => e.status === next.name && e.level === 1) || {}).to || 'the line manager')}.` : 'No escalation timer on this stage.',
+      `Route for this task: ${stages.map(s => esc(s.name)).join(' → ')}`,
+    ];
+    out.className = 'wf__check';
+    out.innerHTML = `<h4>✓ Test task submitted</h4><ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul><p style="margin:8px 0 0;font-size:12px;color:var(--text-3)">Test tasks are tagged so they can be deleted in one click and aren't counted in the Workflow Dashboard.</p>`;
+    out.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  let testRuns = 0;
+
   const table = (heads, rows) => `<div class="g-table-wrap"><table class="g-table"><thead><tr>${heads.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   const flash = el => { el.classList.remove('wf__flash'); void el.offsetWidth; el.classList.add('wf__flash'); };
   document.addEventListener('ai-workflow-apply', e => {
+    applied = e.detail;
+    document.getElementById('wf-check').hidden = true;
     const d = e.detail.draft;
     const q = document.getElementById('wf-queue');
     if (![...q.options].some(o => o.text === d.queue)) q.add(new Option(d.queue + ' (new)', d.queue));

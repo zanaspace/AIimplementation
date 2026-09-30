@@ -20,6 +20,13 @@
   .al__table tr.al--cited td { background: var(--ai-50); }
   .al__table tr.al--cited td:first-child { box-shadow: inset 3px 0 0 var(--ai-500); }
   .al__tag { margin-left: 6px; }
+
+  /* Modal styles for Copilot */
+  .al-modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px); z-index: 100; display: none; align-items: flex-start; justify-content: center; padding-top: 40px; border-radius: var(--radius-lg); }
+  .al-modal-overlay.is-open { display: flex; }
+  .al-modal-content { background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); width: 95%; max-width: 900px; max-height: 85vh; overflow-y: auto; position: relative; padding: 20px; border: 1px solid var(--border); }
+  .al-modal-close { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-2); z-index: 10; line-height: 1; padding: 0; width: 24px; height: 24px; display: grid; place-items: center; }
+  .al-modal-close:hover { color: var(--text); }
 </style>
 </head>
 <body>
@@ -29,7 +36,7 @@
     <div>
       <span class="ai-badge">ECMS · E-A1 · E-A2 · Priority 1</span>
       <h1>Audit Copilot</h1>
-      <p>Lets auditors ask the ECMS Audit Log questions in plain English, such as <i>"Who approved task 16363?"</i>. Each answer cites the log rows it is based on, and those rows are highlighted. An anomaly panel flags patterns a person would miss when scrolling: the <b>same user approving task 16363 twice</b>, approvals outside working hours, and a <b>new IP address for a super admin</b>.</p>
+      <p>Lets auditors query the Audit Log in plain English, highlighting the cited rows directly in the table. An anomaly panel automatically flags unusual patterns, such as duplicate approvals, off-hours activity, or new admin IP addresses.</p>
       <div class="doc__meta"><span class="g-chip">Screen: ECMS → Reports → Audit Log</span><span class="g-chip">Component: &lt;ai-audit-copilot&gt;</span><span class="g-chip">Endpoint: /ecms/audit/ask · /anomalies</span></div>
     </div>
     <div class="doc__toolbar">
@@ -41,15 +48,24 @@
   <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
     <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of the ECMS <b>Audit Logs</b> screen with the tenant's real entries from 26/09/2026 (IP last octets and emails are masked; times are from the underlying log record). Click <i>"Who approved task 16363?"</i> or type your own question, such as <i>"What did api support do?"</i>, and the cited rows light up. In the anomaly panel, click a title to highlight its rows, then <b>Mark reviewed</b> or <b>Open investigation</b>.</p>
+    <p class="doc__lede">This demo uses real <b>Audit Logs</b> data. Click <b>✦ Ask Copilot</b> to open the AI panel, then ask a question like <i>"Who approved task 16363?"</i> to see the matching rows light up. In the anomaly panel, click a title to highlight its rows, then choose to <b>Mark reviewed</b> or <b>Open investigation</b>.</p>
     <div id="screen" class="shell" data-app="ecms" data-active="Audit Log">
       <div class="shell__content">
         <div class="al__bar">
           <h2 class="shell__title">Audit Logs</h2>
-          <button class="g-btn g-btn--primary" type="button">Download</button>
+          <div style="display: flex; gap: 8px;">
+            <button class="g-btn" type="button" style="color: var(--ai-600); border-color: var(--ai-200); background: var(--ai-50);" onclick="document.getElementById('ai-modal').classList.add('is-open')">✦ Ask Copilot</button>
+            <button class="g-btn g-btn--primary" type="button">Download</button>
+          </div>
         </div>
-        <div data-ai-spot="CICOD-AI · Ask the audit log + anomaly panel">
-          <ai-audit-copilot source="#audit-table" work-hours="08:00-18:00"></ai-audit-copilot>
+
+        <div class="al-modal-overlay" id="ai-modal">
+          <div class="al-modal-content">
+            <button class="al-modal-close" aria-label="Close" onclick="document.getElementById('ai-modal').classList.remove('is-open')">&times;</button>
+            <div data-ai-spot="CICOD-AI · Ask the audit log + anomaly panel">
+              <ai-audit-copilot source="#audit-table" work-hours="08:00-18:00"></ai-audit-copilot>
+            </div>
+          </div>
         </div>
         <div class="g-card" style="margin-top:14px">
           <div class="al__tools"><input class="g-input" placeholder="Search by feature..." aria-label="Search by feature"><div><button class="g-btn" type="button">Filters</button><button class="g-btn" type="button">Custom View</button></div></div>
@@ -63,7 +79,7 @@
       </div>
     </div>
     <div class="doc__where" style="margin-top:12px">
-      <div class="doc__where-item"><b>Primary placement</b>Above the table on <code>/ecms/reports/audit-logs</code>, next to Download, Filters and Custom View</div>
+      <div class="doc__where-item"><b>Primary placement</b>A <b>✦ Ask Copilot</b> button above the table on <code>/ecms/reports/audit-logs</code> that opens a modal panel</div>
       <div class="doc__where-item"><b>Also appears in</b>CICOD Drive Audit Log and Approval Log, Asset Mgmt Settings → Audit, and an InMail alert to security admins for high-severity anomalies</div>
       <div class="doc__where-item"><b>Trigger</b>Questions run on Ask. The anomaly scan runs when the page opens and every 15 minutes on new entries</div>
       <div class="doc__where-item"><b>Who sees it</b>Users with the Audit Log permission. Only security admins can open an investigation</div>

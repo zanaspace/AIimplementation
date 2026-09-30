@@ -65,9 +65,9 @@ class AISmartSignature extends HTMLElement {
     briefContent.innerHTML = `
       This document requires authorization for:
       <ul>
-        <li><b>₦4.5m expenditure</b> for Q3 server maintenance.</li>
-        <li>Binding SLA terms with Vendor "TechCorp Ltd".</li>
-        <li>Effective date: <b>October 1st, 2026</b>.</li>
+        <li><b>Service Agreement terms</b> with external vendor.</li>
+        <li>Approval of attached project schedules and delivery dates.</li>
+        <li>Standard confidentiality clauses apply.</li>
       </ul>
     `;
 

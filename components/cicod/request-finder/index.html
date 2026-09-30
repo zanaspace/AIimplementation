@@ -59,7 +59,7 @@
     <div>
       <span class="ai-badge">CICOD · R1 · R2 · R3 · Phase 1</span>
       <h1>Request Finder</h1>
-      <p>Staff shouldn't need to know that a trip to Kaduna is an <i>EXPENSE REQUEST</i>. They describe what they need in one sentence. The finder <b>ranks the forms their role can raise</b> and opens the best one <b>with the fields already filled in</b>.</p>
+      <p>Often, staff don't know exactly which corporate form they are supposed to fill out. With CICOD-AI, they don't have to guess. They simply type what they want to do in everyday language (e.g., <i>"I need money for a trip to Kaduna"</i>). The AI instantly finds the correct form and even fills out the fields for them automatically based on what they typed.</p>
       <div class="doc__meta"><span class="g-chip">Screen: Workspace → Request / webforms</span><span class="g-chip">Component: &lt;ai-request-finder&gt;</span><span class="g-chip">Endpoint: /forms/find</span></div>
     </div>
     <div class="doc__toolbar">
@@ -85,15 +85,22 @@
             <div class="rq__stat rq__s4"><b>20</b><span>Workflow Linked</span></div>
           </div>
 
-          <div data-ai-spot="CICOD-AI · Describe what you need (above the cards)">
-            <ai-request-finder catalog="#rq-cards" user="Prince Ekpenyong" department="Administration"></ai-request-finder>
+          <!-- Hidden AI Modal Overlay -->
+          <div class="g-card dmd-dialog" id="ai-modal" role="dialog" aria-label="CICOD-AI" hidden style="max-width: 900px; margin: 16px 0;">
+            <div class="dmd-dialog__head" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border);">
+              <h3 style="margin: 0; font-size: 16px;">CICOD-AI: Request Finder</h3>
+              <button class="g-btn g-btn--ghost g-btn--sm" type="button" id="ai-modal-close" aria-label="Close">✕</button>
+            </div>
+            <div class="dmd-dialog__body" style="padding: 16px;">
+              <ai-request-finder catalog="#rq-cards" user="Prince Ekpenyong" department="Administration"></ai-request-finder>
+            </div>
           </div>
 
           <div class="g-card rq__form" id="rq-form" hidden></div>
 
           <div class="g-card rq__box">
             <div class="rq__box-h"><div><h3>Internal Requests</h3><p>Forms raised by staff for internal processes.</p></div><span class="g-chip g-chip--ok">20 Forms</span></div>
-            <div class="rq__tools"><input class="g-input" placeholder="Search request forms..." aria-label="Search request forms"><span><button class="g-btn g-btn--sm g-btn--primary" type="button">Cards</button> <button class="g-btn g-btn--sm" type="button">Table</button></span></div>
+            <div class="rq__tools"><input class="g-input" placeholder="Search request forms..." aria-label="Search request forms"><span><button id="top-ai-search-btn" class="g-btn g-btn--ghost g-btn--sm" style="color: var(--ai-600); border: 1px solid var(--border); margin-right: 8px;">✦ Smart Request</button><button class="g-btn g-btn--sm g-btn--primary" type="button">Cards</button> <button class="g-btn g-btn--sm" type="button">Table</button></span></div>
             <div class="rq__group"><b>General Forms</b><span class="g-chip">20 forms ▾</span></div>
             <div class="rq__cards" id="rq-cards">
               <div class="g-card rq__card" data-form="FORM CREATION" data-desc="FORM" data-queue="CICOD-AI IMPLEMENTATION" data-fields="Form name|Queue|Purpose"><h4>FORM CREATION</h4><span><span class="g-chip">internal</span> <span class="g-chip g-chip--ok">Active</span></span><p class="rq__desc">FORM</p><dl><dt>QUEUE</dt><dd>CICOD-AI IMPLEMENTATION</dd><dt>QUEUE TYPE</dt><dd>PROCESS GATHERING</dd></dl><small>Created by api support on 22 Sep, 2026</small><div class="rq__card-acts"><button class="g-btn g-btn--sm" type="button">Share</button><button class="g-btn g-btn--sm g-btn--primary" type="button" data-view>View Form</button></div></div>
@@ -221,8 +228,21 @@ document.addEventListener('ai-request-open', e =&gt;
     formBox.scrollIntoView({ block: 'nearest' });
   }
 
-  document.addEventListener('ai-request-open', e => openForm(e.detail.form, e.detail.fields));
+  document.addEventListener('ai-request-open', e => {
+    document.getElementById('ai-modal').hidden = true;
+    openForm(e.detail.form, e.detail.fields);
+  });
   document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => openForm(b.closest('[data-form]').dataset.form)));
+
+  // Wire up modal close and top search button
+  document.getElementById('ai-modal-close')?.addEventListener('click', () => {
+    document.getElementById('ai-modal').hidden = true;
+  });
+  document.getElementById('top-ai-search-btn')?.addEventListener('click', () => {
+    const modal = document.getElementById('ai-modal');
+    modal.hidden = false;
+    modal.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
 </script>
 </body>
 </html>

@@ -32,7 +32,7 @@
       <span class="ai-badge">CICOD · A12 · Phase 2</span>
       <h1>Asset Approval Copilot</h1>
       <p>When an approver views an asset requisition (e.g., a laptop for staff) or a bulk store dispatch (e.g., branch restocking), the AI instantly provides the necessary context to make a decision. It checks the user's <b>current asset allocation</b>, applies <b>grade-level policies</b>, checks <b>inventory levels</b>, and flags <b>historical consumption anomalies</b> (like hoarding stock) to prevent fraud and waste.</p>
-      <div class="doc__meta"><span class="g-chip">Screen: Assets → Asset Approvals</span><span class="g-chip">Component: &lt;ai-asset-approval&gt;</span><span class="g-chip">Endpoint: /assets/approval-copilot</span></div>
+      <div class="doc__meta"><span class="g-chip">Screen: Assets → Asset Approvals</span><span class="g-chip">Component: &lt;ai-asset-approval&gt;</span></div>
     </div>
     <div class="doc__toolbar">
       <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
@@ -59,8 +59,15 @@
             <!-- Mock details populated by JS -->
           </div>
           
-          <div data-ai-spot="CICOD-AI · Asset Approval Copilot">
-            <ai-asset-approval id="ai-copilot" request="REQ-8812"></ai-asset-approval>
+          <div class="req-card">
+            <h3 style="margin-bottom: 8px">Actions</h3>
+            <button class="g-btn g-btn--primary" style="width: 100%; margin-bottom: 8px" type="button">Approve</button>
+            <button class="g-btn" style="width: 100%; margin-bottom: 16px" type="button">Reject</button>
+            <button class="g-btn g-btn--ghost" id="trigger-copilot" style="width: 100%; border: 1px dashed var(--ai-500); color: var(--ai-600)" type="button">✦ CICOD-AI · Analyze Request</button>
+            
+            <div id="ai-container" style="display: none; margin-top: 16px">
+              <ai-asset-approval id="ai-copilot" request="REQ-8812"></ai-asset-approval>
+            </div>
           </div>
         </div>
         
@@ -68,7 +75,7 @@
     </div>
     <div class="doc__where" style="margin-top:12px">
       <div class="doc__where-item"><b>Primary placement</b>Sidebar on any detailed Asset Approval or Dispatch Approval screen.</div>
-      <div class="doc__where-item"><b>Trigger</b>Loads automatically when the approver opens the request.</div>
+      <div class="doc__where-item"><b>Trigger</b>Hidden behind the '✦ CICOD-AI · Analyze Request' button to avoid cluttering the interface unless needed.</div>
     </div>
   </section>
 
@@ -80,7 +87,7 @@
       <div class="doc__step"><h4>Identify Request</h4><p>The gateway receives the request ID and determines if it is a personal requisition or a bulk branch dispatch.</p></div>
       <div class="doc__step"><h4>Gather Context</h4><p>For individuals, it pulls HR Grade Level, current asset assignments, and repair history. For bulk dispatches, it pulls historical consumption rates for that branch over the last 12 months.</p></div>
       <div class="doc__step"><h4>Check Inventory</h4><p>It checks the central store for current stock levels, pending incoming orders, and critical reorder points.</p></div>
-      <div class="doc__step"><h4>Analyse & Recommend</h4><p>An LLM evaluates the context against company policies (e.g. "Grade 8 cannot have a MacBook") or mathematical models (e.g. "Requested 500 reams, average is 40"). It issues a concrete recommendation.</p></div>
+      <div class="doc__step"><h4>Analyse & Recommend</h4><p>The system evaluates the context against company policies (e.g. "Grade 8 cannot have a MacBook") or mathematical models (e.g. "Requested 500 reams, average is 40"). It issues a concrete recommendation to guide the approver.</p></div>
     </div>
   </section>
 
@@ -134,10 +141,23 @@
     titleSpan.textContent = id;
     detailsDiv.innerHTML = reqData[id];
     copilot.setAttribute('request', id);
+    // Reset AI container state when a new request is loaded
+    document.getElementById('ai-container').style.display = 'none';
+    const trigger = document.getElementById('trigger-copilot');
+    trigger.style.display = 'block';
   }
 
   document.getElementById('btn-req1').addEventListener('click', () => loadReq('REQ-8812'));
   document.getElementById('btn-req2').addEventListener('click', () => loadReq('REQ-8813'));
+
+  document.getElementById('trigger-copilot').addEventListener('click', (e) => {
+    e.target.style.display = 'none';
+    document.getElementById('ai-container').style.display = 'block';
+    
+    // In a real scenario, we might force a reload of the copilot data here.
+    // For this prototype, if the attribute is already set, it rendered initially,
+    // but the <ai-asset-approval> could handle a manual refresh if needed.
+  });
   
   // Initial load
   loadReq('REQ-8812');

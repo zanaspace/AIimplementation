@@ -66,17 +66,34 @@
       <div class="shell__content">
         <div class="wh">
           <div>
-            <span class="wh__date">Sunday, 27 September</span>
-            <div data-ai-spot="CICOD-AI · Daily brief (greeting card)">
-              <ai-daily-brief feed="#db-feed" user="Prince" now="2026-09-27T14:10:00+01:00"></ai-daily-brief>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px;">
+              <div>
+                <h1 style="margin: 0; font-size: 28px;">Good afternoon, <span style="color: var(--gov-green-600);">Ann</span></h1>
+                <p style="margin: 8px 0 0; font-size: 15px; color: var(--text-2);">You have <b>59 approvals</b>, <b>66 tasks</b> and <b>0 new files</b> awaiting you.</p>
+              </div>
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <button id="top-ai-brief-btn" class="g-btn g-btn--ghost g-btn--sm" style="color: var(--ai-600); border: 1px solid var(--border);">✦ AI Daily Brief</button>
+                <span class="wh__date" style="margin: 0;">Tuesday, 29 September</span>
+              </div>
+            </div>
+
+            <!-- Hidden AI Modal Overlay -->
+            <div class="g-card dmd-dialog" id="ai-modal" role="dialog" aria-label="CICOD-AI" hidden style="max-width: 900px; margin: 16px 0;">
+              <div class="dmd-dialog__head" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; font-size: 16px;">CICOD-AI: Daily Brief</h3>
+                <button class="g-btn g-btn--ghost g-btn--sm" type="button" id="ai-modal-close" aria-label="Close">✕</button>
+              </div>
+              <div class="dmd-dialog__body" style="padding: 0;">
+                <ai-daily-brief feed="#db-feed" user="Ann" now="2026-09-29T14:10:00+01:00"></ai-daily-brief>
+              </div>
             </div>
             <div class="wh__toast" id="wh-toast" role="status"></div>
 
             <div class="wh__head"><h3>NEEDS YOU TODAY</h3><a href="#">Open ECMS →</a></div>
             <div class="wh__cards" id="wh-cards" data-ai-spot="CICOD-AI · Priority order + badges">
-              <div class="wh__card wh__card--workflows" data-card="workflows"><b>3</b><span>My Workflows</span></div>
-              <div class="wh__card wh__card--tasks" data-card="tasks"><b>7</b><span>Tasks Assigned To Me</span></div>
-              <div class="wh__card wh__card--approvals" data-card="approvals"><b>4</b><span>Pending Approvals</span></div>
+              <div class="wh__card wh__card--workflows" data-card="workflows"><b>328</b><span>My Workflows</span></div>
+              <div class="wh__card wh__card--tasks" data-card="tasks"><b>66</b><span>Tasks Assigned To...</span></div>
+              <div class="wh__card wh__card--approvals" data-card="approvals"><b>59</b><span>Pending Approvals</span></div>
             </div>
 
             <div class="g-card wh__panel" id="wh-notif">
@@ -238,6 +255,22 @@ document.addEventListener('ai-brief-open', e =&gt;
   const cards = document.getElementById('wh-cards');
   const flash = el => { if (!el) return; el.classList.remove('wh__flash'); void el.offsetWidth; el.classList.add('wh__flash'); };
   const TARGET = { approval: '[data-card="approvals"]', task: '[data-card="tasks"]', file: '#wh-shared', mail: '#wh-notif', meeting: null };
+
+  // Modal wiring
+  document.getElementById('ai-modal-close')?.addEventListener('click', () => {
+    document.getElementById('ai-modal').hidden = true;
+  });
+  document.getElementById('top-ai-brief-btn')?.addEventListener('click', () => {
+    const modal = document.getElementById('ai-modal');
+    modal.hidden = false;
+    modal.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+
+  document.addEventListener('ai-brief-open', e => {
+    document.getElementById('ai-modal').hidden = true;
+    toast.textContent = `Opening ${e.detail.item.kind}: ${AIGateway.esc(e.detail.item.title)}...`;
+    flash(toast);
+  });
 
   document.addEventListener('ai-brief-reorder', e => {
     e.detail.order.forEach(o => {

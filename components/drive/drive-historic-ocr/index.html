@@ -1,137 +1,392 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Historic Files Search</title>
-<link rel="stylesheet" href="../../../shared/tokens.css">
-<link rel="stylesheet" href="../../../shared/shell.css">
-<link rel="stylesheet" href="../../../shared/doc.css">
-<link rel="stylesheet" href="drive-historic-ocr.css">
-<style>
-  /* Page-only layout for the mock Drive → Historic Files screen */
-  .dhf__head h2 { margin: 0; font-size: 15px; }
-  .dhf__old { font-size: 13px; color: var(--gov-green-600); text-decoration: none; display: inline-block; margin: 2px 0 14px; }
-  .dhf__card { padding: 14px 16px; margin-top: 12px; }
-  .dhf__bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-  .dhf__bar b { font-size: 13px; }
-  .dhf__tools { display: flex; gap: 6px; align-items: center; }
-  .dhf__seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 2px; font-size: 12px; }
-  .dhf__seg span { padding: 3px 8px; border-radius: 6px; color: var(--text-3); }
-  .dhf__seg span.on { background: var(--surface); color: var(--text); font-weight: 600; }
-  .dhf__ft { border-color: var(--gov-green-600); color: var(--gov-green-600); }
-  .dhf__folder { cursor: pointer; }
-  .dhf__folder--open td { background: var(--gov-green-50); font-weight: 600; }
-  .dhf__ico { display: inline-block; width: 16px; height: 12px; border-radius: 2px; background: var(--gov-green-600); margin-right: 8px; vertical-align: -1px; }
-  .dhf__file { font-weight: 500; }
-  .dhf__file small { display: block; font-weight: 400; color: var(--text-2); font-size: 11.5px; }
-  .dhf__owner { display: inline-flex; align-items: center; gap: 6px; color: var(--gov-green-600); font-size: 12px; white-space: nowrap; }
-  .dhf__av { width: 24px; height: 24px; border-radius: 50%; background: var(--gov-green-700); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; }
-  .dhf__cls { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--gov-green-100); color: var(--gov-green-600); font-size: 11.5px; white-space: nowrap; }
-  .dhf__cls--c { background: var(--warn-bg); color: var(--warn); }
-  .dhf__status { white-space: nowrap; }
-  .dhf__row--hit td { background: var(--ai-50); }
-  .dhf__flash { animation: dhf-flash 1.4s ease; }
-  @keyframes dhf-flash { 0% { box-shadow: inset 0 0 0 2px var(--ai-500); } 100% { box-shadow: none; } }
-  .dhf__viewer { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); font-size: 12.5px; display: none; }
-  .dhf__viewer.on { display: block; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Historic Files Search</title>
+  <link rel="stylesheet" href="../../../shared/tokens.css">
+  <link rel="stylesheet" href="../../../shared/shell.css">
+  <link rel="stylesheet" href="../../../shared/doc.css">
+  <link rel="stylesheet" href="drive-historic-ocr.css">
+  <style>
+    /* Page-only layout for the mock Drive → Historic Files screen */
+    .dhf__head h2 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .dhf__old {
+      font-size: 13px;
+      color: var(--gov-green-600);
+      text-decoration: none;
+      display: inline-block;
+      margin: 2px 0 14px;
+    }
+
+    .dhf__card {
+      padding: 14px 16px;
+      margin-top: 12px;
+    }
+
+    .dhf__bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .dhf__bar b {
+      font-size: 13px;
+    }
+
+    .dhf__tools {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dhf__seg {
+      display: inline-flex;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2px;
+      font-size: 12px;
+    }
+
+    .dhf__seg span {
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: var(--text-3);
+    }
+
+    .dhf__seg span.on {
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .dhf__ft {
+      border-color: var(--gov-green-600);
+      color: var(--gov-green-600);
+    }
+
+    .dhf__folder {
+      cursor: pointer;
+    }
+
+    .dhf__folder--open td {
+      background: var(--gov-green-50);
+      font-weight: 600;
+    }
+
+    .dhf__ico {
+      display: inline-block;
+      width: 16px;
+      height: 12px;
+      border-radius: 2px;
+      background: var(--gov-green-600);
+      margin-right: 8px;
+      vertical-align: -1px;
+    }
+
+    .dhf__file {
+      font-weight: 500;
+    }
+
+    .dhf__file small {
+      display: block;
+      font-weight: 400;
+      color: var(--text-2);
+      font-size: 11.5px;
+    }
+
+    .dhf__owner {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--gov-green-600);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .dhf__av {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--gov-green-700);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+    }
+
+    .dhf__cls {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--gov-green-100);
+      color: var(--gov-green-600);
+      font-size: 11.5px;
+      white-space: nowrap;
+    }
+
+    .dhf__cls--c {
+      background: var(--warn-bg);
+      color: var(--warn);
+    }
+
+    .dhf__status {
+      white-space: nowrap;
+    }
+
+    .dhf__row--hit td {
+      background: var(--ai-50);
+    }
+
+    .dhf__flash {
+      animation: dhf-flash 1.4s ease;
+    }
+
+    @keyframes dhf-flash {
+      0% {
+        box-shadow: inset 0 0 0 2px var(--ai-500);
+      }
+
+      100% {
+        box-shadow: none;
+      }
+    }
+
+    .dhf__viewer {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      font-size: 12.5px;
+      display: none;
+    }
+
+    .dhf__viewer.on {
+      display: block;
+    }
+  </style>
 </head>
+
 <body>
-<main class="doc">
-  <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD Drive</div>
-  <header class="doc__hero">
-    <div>
-      <span class="ai-badge">CICOD · D3 · D6 · Phase 1</span>
-      <h1>Historic Files OCR &amp; Search</h1>
-      <p>Historic Files holds scanned file jackets that today can only be found by file name, and the live tenant shows <i>"Open a folder to view files"</i> with nothing searchable. CICOD-AI reads every scanned page with OCR. It shows an <b>OCR status</b> for each file, lets officers <b>search by meaning</b> inside the pages (with the matching page and highlighted text), and extracts the <b>file reference, dates, parties, subject and signatures</b> for the records officer to confirm.</p>
-      <div class="doc__meta"><span class="g-chip">Screen: Drive → Historic Files</span><span class="g-chip">Component: &lt;ai-ocr-search&gt;</span><span class="g-chip">Endpoint: /drive/historic-search</span></div>
-    </div>
-    <div class="doc__toolbar">
-      <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
-      <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
-    </div>
-  </header>
+  <main class="doc">
+    <div class="doc__crumbs"><a href="../../../index.html">CICOD-AI Components</a> / CICOD Drive</div>
+    <header class="doc__hero">
+      <div>
+        <span class="ai-badge">CICOD · D3 · D6 · Phase 1</span>
+        <h1>Historic Files OCR &amp; Search</h1>
+        <p>Historic Files holds scanned file jackets that today can only be found by file name, and the live tenant
+          shows <i>"Open a folder to view files"</i> with nothing searchable. CICOD-AI reads every scanned page with
+          OCR. It shows an <b>OCR status</b> for each file, lets officers <b>search by meaning</b> inside the pages
+          (with the matching page and highlighted text), and extracts the <b>file reference, dates, parties, subject and
+            signatures</b> for the records officer to confirm.</p>
+        <div class="doc__meta"><span class="g-chip">Screen: Drive → Historic Files</span><span class="g-chip">Component:
+            &lt;ai-ocr-search&gt;</span><span class="g-chip">Endpoint: /drive/historic-search</span></div>
+      </div>
+      <div class="doc__toolbar">
+        <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI
+          placement</label>
+        <button class="g-btn g-btn--sm" data-toggle-theme type="button">Theme</button>
+      </div>
+    </header>
 
-  <!-- 1. LIVE PLACEMENT -->
-  <section class="doc__section">
-    <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of Drive <b>Historic Files</b> with the folder <b>LANDS_FILE_JACKETS_2015-2020</b> open. Type <i>"land allocation approval 2019 Kubwa"</i> in the CICOD-AI search bar (or click an example). Then click <b>✦ Metadata</b> on a result or a row, and accept it. Try <b>FCDA_LA_BWA_2017_0098.pdf</b>, which needs review. The file marked <i>Processing</i> becomes searchable after about 10 seconds.</p>
-    <div id="screen" class="shell" data-app="drive" data-active="Historic Files">
-      <div class="shell__content">
-        <div class="dhf__head"><h2>Historic Files</h2><a class="dhf__old" href="#" onclick="return false">↗ Visit the old CICOD Drive app</a></div>
-
-        <div data-ai-spot="CICOD-AI · Semantic search + metadata panel">
-          <ai-ocr-search folder="LANDS_FILE_JACKETS_2015-2020" min-confidence="0.75"></ai-ocr-search>
-        </div>
-
-        <div class="g-card dhf__card">
-          <div class="dhf__bar"><b>Folders (3)</b><span class="dhf__seg"><span>Grid</span><span class="on">List</span></span></div>
-          <div class="g-table-wrap"><table class="g-table">
-            <thead><tr><th>S/N</th><th>Folder Name</th><th>Owner</th><th>Date</th></tr></thead>
-            <tbody>
-              <tr class="dhf__folder dhf__folder--open"><td>1</td><td><span class="dhf__ico"></span>LANDS_FILE_JACKETS_2015-2020</td><td><span class="dhf__owner"><span class="dhf__av">AN</span>Zana</span></td><td>Mar 4, 2026 9:12:40 AM</td></tr>
-              <tr class="dhf__folder"><td>2</td><td><span class="dhf__ico"></span>PERSONNEL_FILES_1998-2010</td><td><span class="dhf__owner"><span class="dhf__av">RS</span>Zana</span></td><td>Mar 4, 2026 9:15:02 AM</td></tr>
-              <tr class="dhf__folder"><td>3</td><td><span class="dhf__ico"></span>REGISTRY_CORRESPONDENCE</td><td><span class="dhf__owner"><span class="dhf__av">AN</span>Zana</span></td><td>Mar 5, 2026 11:40:18 AM</td></tr>
-            </tbody>
-          </table></div>
-        </div>
-
-        <div class="g-card dhf__card">
-          <div class="dhf__bar"><b id="dhf-count">Files (8)</b><span class="dhf__tools"><span class="dhf__seg"><span>Grid</span><span class="on">List</span></span><button class="g-btn g-btn--sm dhf__ft" type="button">FILE TYPE ▾</button></span></div>
-          <div class="g-table-wrap" data-ai-spot="CICOD-AI · OCR status column">
-            <table class="g-table">
-              <thead><tr><th>File Name</th><th>Owner</th><th>Classification Type</th><th>File Size</th><th>Date</th><th><span class="ai-badge">CICOD-AI</span> OCR status</th><th></th></tr></thead>
-              <tbody id="dhf-rows"></tbody>
-            </table>
+    <!-- 1. LIVE PLACEMENT -->
+    <section class="doc__section">
+      <h2>1. Where it goes: live demo</h2>
+      <p class="doc__lede">This is a copy of Drive <b>Historic Files</b> with the folder
+        <b>LANDS_FILE_JACKETS_2015-2020</b> open. Type <i>"land allocation approval 2019 Kubwa"</i> in the CICOD-AI
+        search bar (or click an example). Then click <b>✦ Metadata</b> on a result or a row, and accept it. Try
+        <b>FCDA_LA_BWA_2017_0098.pdf</b>, which needs review. The file marked <i>Processing</i> becomes searchable after
+        about 10 seconds.</p>
+      <div id="screen" class="shell" data-app="drive" data-active="Historic Files">
+        <div class="shell__content">
+          <div class="dhf__head">
+            <h2>Historic Files</h2><a class="dhf__old" href="#" onclick="return false">↗ Visit the old CICOD Drive
+              app</a>
           </div>
-          <div class="dhf__viewer" id="dhf-viewer"></div>
+
+          <!-- Hidden AI Modal Overlay -->
+          <div class="g-card dmd-dialog" id="ai-modal" role="dialog" aria-label="CICOD-AI" hidden style="max-width: 900px; margin: 16px 0;">
+            <div class="dmd-dialog__head" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border);">
+              <h3 style="margin: 0; font-size: 16px;">CICOD-AI: Historic OCR & Search</h3>
+              <button class="g-btn g-btn--ghost g-btn--sm" type="button" id="ai-modal-close" aria-label="Close">✕</button>
+            </div>
+            <div class="dmd-dialog__body" style="padding: 16px;">
+              <ai-ocr-search folder="LANDS_FILE_JACKETS_2015-2020" min-confidence="0.75"></ai-ocr-search>
+            </div>
+          </div>
+
+          <div class="g-card dhf__card">
+            <div class="dhf__bar"><b>Folders (3)</b><span class="dhf__seg"><span>Grid</span><span
+                  class="on">List</span></span></div>
+            <div class="g-table-wrap">
+              <table class="g-table">
+                <thead>
+                  <tr>
+                    <th>S/N</th>
+                    <th>Folder Name</th>
+                    <th>Owner</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="dhf__folder dhf__folder--open">
+                    <td>1</td>
+                    <td><span class="dhf__ico"></span>LANDS_FILE_JACKETS_2015-2020</td>
+                    <td><span class="dhf__owner"><span class="dhf__av">AN</span>Zana</span></td>
+                    <td>Mar 4, 2026 9:12:40 AM</td>
+                  </tr>
+                  <tr class="dhf__folder">
+                    <td>2</td>
+                    <td><span class="dhf__ico"></span>PERSONNEL_FILES_1998-2010</td>
+                    <td><span class="dhf__owner"><span class="dhf__av">RS</span>Zana</span></td>
+                    <td>Mar 4, 2026 9:15:02 AM</td>
+                  </tr>
+                  <tr class="dhf__folder">
+                    <td>3</td>
+                    <td><span class="dhf__ico"></span>REGISTRY_CORRESPONDENCE</td>
+                    <td><span class="dhf__owner"><span class="dhf__av">AN</span>Zana</span></td>
+                    <td>Mar 5, 2026 11:40:18 AM</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="g-card dhf__card">
+            <div class="dhf__bar"><b id="dhf-count">Files (8)</b><span class="dhf__tools"><span
+                  class="dhf__seg"><span>Grid</span><span class="on">List</span></span><button
+                  class="g-btn g-btn--sm dhf__ft" type="button">FILE TYPE ▾</button><button id="top-ai-search-btn" class="g-btn g-btn--ghost g-btn--sm" style="color: var(--ai-600); border: 1px solid var(--border);">✦ Smart Search</button></span></div>
+            <div class="g-table-wrap" data-ai-spot="CICOD-AI · OCR status column">
+              <table class="g-table">
+                <thead>
+                  <tr>
+                    <th>File Name</th>
+                    <th>Owner</th>
+                    <th>Classification Type</th>
+                    <th>File Size</th>
+                    <th>Date</th>
+                    <th><span class="ai-badge">CICOD-AI</span> OCR status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="dhf-rows"></tbody>
+              </table>
+            </div>
+            <div class="dhf__viewer" id="dhf-viewer"></div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="doc__where" style="margin-top:12px">
-      <div class="doc__where-item"><b>Primary placement</b>Search bar and metadata panel above the file list of <code>/CICOD Drive/historic-files</code>; OCR status as a new column in the file table</div>
-      <div class="doc__where-item"><b>Also appears in</b>The global "Search files" box in every Drive view (My Documents, Departments, General, Application), and Ask CICOD</div>
-      <div class="doc__where-item"><b>Trigger</b>OCR runs when a scan is uploaded or migrated; search runs 600 ms after typing stops or on Enter; metadata on "✦ Metadata"</div>
-      <div class="doc__where-item"><b>Who sees it</b>Anyone with access to the folder. Results only include files the user may open. Metadata edits need the Records Officer role</div>
-    </div>
-    <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
-  </section>
+      <div class="doc__where" style="margin-top:12px">
+        <div class="doc__where-item"><b>Primary placement</b>Search bar and metadata panel above the file list of
+          <code>/CICOD Drive/historic-files</code>; OCR status as a new column in the file table</div>
+        <div class="doc__where-item"><b>Also appears in</b>The global "Search files" box in every Drive view (My
+          Documents, Departments, General, Application), and Ask CICOD</div>
+        <div class="doc__where-item"><b>Trigger</b>OCR runs when a scan is uploaded or migrated; search runs 600 ms
+          after typing stops or on Enter; metadata on "✦ Metadata"</div>
+        <div class="doc__where-item"><b>Who sees it</b>Anyone with access to the folder. Results only include files the
+          user may open. Metadata edits need the Records Officer role</div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="doc__audit" data-audit-log></div>
+      </div>
+    </section>
 
-  <!-- 2. HOW IT WORKS -->
-  <section class="doc__section">
-    <h2>2. How it works</h2>
-    <p class="doc__lede">A document-intelligence pipeline turns each scanned page into text and layout, a vector index makes it searchable by meaning, and an extractor fills in the records metadata.</p>
-    <div class="doc__flow">
-      <div class="doc__step"><h4>Capture</h4><p>Scanned PDFs and TIFFs in Historic Files are queued for OCR on upload or migration. Each page's text, layout and detected stamps and signatures are stored, and the status column shows Processing until done.</p></div>
-      <div class="doc__step"><h4>Protect</h4><p>OCR and search run on the sovereign model inside the CICOD data centre. Personal data (NIN, phone) is masked in snippets, and Secret and Top Secret jackets are only indexed for users cleared for that level.</p></div>
-      <div class="doc__step"><h4>Read &amp; index</h4><p>An OCR model tuned for typed and handwritten CICOD enterprise files produces text with a confidence per word. Pages are split into passages and embedded; each passage keeps its page number.</p></div>
-      <div class="doc__step"><h4>Search</h4><p>The query is parsed into topic, year and place. Hybrid search (keyword + vector) finds passages, a reranker orders them, and synonyms such as "allotment" for "allocation" are explained.</p></div>
-      <div class="doc__step"><h4>Extract</h4><p>A layout-aware extractor reads the jacket's reference number, subject, dates, parties and signature blocks. Fields below 75% confidence, often handwriting, are marked "Needs review".</p></div>
-      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The records officer accepts, edits or rejects the metadata. Result clicks and "Not relevant" marks go to <code>/feedback</code> to tune the ranking; corrected fields retrain the extractor.</p></div>
-    </div>
-  </section>
+    <!-- 2. HOW IT WORKS -->
+    <section class="doc__section">
+      <h2>2. How it works</h2>
+      <p class="doc__lede">A document-intelligence pipeline turns each scanned page into text and layout, a vector index
+        makes it searchable by meaning, and an extractor fills in the records metadata.</p>
+      <div class="doc__flow">
+        <div class="doc__step">
+          <h4>Capture</h4>
+          <p>Scanned PDFs and TIFFs in Historic Files are queued for OCR on upload or migration. Each page's text,
+            layout and detected stamps and signatures are stored, and the status column shows Processing until done.</p>
+        </div>
+        <div class="doc__step">
+          <h4>Protect</h4>
+          <p>OCR and search run on the sovereign model inside the CICOD data centre. Personal data (NIN, phone) is
+            masked in snippets, and Secret and Top Secret jackets are only indexed for users cleared for that level.</p>
+        </div>
+        <div class="doc__step">
+          <h4>Read &amp; index</h4>
+          <p>An OCR model tuned for typed and handwritten CICOD enterprise files produces text with a confidence per
+            word. Pages are split into passages and embedded; each passage keeps its page number.</p>
+        </div>
+        <div class="doc__step">
+          <h4>Search</h4>
+          <p>The query is parsed into topic, year and place. Hybrid search (keyword + vector) finds passages, a reranker
+            orders them, and synonyms such as "allotment" for "allocation" are explained.</p>
+        </div>
+        <div class="doc__step">
+          <h4>Extract</h4>
+          <p>A layout-aware extractor reads the jacket's reference number, subject, dates, parties and signature blocks.
+            Fields below 75% confidence, often handwriting, are marked "Needs review".</p>
+        </div>
+        <div class="doc__step">
+          <h4>Confirm &amp; learn</h4>
+          <p>The records officer accepts, edits or rejects the metadata. Result clicks and "Not relevant" marks go to
+            <code>/feedback</code> to tune the ranking; corrected fields retrain the extractor.</p>
+        </div>
+      </div>
+    </section>
 
-  <!-- 3. BENEFITS -->
-  <section class="doc__section">
-    <h2>3. Benefits to this feature</h2>
-    <p class="doc__lede">Baseline from the cicod tenant, 27 Sep 2026: Historic Files shows "Files (0) · Open a folder to view files" and has no content search. Figures below are targets.</p>
-    <div class="doc__benefits">
-      <div class="doc__benefit"><div class="doc__benefit-kpi">0 → 100%</div><h4>Searchable archive</h4><p>Every scanned page becomes searchable text. Today a scan can only be found if its file name is known.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Days → seconds</div><h4>Time to find a file</h4><p>Target: a land or personnel jacket found in under a minute instead of a manual search through the registry.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">−80%</div><h4>Manual indexing effort</h4><p>Target: records officers confirm extracted metadata instead of typing reference numbers, dates and parties for each jacket.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">&gt; 85%</div><h4>Top-3 search success</h4><p>Target share of searches where the right file is in the first three results, measured from result clicks.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Audit-ready</div><h4>Evidence for disputes</h4><p>Land allocation and revocation questions are answered with the exact page and signature, which helps FOI requests and court cases.</p></div>
-    </div>
-  </section>
+    <!-- 3. BENEFITS -->
+    <section class="doc__section">
+      <h2>3. Benefits to this feature</h2>
+      <p class="doc__lede">Baseline from the cicod tenant, 27 Sep 2026: Historic Files shows "Files (0) · Open a folder
+        to view files" and has no content search. Figures below are targets.</p>
+      <div class="doc__benefits">
+        <div class="doc__benefit">
+          <div class="doc__benefit-kpi">0 → 100%</div>
+          <h4>Searchable archive</h4>
+          <p>Every scanned page becomes searchable text. Today a scan can only be found if its file name is known.</p>
+        </div>
+        <div class="doc__benefit">
+          <div class="doc__benefit-kpi">Days → seconds</div>
+          <h4>Time to find a file</h4>
+          <p>Target: a land or personnel jacket found in under a minute instead of a manual search through the registry.
+          </p>
+        </div>
+        <div class="doc__benefit">
+          <div class="doc__benefit-kpi">−80%</div>
+          <h4>Manual indexing effort</h4>
+          <p>Target: records officers confirm extracted metadata instead of typing reference numbers, dates and parties
+            for each jacket.</p>
+        </div>
+        <div class="doc__benefit">
+          <div class="doc__benefit-kpi">&gt; 85%</div>
+          <h4>Top-3 search success</h4>
+          <p>Target share of searches where the right file is in the first three results, measured from result clicks.
+          </p>
+        </div>
+        <div class="doc__benefit">
+          <div class="doc__benefit-kpi">Audit-ready</div>
+          <h4>Evidence for disputes</h4>
+          <p>Land allocation and revocation questions are answered with the exact page and signature, which helps FOI
+            requests and court cases.</p>
+        </div>
+      </div>
+    </section>
 
-  <!-- 4. INTEGRATION -->
-  <section class="doc__section">
-    <h2>4. How to implement it in Drive</h2>
-    <div class="doc__cols">
-      <div>
-        <div class="doc__panel"><h4>Mount (Historic Files page)</h4>
-<pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/drive-historic-ocr.css"&gt;
+    <!-- 4. INTEGRATION -->
+    <section class="doc__section">
+      <h2>4. How to implement it in Drive</h2>
+      <div class="doc__cols">
+        <div>
+          <div class="doc__panel">
+            <h4>Mount (Historic Files page)</h4>
+            <pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/drive-historic-ocr.css"&gt;
 &lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
 &lt;script src="/ai/components/drive-historic-ocr.js"&gt;&lt;/script&gt;
 
@@ -146,20 +401,30 @@ document.addEventListener('ai-ocr-open', e =&gt;
 document.addEventListener('ai-ocr-metadata-apply', e =&gt;
   driveApi.saveMetadata(e.detail.fileId, e.detail.metadata));
 // row button: document.querySelector('ai-ocr-search').inspect(id)
-&lt;/script&gt;</pre></div>
-        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
-          <ol class="doc__list">
-            <li>Add an OCR job to the Drive upload pipeline for image PDFs and TIFFs; back-fill every file in Historic Files.</li>
-            <li>Store page text, word confidence and signature/stamp boxes per page; expose status via <code>/drive/ocr-status</code>.</li>
-            <li>Embed passages into the unified index with the file's ACL and classification, so results are permission-trimmed.</li>
-            <li>Expose <code>/drive/historic-search</code> (query parsing, hybrid search, reranking) and <code>/drive/ocr-extract</code> on the CICOD-AI Gateway.</li>
-            <li>Add the component and the OCR status column to Historic Files; add the metadata fields to the file record.</li>
-            <li>Pilot on one registry (e.g. Lands) and measure top-3 success and the share of metadata accepted without edits.</li>
-          </ol></div>
-      </div>
-      <div>
-        <div class="doc__panel"><h4>API contract</h4>
-<pre class="doc__code">POST /ai/drive/historic-search
+&lt;/script&gt;</pre>
+          </div>
+          <div class="doc__panel" style="margin-top:12px">
+            <h4>Build steps</h4>
+            <ol class="doc__list">
+              <li>Add an OCR job to the Drive upload pipeline for image PDFs and TIFFs; back-fill every file in Historic
+                Files.</li>
+              <li>Store page text, word confidence and signature/stamp boxes per page; expose status via
+                <code>/drive/ocr-status</code>.</li>
+              <li>Embed passages into the unified index with the file's ACL and classification, so results are
+                permission-trimmed.</li>
+              <li>Expose <code>/drive/historic-search</code> (query parsing, hybrid search, reranking) and
+                <code>/drive/ocr-extract</code> on the CICOD-AI Gateway.</li>
+              <li>Add the component and the OCR status column to Historic Files; add the metadata fields to the file
+                record.</li>
+              <li>Pilot on one registry (e.g. Lands) and measure top-3 success and the share of metadata accepted
+                without edits.</li>
+            </ol>
+          </div>
+        </div>
+        <div>
+          <div class="doc__panel">
+            <h4>API contract</h4>
+            <pre class="doc__code">POST /ai/drive/historic-search
 { "query": "land allocation approval 2019 Kubwa",
   "folder": "LANDS_FILE_JACKETS_2015-2020" }
 → 200
@@ -179,81 +444,109 @@ document.addEventListener('ai-ocr-metadata-apply', e =&gt;
 POST /ai/drive/ocr-extract { "fileId": "hf1" }
 → { "fields": [{ "key": "ref", "value": "FCDA/LA/KUB/2019/0347",
                  "confidence": 0.97 }, …],
-    "signatures": [{ "page": 6, "kind": "Signature + FCDA stamp" }] }</pre></div>
-        <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
-          <ul class="doc__list">
-            <li>Feature flag <code>ai.cicod.driveHistoricOcr</code> in Drive settings, on/off per tenant and per folder.</li>
-            <li>Review threshold <code>min-confidence</code> defaults to 0.75; below it the file shows "Needs review" and metadata is never saved without a person.</li>
-            <li>Every search, result click and metadata decision is written to the Drive Audit Log (feature: <i>CICOD-AI Historic OCR</i>).</li>
-            <li>Search results and snippets are trimmed to files the user can open; Secret jackets are processed on the sovereign model only.</li>
-          </ul></div>
+    "signatures": [{ "page": 6, "kind": "Signature + FCDA stamp" }] }</pre>
+          </div>
+          <div class="doc__panel" style="margin-top:12px">
+            <h4>Controls</h4>
+            <ul class="doc__list">
+              <li>Feature flag <code>ai.cicod.driveHistoricOcr</code> in Drive settings, on/off per tenant and per
+                folder.</li>
+              <li>Review threshold <code>min-confidence</code> defaults to 0.75; below it the file shows "Needs review"
+                and metadata is never saved without a person.</li>
+              <li>Every search, result click and metadata decision is written to the Drive Audit Log (feature:
+                <i>CICOD-AI Historic OCR</i>).</li>
+              <li>Search results and snippets are trimmed to files the user can open; Secret jackets are processed on
+                the sovereign model only.</li>
+            </ul>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
-</main>
+    </section>
+  </main>
 
-<script src="../../../shared/shell.js"></script>
-<script src="../../../shared/ai-gateway.js"></script>
-<script src="../../../shared/doc.js"></script>
-<script src="drive-historic-ocr.js"></script>
-<script>
-  // Host-page wiring: the page owns the file table. The component reports status, results and accepted metadata.
-  const FILES = [
-    { id: 'hf1', name: 'FCDA_LA_KUB_2019_0347.pdf', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '4.82 MB', date: 'Mar 4, 2026 9:20:11 AM' },
-    { id: 'hf2', name: 'MIN_LAC_2019_011_scan.pdf', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '7.14 MB', date: 'Mar 4, 2026 9:21:40 AM' },
-    { id: 'hf3', name: 'FCDA_LA_KUB_2019_0412.pdf', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '3.06 MB', date: 'Mar 4, 2026 9:24:05 AM' },
-    { id: 'hf4', name: 'FMW_PRJ_2018_072_contract.pdf', owner: ['PE', 'Prince E'], cls: 'Confidential (C)', size: '11.9 MB', date: 'Mar 4, 2026 9:30:52 AM' },
-    { id: 'hf5', name: 'FCDA_LA_BWA_2017_0098.pdf', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '3.71 MB', date: 'Mar 4, 2026 9:33:18 AM' },
-    { id: 'hf6', name: 'MFCT_EST_2016_118.pdf', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '5.48 MB', date: 'Mar 4, 2026 9:35:47 AM' },
-    { id: 'hf7', name: 'FCDA_LA_KUB_2020_0021.pdf', owner: ['PE', 'Prince E'], cls: 'Official (O)', size: '2.66 MB', date: 'Sep 27, 2026 8:02:13 AM' },
-    { id: 'hf8', name: 'REG_CORR_2015_JACKET_03.tif', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '18.2 MB', date: 'Mar 5, 2026 11:42:30 AM' },
-  ];
-  const status = {}, meta = {};
-  const esc = window.AIGateway.esc;
-  const chip = s => s === 'Searchable' ? '<span class="g-chip g-chip--ok">Searchable ✓</span>'
-    : s === 'Processing' ? '<span class="g-chip g-chip--info">Processing…</span>'
-    : s === 'Needs review' ? '<span class="g-chip g-chip--warn">Needs review</span>'
-    : '<div class="ai-skeleton" style="width:80px"></div>';
-  const rows = document.getElementById('dhf-rows');
-  function draw() {
-    rows.innerHTML = FILES.map(f => `<tr data-row="${f.id}">
+  <script src="../../../shared/shell.js"></script>
+  <script src="../../../shared/ai-gateway.js"></script>
+  <script src="../../../shared/doc.js"></script>
+  <script src="drive-historic-ocr.js"></script>
+  <script>
+    // Host-page wiring: the page owns the file table. The component reports status, results and accepted metadata.
+    const FILES = [
+      { id: 'hf1', name: 'FCDA_LA_KUB_2019_0347.pdf', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '4.82 MB', date: 'Mar 4, 2026 9:20:11 AM' },
+      { id: 'hf2', name: 'MIN_LAC_2019_011_scan.pdf', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '7.14 MB', date: 'Mar 4, 2026 9:21:40 AM' },
+      { id: 'hf3', name: 'FCDA_LA_KUB_2019_0412.pdf', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '3.06 MB', date: 'Mar 4, 2026 9:24:05 AM' },
+      { id: 'hf4', name: 'FMW_PRJ_2018_072_contract.pdf', owner: ['PE', 'Prince E'], cls: 'Confidential (C)', size: '11.9 MB', date: 'Mar 4, 2026 9:30:52 AM' },
+      { id: 'hf5', name: 'FCDA_LA_BWA_2017_0098.pdf', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '3.71 MB', date: 'Mar 4, 2026 9:33:18 AM' },
+      { id: 'hf6', name: 'MFCT_EST_2016_118.pdf', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '5.48 MB', date: 'Mar 4, 2026 9:35:47 AM' },
+      { id: 'hf7', name: 'FCDA_LA_KUB_2020_0021.pdf', owner: ['PE', 'Prince E'], cls: 'Official (O)', size: '2.66 MB', date: 'Sep 27, 2026 8:02:13 AM' },
+      { id: 'hf8', name: 'REG_CORR_2015_JACKET_03.tif', owner: ['Z', 'Zana'], cls: 'Official (O)', size: '18.2 MB', date: 'Mar 5, 2026 11:42:30 AM' },
+    ];
+    const status = {}, meta = {};
+    const esc = window.AIGateway.esc;
+    const chip = s => s === 'Searchable' ? '<span class="g-chip g-chip--ok">Searchable ✓</span>'
+      : s === 'Processing' ? '<span class="g-chip g-chip--info">Processing…</span>'
+        : s === 'Needs review' ? '<span class="g-chip g-chip--warn">Needs review</span>'
+          : '<div class="ai-skeleton" style="width:80px"></div>';
+    const rows = document.getElementById('dhf-rows');
+    function draw() {
+      rows.innerHTML = FILES.map(f => `<tr data-row="${f.id}">
       <td class="dhf__file">${esc(f.name)}${meta[f.id] ? `<small>${esc(meta[f.id].ref)} · ${esc(meta[f.id].subject)}</small>` : ''}</td>
       <td><span class="dhf__owner"><span class="dhf__av">${esc(f.owner[0])}</span>${esc(f.owner[1])}</span></td>
       <td><span class="dhf__cls ${/Conf/.test(f.cls) ? 'dhf__cls--c' : ''}">${esc(f.cls)}</span></td>
       <td>${esc(f.size)}</td><td style="white-space:nowrap">${esc(f.date)}</td>
       <td class="dhf__status">${chip(status[f.id])}</td>
-      <td><button class="g-btn g-btn--sm" type="button" data-inspect="${f.id}">✦ Metadata</button></td></tr>`).join('');
-    rows.querySelectorAll('[data-inspect]').forEach(b => b.addEventListener('click', () => document.querySelector('ai-ocr-search').inspect(b.dataset.inspect)));
-  }
-  function flash(id) {
-    const tr = rows.querySelector(`[data-row="${id}"]`);
-    if (tr) { tr.classList.remove('dhf__flash'); void tr.offsetWidth; tr.classList.add('dhf__flash'); }
-  }
-  draw();
-  document.addEventListener('ai-ocr-status', e => {
-    const changed = e.detail.files.filter(f => status[f.id] && status[f.id] !== f.status && !meta[f.id]).map(f => f.id);
-    e.detail.files.forEach(f => { if (!meta[f.id]) status[f.id] = f.status; });
-    draw(); changed.forEach(flash);
-  });
-  document.addEventListener('ai-ocr-results', e => {
-    const ids = e.detail.results.map(r => r.fileId);
-    rows.querySelectorAll('tr').forEach(tr => tr.classList.toggle('dhf__row--hit', ids.includes(tr.dataset.row)));
-  });
-  document.addEventListener('ai-ocr-open', e => {
-    const f = FILES.find(x => x.id === e.detail.fileId);
-    const v = document.getElementById('dhf-viewer');
-    v.innerHTML = `<b>File viewer:</b> ${esc(f.name)} opened at <b>page ${esc(e.detail.page)}</b>, with the matching passage highlighted.`;
-    v.classList.add('on'); flash(f.id);
-  });
-  document.addEventListener('ai-ocr-metadata-apply', e => {
-    meta[e.detail.fileId] = e.detail.metadata;
-    status[e.detail.fileId] = 'Searchable';
-    draw(); flash(e.detail.fileId);
-  });
-  document.addEventListener('ai-ocr-review', e => {
-    status[e.detail.fileId] = 'Needs review';
-    draw(); flash(e.detail.fileId);
-  });
-</script>
+      <td style="text-align: right; padding-right: 16px;">
+        <button type="button" data-inspect="${f.id}" style="background:none; border:none; cursor:pointer; padding: 4px; color: var(--text-2);" title="More Options (Review Metadata)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg>
+        </button>
+      </td></tr>`).join('');
+      
+      const modal = document.getElementById('ai-modal');
+      rows.querySelectorAll('[data-inspect]').forEach(b => b.addEventListener('click', () => {
+        modal.hidden = false;
+        modal.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        document.querySelector('ai-ocr-search').inspect(b.dataset.inspect);
+      }));
+    }
+    
+    // Wire up modal close and top search button
+    document.getElementById('ai-modal-close')?.addEventListener('click', () => {
+      document.getElementById('ai-modal').hidden = true;
+    });
+    document.getElementById('top-ai-search-btn')?.addEventListener('click', () => {
+      const modal = document.getElementById('ai-modal');
+      modal.hidden = false;
+      modal.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+    function flash(id) {
+      const tr = rows.querySelector(`[data-row="${id}"]`);
+      if (tr) { tr.classList.remove('dhf__flash'); void tr.offsetWidth; tr.classList.add('dhf__flash'); }
+    }
+    draw();
+    document.addEventListener('ai-ocr-status', e => {
+      const changed = e.detail.files.filter(f => status[f.id] && status[f.id] !== f.status && !meta[f.id]).map(f => f.id);
+      e.detail.files.forEach(f => { if (!meta[f.id]) status[f.id] = f.status; });
+      draw(); changed.forEach(flash);
+    });
+    document.addEventListener('ai-ocr-results', e => {
+      const ids = e.detail.results.map(r => r.fileId);
+      rows.querySelectorAll('tr').forEach(tr => tr.classList.toggle('dhf__row--hit', ids.includes(tr.dataset.row)));
+    });
+    document.addEventListener('ai-ocr-open', e => {
+      const f = FILES.find(x => x.id === e.detail.fileId);
+      const v = document.getElementById('dhf-viewer');
+      v.innerHTML = `<b>File viewer:</b> ${esc(f.name)} opened at <b>page ${esc(e.detail.page)}</b>, with the matching passage highlighted.`;
+      v.classList.add('on'); flash(f.id);
+    });
+    document.addEventListener('ai-ocr-metadata-apply', e => {
+      meta[e.detail.fileId] = e.detail.metadata;
+      status[e.detail.fileId] = 'Searchable';
+      draw(); flash(e.detail.fileId);
+    });
+    document.addEventListener('ai-ocr-review', e => {
+      status[e.detail.fileId] = 'Needs review';
+      draw(); flash(e.detail.fileId);
+    });
+  </script>
 </body>
+
 </html>

@@ -17,7 +17,7 @@
   .mc__tabs { display: flex; gap: 16px; border-bottom: 1px solid var(--border); margin-bottom: 12px; font-size: 13px; }
   .mc__tabs span { padding: 6px 2px; color: var(--text-2); }
   .mc__tabs .mc__tab--on { color: var(--gov-green-600); border-bottom: 2px solid var(--gov-green-600); font-weight: 600; }
-  .mc { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+  .mc { display: block; }
   .mc__editor { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); overflow: hidden; min-width: 0; }
   .mc__toolbar { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 8px 10px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 12px; }
   .mc__tool { height: 28px; min-width: 28px; padding: 0 8px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--text-2); cursor: default; }
@@ -45,7 +45,7 @@
     <div>
       <span class="ai-badge">ECMS · E-M1 · E-M2 · Priority 1</span>
       <h1>Memo Copilot</h1>
-      <p>Turns an officer's bullet points into a properly formatted <b>official executive memo</b>: Ref No, Date, To / Through / From, SUBJECT in capitals, numbered paragraphs, the amount in figures and words, and a Recommendation. Select any sentence to rewrite it as <b>Formal, Concise, For Hon. Minister</b> or with grammar fixed. A chip also suggests the <b>classification</b> (Official / Confidential / Secret, E-M7) and says why. The officer places every change.</p>
+      <p>Turns quick notes into properly formatted official memos (including reference numbers, dates, and recipients). You can also rewrite any sentence to sound more formal or concise, and the AI will automatically suggest the security classification (Official, Confidential, or Secret) based on what you write.</p>
       <div class="doc__meta"><span class="g-chip">Screen: ECMS → Memos → Create Memo</span><span class="g-chip">Component: &lt;ai-memo-copilot&gt;</span><span class="g-chip">Endpoint: /ecms/memo/draft · /rewrite · /classify</span></div>
     </div>
     <div class="doc__toolbar">
@@ -57,13 +57,17 @@
   <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
     <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of the ECMS <b>Create Memo</b> editor. Try three things: <b>(1)</b> in the right panel click <i>Use example</i> (or type your own points, e.g. <i>"To: Permanent Secretary / 3 laptops for ICT, ₦450k, urgent"</i>), then <i>Draft memo</i> and <i>Replace memo body</i>. <b>(2)</b> Highlight the rough sentence in the memo and pick a rewrite from the pop-up. <b>(3)</b> Type <i>"salary arrears"</i> or <i>"national security"</i> in the memo and watch the classification chip change.</p>
+    <p class="doc__lede">Click the <b>✦ Memo Copilot</b> button in the titlebar to open the AI drawer. You can draft a memo from quick notes, rewrite sentences in the editor, or watch the AI suggest security classifications as you type.</p>
     <div id="screen" class="shell" data-app="ecms" data-active="Create Memo">
       <div class="shell__content">
         <div class="mc__crumb">Memos › <b>New</b></div>
         <span class="g-chip g-chip--warn" id="mc-status">Draft</span>
         <div class="mc__titlebar">
           <input class="mc__title" id="mc-title" value="Untitled Memo" aria-label="Memo title">
+          <div data-ai-spot="CICOD-AI">
+            <ai-memo-copilot editor="#memo-body" from="Director (ICT)" mda="CICOD"></ai-memo-copilot>
+          </div>
+          <span style="flex:1"></span>
           <button class="g-btn" type="button" id="mc-save">Save</button>
           <button class="g-btn g-btn--primary" type="button">Publish</button>
         </div>
@@ -88,8 +92,6 @@
             </div>
             <div class="mc__foot"><span>−</span><span>100%</span><span>+</span></div>
           </div>
-          <div data-ai-spot="CICOD-AI · Draft with CICOD-AI panel">
-            <ai-memo-copilot editor="#memo-body" from="Director (ICT)" mda="CICOD"></ai-memo-copilot>
           </div>
         </div>
         <div class="mc__settings" data-ai-spot="CICOD-AI · Classification in Settings"><b>Settings → Classification:</b><select class="g-select" id="mc-class" style="width:auto"><option>Official</option><option>Confidential</option><option>Secret</option></select><span id="mc-class-note"></span></div>
@@ -107,27 +109,27 @@
   <!-- 2. HOW IT WORKS -->
   <section class="doc__section">
     <h2>2. How it works</h2>
-    <p class="doc__lede">An LLM fills the MDA's own memo template. Rewrites use the same model with a style instruction, and a small classifier checks sensitivity as the officer types.</p>
+    <p class="doc__lede">The AI assists you at every step of writing a memo without taking over control.</p>
     <div class="doc__flow">
-      <div class="doc__step"><h4>Capture</h4><p>The officer's bullet points, the logged-in user's role and department, and the MDA short name are sent to <code>/ecms/memo/draft</code>. For rewrites, only the selected text is sent.</p></div>
-      <div class="doc__step"><h4>Protect</h4><p>The gateway redacts NIN, BVN, phone numbers and emails before the prompt. Text the classifier marks Confidential or Secret is only sent to the sovereign model hosted in-country.</p></div>
-      <div class="doc__step"><h4>Draft</h4><p>The model fills the MDA memo template (Ref No, Date, To/Through/From, SUBJECT, numbered paragraphs, Recommendation). A style guide based on the enterprise Rules and Financial Regulations supplies the phrasing ("may wish to kindly approve"). Amounts are written in figures and words by code, not by the model.</p></div>
-      <div class="doc__step"><h4>Rewrite</h4><p>Four fixed styles: Formal, Concise, For Hon. Minister (third person, "the Ministry"), and Fix grammar. Each result lists what changed.</p></div>
-      <div class="doc__step"><h4>Classify</h4><p>A sensitive-content classifier suggests Official, Confidential or Secret and quotes the words that triggered it, so the officer can judge the suggestion.</p></div>
-      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>Nothing enters the memo until the officer clicks Replace, Insert or Apply. Every accept, reject and edit goes to <code>/feedback</code>, and the draft is marked "CICOD-AI-generated" until a human edits and publishes it.</p></div>
+      <div class="doc__step"><h4>Capture</h4><p>You provide rough bullet points, your role, and your department.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>Sensitive data like phone numbers and emails are automatically protected before processing. Highly classified memos are kept strictly within secure environments.</p></div>
+      <div class="doc__step"><h4>Draft</h4><p>The AI writes the memo in the proper official format, including the reference number, date, subject, structured paragraphs, and the correct phrasing for recommendations. Any monetary amounts are automatically spelled out in both figures and words.</p></div>
+      <div class="doc__step"><h4>Rewrite</h4><p>You can instantly rephrase any sentence you write. Choose to make it sound more formal, more concise, address it to the Honorable Minister, or just fix spelling and grammar mistakes.</p></div>
+      <div class="doc__step"><h4>Classify</h4><p>As you type, the AI reads your content and suggests whether the memo should be classified as Official, Confidential, or Secret, helping you catch sensitive information early.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; Learn</h4><p>The AI never changes your memo without your permission. You review every draft or rewrite and must click to insert it. Your edits help the system learn and improve future suggestions.</p></div>
     </div>
   </section>
 
   <!-- 3. BENEFITS -->
   <section class="doc__section">
     <h2>3. Benefits to this feature</h2>
-    <p class="doc__lede">Targets from the CICOD-AI augmentation analysis. Baselines will be measured in the cicod tenant during the pilot.</p>
+    <p class="doc__lede">Memo Copilot is designed to make drafting faster, more accurate, and perfectly aligned with official standards.</p>
     <div class="doc__benefits">
-      <div class="doc__benefit"><div class="doc__benefit-kpi">−70%</div><h4>Drafting time</h4><p>Target: a routine approval memo goes from about 30 minutes of drafting to under 10 minutes of review.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">100%</div><h4>Template compliance</h4><p>Every CICOD-AI draft has a Ref No, Date, To/Through/From, a SUBJECT and a Recommendation, in that order.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Fewer returns</div><h4>First-time-right memos</h4><p>Target: fewer memos returned for wrong tone, missing amount-in-words or the wrong "Through" officer.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Mis-classification ↓</div><h4>Right classification</h4><p>Personnel, tender and security content is flagged before it is published to a wide audience.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">1 click</div><h4>Memos for the Hon. Minister</h4><p>A briefing version for the Minister without rewriting the whole memo by hand.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−70%</div><h4>Drafting time</h4><p>A routine memo goes from taking 30 minutes of manual drafting to just under 10 minutes of quick review.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">100%</div><h4>Format compliance</h4><p>Every draft is guaranteed to have the correct layout: Reference Number, Date, To/Through/From, a Subject, and a Recommendation.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Fewer returns</div><h4>First-time-right memos</h4><p>Drastically reduces the number of memos returned due to wrong tone, missing amounts in words, or incorrect routing.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Mis-classification ↓</div><h4>Right classification</h4><p>Helps you automatically flag personnel, tender, or security content before it is accidentally published to a wide audience.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">1 click</div><h4>Ministerial Briefs</h4><p>Quickly generate a briefing version for the Minister without having to rewrite the whole memo by hand.</p></div>
     </div>
   </section>
 

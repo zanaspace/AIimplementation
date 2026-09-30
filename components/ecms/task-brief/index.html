@@ -5,38 +5,182 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Task Brief and Reply</title>
 <link rel="stylesheet" href="../../../shared/tokens.css">
-<link rel="stylesheet" href="../../../shared/shell.css">
 <link rel="stylesheet" href="../../../shared/doc.css">
 <link rel="stylesheet" href="task-brief.css">
 <style>
-  /* Page-only layout for the mock "Task detail" screen */
-  .td-crumb { font-size: 12px; color: var(--text-3); margin-bottom: 6px; }
-  .td-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 14px; }
-  .td-head h2 { margin: 0; font-size: 18px; }
-  .td-head__id { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
-  .td-head__chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
-  .td-head__btns { display: flex; gap: 8px; flex-wrap: wrap; }
-  .td { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
-  .td-card { padding: 16px; }
-  .td-card h3 { margin: 0 0 10px; font-size: 14px; }
-  .td-tl { list-style: none; margin: 0; padding: 0; }
-  .td-entry { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--border); }
-  .td-entry:last-child { border-bottom: 0; }
-  .td-av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--gov-green-100); color: var(--gov-green-600); }
-  .td-entry__meta { font-size: 12px; color: var(--text-3); }
-  .td-entry__meta b { color: var(--text); font-weight: 600; }
-  .td-entry__text { font-size: 13px; margin-top: 2px; overflow-wrap: anywhere; }
-  .td-file { display: inline-flex; gap: 6px; align-items: center; padding: 4px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); font-size: 12.5px; }
-  .td-entry--new { animation: td-flash 1.4s ease; }
-  .td-remark { margin-top: 20px; border: 1px solid var(--border); border-radius: var(--radius); }
-  .td-remark textarea { border: 0; border-radius: 0; min-height: 110px; }
-  .td-remark__foot { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 12px; background: var(--surface-2); border-top: 1px solid var(--border); }
-  .td-dl { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 8px 10px; margin: 0; font-size: 13px; }
-  .td-dl dt { color: var(--text-3); font-size: 12px; }
-  .td-dl dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
-  .td-flash { animation: td-flash 1.2s ease; }
+  /* Copy of the live ECMS Tasks screens (govtest, crawled 28 Sep 2026): All Tasks + task detail. Classes are prefixed `lv-`. */
+  .lv { --lv-bg: #fafafa; --lv-card: #fcfcfc; --lv-line: #e4e4e7; --lv-muted: #71717a; --lv-text: #18181b; --lv-green: #1c6b45; --lv-green-bg: #e3ede7; --lv-row: #f4f4f5; --lv-rail: #f4f4f5;
+    display: grid; grid-template-columns: 62px 230px minmax(0, 1fr); min-height: 820px; background: var(--lv-bg); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; color: var(--lv-text); font-size: 14px; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lv { --lv-bg: #0f1420; --lv-card: #151b29; --lv-line: #283045; --lv-muted: #9aa3b5; --lv-text: #f2f4f7; --lv-green: #2e8b5e; --lv-green-bg: #16392a; --lv-row: #1a2131; --lv-rail: #121826; } }
+  :root[data-theme="dark"] .lv { --lv-bg: #0f1420; --lv-card: #151b29; --lv-line: #283045; --lv-muted: #9aa3b5; --lv-text: #f2f4f7; --lv-green: #2e8b5e; --lv-green-bg: #16392a; --lv-row: #1a2131; --lv-rail: #121826; }
+
+  .lv svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .lv-rail { background: var(--lv-rail); border-right: 1px solid var(--lv-line); display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 14px 4px; font-size: 10px; color: var(--lv-muted); text-align: center; }
+  .lv-rail span { display: grid; justify-items: center; gap: 4px; }
+  .lv-rail i { width: 24px; height: 24px; border-radius: 6px; background: var(--lv-green-bg); border: 1px solid color-mix(in srgb, var(--lv-green) 30%, transparent); }
+  .lv-side { border-right: 1px solid var(--lv-line); padding: 12px 10px; display: flex; flex-direction: column; gap: 1px; }
+  .lv-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; letter-spacing: .03em; color: #52525b; padding: 0 0 14px 4px; }
+  .lv-logo { width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 40% 30%, #4ade80, #166534); }
+  .lv-nav { display: flex; align-items: center; gap: 8px; padding: 7px 6px; border-radius: 8px; }
+  .lv-nav span { flex: 1; }
+  .lv-sub { margin: 1px 0 3px 14px; padding-left: 10px; border-left: 1px solid var(--lv-line); display: grid; gap: 1px; }
+  .lv-sub div { padding: 7px 12px; border-radius: 8px; }
+  .lv-sub .lv-active { background: var(--lv-green-bg); color: var(--lv-green); }
+  .lv-link { cursor: pointer; }
+  .lv-help { font-size: 12px; color: var(--lv-muted); padding: 18px 6px 4px; }
+  .lv-dim { color: #a1a1aa; }
+
+  .lv-main { display: flex; flex-direction: column; min-width: 0; position: relative; }
+  .lv-top { height: 48px; display: flex; align-items: center; gap: 8px; padding: 0 14px 0 18px; border-bottom: 1px solid var(--lv-line); }
+  .lv-btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px; border: 1px solid var(--lv-line); border-radius: 8px; background: var(--lv-card); color: var(--lv-text); font: 500 13.5px var(--font); white-space: nowrap; }
+  .lv-icon { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--lv-line); border-radius: 8px; background: var(--lv-card); position: relative; }
+  .lv-badge { position: absolute; top: -7px; right: -6px; background: var(--lv-green); color: #fff; font-size: 9.5px; font-weight: 700; border-radius: 99px; padding: 1px 5px; }
+  .lv-avatar { height: 30px; padding: 0 6px 0 3px; border-radius: 99px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--lv-line); background: var(--lv-card); font-size: 11px; font-weight: 600; color: var(--lv-muted); }
+  .lv-avatar b { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--lv-row); }
+  .lv-spacer { flex: 1; }
+
+  .lv-body { padding: 16px 16px 70px 20px; flex: 1; min-width: 0; }
+  .lv-view[hidden] { display: none; }
+  .lv-page-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .lv-page-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+  .lv-primary { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border: 0; border-radius: 8px; background: var(--lv-green); color: #fff; font: 600 14px var(--font); white-space: nowrap; cursor: pointer; }
+  .lv-panel { background: var(--lv-card); border: 1px solid var(--lv-line); border-radius: 12px; padding: 14px 16px 10px; min-width: 0; }
+  .lv-tabs { display: flex; gap: 16px; border-bottom: 1px solid var(--lv-line); overflow-x: auto; margin-bottom: 18px; }
+  .lv-tabs span { padding: 10px 8px 8px; white-space: nowrap; color: var(--lv-muted); font-size: 14.5px; border-bottom: 2px solid transparent; }
+  .lv-tabs .lv-tab--on { color: var(--lv-green); border-color: var(--lv-green); font-weight: 500; }
+
+  .lv-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-bottom: 18px; }
+  .lv-stat { position: relative; overflow: hidden; border-radius: 12px; padding: 26px 18px; display: flex; align-items: center; gap: 18px; color: #fff; }
+  .lv-stat::before { content: ""; position: absolute; width: 220px; height: 220px; border-radius: 50%; right: -60px; top: -60px; background: rgba(255,255,255,.12); }
+  .lv-stat::after { content: ""; position: absolute; width: 200px; height: 200px; border-radius: 50%; left: -40px; bottom: -140px; background: rgba(255,255,255,.08); }
+  .lv-stat--g { background: linear-gradient(90deg, #3fcf97, #14a86d); }
+  .lv-stat--b { background: linear-gradient(90deg, #3fb0f3, #2563eb); }
+  .lv-stat--o { background: linear-gradient(90deg, #fb923c, #f7a940); }
+  .lv-stat__ic { width: 52px; height: 52px; border-radius: 12px; background: rgba(255,255,255,.2); display: grid; place-items: center; position: relative; z-index: 1; }
+  .lv-stat__ic svg { width: 22px; height: 22px; }
+  .lv-stat b { display: block; font-size: 28px; line-height: 1.1; position: relative; z-index: 1; }
+  .lv-stat small { white-space: nowrap; font-size: clamp(13px, 1.2vw, 16px); opacity: .92; position: relative; z-index: 1; }
+
+  .lv-tablecard { border: 1px solid var(--lv-line); border-radius: 12px; padding: 16px 0 0; background: var(--lv-bg); }
+  .lv-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 0 16px 14px; }
+  .lv-search { flex: 1 1 240px; max-width: 420px; display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px; border: 1px solid var(--lv-line); border-radius: 8px; background: var(--lv-card); color: var(--lv-muted); min-width: 180px; }
+  .lv-search input { border: 0; background: transparent; outline: 0; flex: 1; font: inherit; color: var(--lv-text); min-width: 0; }
+  .lv-toolbar .lv-btn { height: 36px; }
+  .lv-table-wrap { overflow-x: auto; max-height: 560px; overflow-y: auto; }
+  .lv-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .lv-table th { position: sticky; top: 0; z-index: 1; background: var(--lv-bg); text-align: left; font-weight: 500; padding: 11px 10px; border-bottom: 1px solid var(--lv-line); white-space: nowrap; }
+  .lv-sort { display: inline-block; margin-left: 6px; color: var(--lv-muted); font-size: 9px; line-height: 7px; vertical-align: middle; }
+  .lv-table td { padding: 9px 10px; border-bottom: 1px solid var(--lv-line); white-space: nowrap; vertical-align: middle; }
+  .lv-table tbody tr:nth-child(even) td { background: var(--lv-row); }
+  .lv-id { display: inline-flex; align-items: center; gap: 8px; }
+  .lv-id a, .lv-title a { color: var(--lv-green); text-decoration: none; cursor: pointer; }
+  .lv-id a:hover, .lv-title a:hover { text-decoration: underline; }
+  .lv-title { display: flex; align-items: center; gap: 10px; }
+  .lv-title__av { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; background: var(--lv-row); border: 1px solid var(--lv-line); color: var(--lv-muted); font-size: 13px; }
+  .lv-title small { display: block; color: var(--lv-muted); font-size: 13px; margin-top: 2px; }
+  .lv-pri { display: inline-block; padding: 1px 10px; border-radius: 99px; font-size: 13px; }
+  .lv-pri--low { background: #dcfce7; color: #15803d; }
+  .lv-pri--medium { background: #fef3c7; color: #d97706; }
+  .lv-pri--high { background: #fee2e2; color: #dc2626; }
+  .lv-st { display: inline-block; padding: 1px 10px; border-radius: 99px; font-size: 13px; background: var(--lv-green-bg); color: var(--lv-green); }
+  .lv-st--backlog { background: #ffedd5; color: #c2410c; }
+  .lv-pend { color: #d97706; }
+  .lv-pager { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 12px; }
+  .lv-pager span { min-width: 34px; height: 34px; display: grid; place-items: center; border-radius: 8px; }
+  .lv-pager .lv-pg-on { border: 1px solid var(--lv-line); background: var(--lv-card); }
+
+  /* CICOD-AI addition on All Tasks */
+  .lv-ai-ic { width: 26px; height: 26px; display: inline-grid; place-items: center; border-radius: 7px; border: 1px solid color-mix(in srgb, var(--ai-500) 45%, transparent); background: var(--ai-50); color: var(--ai-600); font-size: 13px; font-weight: 700; cursor: pointer; padding: 0; }
+  .lv-ai-ic:hover, .lv-ai-ic[aria-expanded="true"] { background: var(--ai-500); color: #fff; }
+  .lv-pop { position: absolute; z-index: 30; width: min(460px, calc(100% - 24px)); }
+  .lv-pop[hidden] { display: none; }
+
+  /* Task detail (live layout) */
+  .lv-crumbs { display: flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--lv-muted); margin-bottom: 8px; }
+  .lv-crumbs a { color: var(--lv-muted); cursor: pointer; }
+  .lv-crumbs b { color: var(--lv-text); font-weight: 600; }
+  .td-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+  .td-chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 6px; font-size: 12px; background: var(--lv-row); color: var(--lv-text); }
+  .td-chip--open, .td-chip--active { background: var(--lv-green-bg); color: var(--lv-green); }
+  .td-chip--backlog, .td-chip--medium { background: #ffedd5; color: #c2410c; }
+  .td-chip--high { background: #fee2e2; color: #dc2626; }
+  .td-chip--low { background: #dcfce7; color: #15803d; }
+  .td-chip svg { width: 12px; height: 12px; }
+  .td-title { margin: 0 0 8px; font-size: 19px; font-weight: 600; }
+  .td-by { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .td-av { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 11.5px; background: var(--lv-row); border: 1px solid var(--lv-line); color: var(--lv-muted); flex-shrink: 0; }
+  .td-by small { display: block; color: var(--lv-muted); font-size: 11.5px; }
+  .td-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--lv-line); overflow-x: auto; margin-bottom: 16px; }
+  .td-tabs button { border: 0; background: none; font: 14px var(--font); color: var(--lv-muted); padding: 6px 8px; border-bottom: 2px solid transparent; white-space: nowrap; cursor: pointer; }
+  .td-tabs button[aria-selected="true"] { color: var(--lv-green); border-color: var(--lv-green); font-weight: 500; }
+  .td-tabs button:disabled { cursor: default; }
+  .td-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
+  .td-col { display: grid; gap: 14px; min-width: 0; }
+  .td-card { background: var(--lv-card); border: 1px solid var(--lv-line); border-radius: 10px; min-width: 0; }
+  .td-pad { padding: 16px; }
+  .td-card h3 { margin: 0; font-size: 14px; font-weight: 500; }
+  .td-card__head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .td-sub { color: var(--lv-muted); margin: 6px 0 0; }
+  .td-glink { color: var(--lv-green); font-size: 13px; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; background: none; border: 0; font-family: var(--font); padding: 0; }
+  .td-glinks { display: flex; gap: 18px; }
+  .td-channel { display: inline-block; margin-top: 6px; padding: 0 7px; border: 1px solid var(--lv-line); border-radius: 99px; font-size: 11.5px; color: var(--lv-muted); }
+  .td-channel b { color: var(--lv-text); font-weight: 600; }
+  .td-wf { border-top: 1px solid var(--lv-line); padding: 12px 16px; background: color-mix(in srgb, var(--lv-line) 30%, var(--lv-card)); border-radius: 0 0 10px 10px; }
+  .td-wf small { color: var(--lv-muted); display: block; margin-bottom: 3px; font-size: 12px; }
+  .td-banner { background: var(--lv-green); color: #fff; border-radius: 10px; padding: 12px 16px; }
+  .td-banner small { display: block; font-size: 11.5px; opacity: .9; }
+  .td-banner b { font-weight: 600; font-size: 13.5px; }
+  .td-show { margin-top: 12px; display: flex; justify-content: center; gap: 4px; align-items: center; padding: 4px; border-radius: 6px; background: var(--lv-row); border: 0; width: 100%; font: 12.5px var(--font); color: var(--lv-text); cursor: pointer; }
+  .td-feed { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 10px; }
+  .td-feed li { display: flex; gap: 10px; font-size: 13px; }
+  .td-feed small { display: block; color: var(--lv-muted); }
+  .td-steps { list-style: none; margin: 12px 0 0; padding: 0; }
+  .td-steps li { display: flex; align-items: center; gap: 10px; padding: 0 0 18px; position: relative; font-size: 13px; color: var(--lv-muted); }
+  .td-steps li:not(:last-child)::after { content: ""; position: absolute; left: 8px; top: 20px; height: 14px; border-left: 1.5px solid var(--lv-line); }
+  .td-steps li.done::after { border-color: var(--lv-green); }
+  .td-dot { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--lv-line); display: grid; place-items: center; }
+  .done .td-dot { border-color: var(--lv-green); } .done .td-dot::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--lv-green); }
+  .cur .td-dot { border-color: #f59e0b; } .cur .td-dot::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
+  .cur { color: var(--lv-text) !important; font-weight: 600; } .cur em { font-style: normal; color: #f59e0b; font-size: 10.5px; letter-spacing: .06em; font-weight: 600; }
+  .td-people { display: grid; gap: 12px; margin-top: 12px; }
+  .td-person { display: flex; gap: 8px; align-items: center; }
+  .td-person small { display: block; color: var(--lv-muted); font-size: 11.5px; }
+  .td-person i { font-style: normal; display: block; color: var(--lv-muted); font-size: 11.5px; }
+  .td-cc { border-top: 1px solid var(--lv-line); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; color: var(--lv-muted); }
+  .td-comments { display: grid; gap: 14px; }
+  .td-comment .td-bubble { display: inline-block; margin-top: 6px; padding: 8px 14px; border: 1px solid var(--lv-line); border-radius: 12px; background: var(--lv-card); overflow-wrap: anywhere; white-space: pre-wrap; }
+  .td-empty { color: var(--lv-muted); }
+  .td-composer { border: 1px solid var(--lv-line); border-radius: 10px; background: var(--lv-card); margin-bottom: 16px; }
+  .td-composer .aitb { border-radius: 10px 10px 0 0; border-width: 0 0 1px; }
+  .td-composer textarea { display: block; width: 100%; border: 0; min-height: 100px; padding: 10px 12px; background: transparent; color: var(--lv-text); font: 14px var(--font); resize: vertical; }
+  .td-composer__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--lv-line); }
+  .td-hist { display: grid; gap: 14px; }
+  .td-hist li { list-style: none; display: flex; gap: 10px; }
+  .td-hist small { display: block; color: var(--lv-muted); }
+  .td-appr { border: 1px solid var(--lv-line); border-radius: 10px; padding: 12px 14px; background: color-mix(in srgb, var(--lv-line) 25%, var(--lv-card)); }
+  .td-appr__lvl { margin-top: 10px; border: 1px solid var(--lv-line); border-radius: 8px; padding: 10px 12px; background: var(--lv-card); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .td-appr small { color: var(--lv-muted); display: block; font-size: 12px; }
+  .td-files { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .td-files th, .td-files td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--lv-line); white-space: nowrap; }
+  .td-files th { font-weight: 500; color: var(--lv-muted); }
+  .td-actbar { position: absolute; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--lv-line); background: var(--lv-bg); padding: 10px 14px; display: flex; justify-content: flex-end; }
+  .td-actbar[hidden] { display: none; }
+  .lv-toast { position: fixed; top: 16px; right: 16px; z-index: 100; max-width: 360px; padding: 12px 14px; border-radius: 10px; background: var(--lv-card); border: 1px solid var(--lv-line); border-left: 4px solid var(--lv-green); box-shadow: var(--shadow-lg); font-size: 13.5px; }
+  .lv-toast[hidden] { display: none; }
+  .td-flash { animation: td-flash 1.4s ease; }
   @keyframes td-flash { 0% { box-shadow: 0 0 0 3px var(--ai-100); background: var(--ai-50); } 100% { box-shadow: none; } }
-  @media (max-width: 1100px) { .td { grid-template-columns: 1fr; } }
+
+  /* Placement callouts (shown with the toggle) */
+  .show-spots [data-ai-spot] { outline: 2px dashed var(--ai-500); outline-offset: 3px; border-radius: 10px; position: relative; }
+  .show-spots [data-ai-spot]::after { content: attr(data-ai-spot); position: absolute; top: -11px; right: 8px; background: var(--ai-500); color: #fff; font: 700 10px var(--font); padding: 2px 8px; border-radius: 999px; z-index: 5; white-space: nowrap; pointer-events: none; }
+  .show-spots .lv-ai-ic[data-ai-spot]::after { top: -20px; right: auto; left: -4px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 0 0 12px; }
+  .steps div { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; font-size: 12.5px; color: var(--text-2); }
+  .steps b { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--ai-500); color: #fff; font-size: 11px; margin-right: 6px; }
+  .note { font-size: 12.5px; color: var(--text-3); margin: 8px 0 0; }
+
+  @media (max-width: 1200px) { .td-grid { grid-template-columns: 1fr; } .lv-stats { grid-template-columns: 1fr; } .lv { grid-template-columns: 62px minmax(0, 1fr); } .lv-side { display: none; } }
+  @media (max-width: 700px) { .lv { grid-template-columns: 1fr; } .lv-rail { display: none; } .lv-top .lv-hide-sm { display: none; } .lv-body { padding: 12px 12px 70px; } .lv-panel { padding: 12px; } .lv-toolbar { padding: 0 12px 12px; } }
 </style>
 </head>
 <body>
@@ -46,8 +190,8 @@
     <div>
       <span class="ai-badge">ECMS · E-T2 · E-T4 · Priority 1</span>
       <h1>Task Brief &amp; Suggested Reply</h1>
-      <p>Opens every task with a <b>five-line brief</b> of the whole timeline: what was asked, what has been done, the attachments, the <b>current blocker</b> and <b>what's needed from you</b>. A <b>Next best action</b> chip does the obvious next step in one click. Above the remark box, <b>Suggest reply</b> drafts the next remark or citizen reply in a formal, citizen-friendly or brief tone. The officer inserts it, edits it and posts it.</p>
-      <div class="doc__meta"><span class="g-chip">Screen: ECMS → Tasks → Task detail</span><span class="g-chip">Component: &lt;ai-task-brief&gt;</span><span class="g-chip">Endpoints: /ecms/task-brief · /ecms/suggest-reply</span></div>
+      <p>This page shows how <b>CICOD-AI</b> enhances the <b>ECMS Tasks screens</b>. It adds a <b>Task brief</b> to summarize tasks and suggest actions, a <b>Suggest reply</b> feature for quick comments, and a <b>✦ preview button</b> to view summaries directly from the task list.</p>
+      <div class="doc__meta"><span class="g-chip">Screens: /ecms/tasks?tab=all · /ecms/tasks/:id?tab=overview</span><span class="g-chip">Component: &lt;ai-task-brief&gt;</span><span class="g-chip">Endpoints: /ecms/task-brief · /ecms/suggest-reply</span></div>
     </div>
     <div class="doc__toolbar">
       <label class="doc__toggle"><input type="checkbox" data-toggle-spots="#screen" checked> Show CICOD-AI placement</label>
@@ -55,230 +199,461 @@
     </div>
   </header>
 
-  <!-- 1. LIVE PLACEMENT -->
-  <section class="doc__section">
-    <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a plausible ECMS <b>task detail</b> page for task #17572. The brief loads on its own. Try this: click the <b>Next best action</b> chip to approve the transfer and watch the status and timeline change, then the brief refresh. Then pick a tone and click <b>Suggest reply</b>. Type a note first, for example <i>"Technician will fit it on Tuesday morning"</i>, and the draft will include it.</p>
-    <div id="screen" class="shell" data-app="ecms" data-active="All Tasks">
-      <div class="shell__content">
-        <div class="td-crumb">Tasks / All Tasks / #17572</div>
-        <div id="task-detail">
-          <div class="td-head">
-            <div>
-              <span class="td-head__id" data-task-field="id">#17572</span>
-              <h2 data-task-field="title">Printer on 2nd floor not working</h2>
-              <div class="td-head__chips">
-                <span class="g-chip">Queue: IT Support</span><span class="g-chip">Hardware &amp; Network</span>
-                <span class="g-chip g-chip--info" id="st-chip">Status: <span data-task-field="status">In Progress</span></span>
-                <span class="g-chip g-chip--bad">Priority: <span data-task-field="priority">High</span></span>
-              </div>
-            </div>
-            <div class="td-head__btns"><button class="g-btn g-btn--sm" type="button">Reassign</button><button class="g-btn g-btn--sm" type="button">Change Status</button><button class="g-btn g-btn--sm g-btn--primary" type="button">Close Task</button></div>
-          </div>
+  <section class="doc__section" style="margin-top:8px">
+    <h2>Live screen with CICOD-AI in place</h2>
+    <div class="steps">
+      <div><b>1</b>On All Tasks, click the <b style="all:unset;font-weight:700;color:var(--ai-600)">✦</b> next to a Task ID. Try <b style="all:unset;font-weight:700">17581</b> (not assigned, approval pending) or <b style="all:unset;font-weight:700">17578</b> (in Backlog).</div>
+      <div><b>2</b>In the preview, click the purple <b style="all:unset;font-weight:700;color:var(--ai-600)">✦ next action</b> to open the task straight at the follow-up (a drafted comment or Reassign). Or click <b style="all:unset;font-weight:700">Open task →</b> to land on Overview, where the <b style="all:unset;font-weight:700">Task brief</b> is the first block.</div>
+      <div><b>3</b>Click the <b style="all:unset;font-weight:700">Next best action</b> chip. It opens Comments → Add comment with a <b style="all:unset;font-weight:700;color:var(--ai-600)">✦ Suggest reply</b> draft for you to insert, edit and post.</div>
+    </div>
 
-          <div class="td">
-            <div>
-              <div data-ai-spot="CICOD-AI · Task brief (top of task)">
-                <ai-task-brief id="brief" mode="brief" source="#task-detail" viewer="Prince Ekpenyong"></ai-task-brief>
-              </div>
+    <div id="screen" class="lv">
+      <nav class="lv-rail" aria-label="1Gov apps"><span><i></i>Gov D...</span><span><i></i>Gov In...</span><span><i></i>Confe...</span><span><i></i>Asset ...</span><span><i></i>Gov L...</span><span><i></i>1Gov Admin</span></nav>
+      <aside class="lv-side" aria-label="ECMS navigation">
+        <div class="lv-brand"><span class="lv-logo"></span>GOVTEST</div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>Overview</span></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17V9M13 17V5M18 17v-6"/></svg><span>Dashboard</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h13"/></svg><span>Requests</span></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><circle cx="12" cy="15" r="2"/></svg><span>Tasks</span><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>
+        <div class="lv-sub"><div>Create Task</div><div class="lv-active lv-link" id="nav-all">All Tasks</div><div>Task Approvals</div></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>Memos</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="15" width="6" height="6" rx="1"/><path d="M6 9v3a3 3 0 0 0 3 3h6"/></svg><span>Workflows</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0M16 4a3 3 0 0 1 0 6M21 20a6 6 0 0 0-4-5.6"/></svg><span>Workgroups</span></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h13"/></svg><span>Forms</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="3"/><path d="M8 17a4 4 0 0 1 8 0"/></svg><span>Contacts</span></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>Users</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 11-3.3"/><circle cx="17.5" cy="16.5" r="2.5"/></svg><span>Resources</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M9 16v-3M12 16v-5M15 16v-2"/></svg><span>Reports</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><span>Settings</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></div>
+        <div class="lv-help">Help &amp; Support</div>
+        <div class="lv-nav"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Get Support</span></div>
+        <div class="lv-nav lv-dim"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span>Start Tour</span></div>
+      </aside>
 
-              <div class="g-card td-card" style="margin-top:16px">
-                <h3>Timeline</h3>
-                <ol class="td-tl" id="timeline">
-                  <li class="td-entry" data-entry data-author="Francis" data-when="26/09/2026 09:12" data-kind="remark"><span class="td-av">AN</span><div><div class="td-entry__meta"><b>Francis</b> created the task · 26/09/2026 09:12</div><div class="td-entry__text" data-entry-text>The HP LaserJet 4250 on the 2nd floor (Room 214) keeps jamming and shows error 49.4C02. We need it for the board meeting papers by Monday 29/09.</div></div></li>
-                  <li class="td-entry" data-entry data-author="Francis" data-when="26/09/2026 09:13" data-kind="attachment" data-ocr="49.4C02 SERVICE ERROR. Turn off then on"><span class="td-av">AN</span><div><div class="td-entry__meta"><b>Francis</b> attached a file · 26/09/2026 09:13</div><div class="td-entry__text"><span class="td-file" data-entry-text>printer_error.jpg</span></div></div></li>
-                  <li class="td-entry" data-entry data-author="Praisen" data-when="26/09/2026 11:40" data-kind="remark"><span class="td-av">EA</span><div><div class="td-entry__meta"><b>Praisen</b> added a remark · 26/09/2026 11:40</div><div class="td-entry__text" data-entry-text>Visited Room 214. The fuser unit is faulty and must be replaced. I have raised a store requisition for 1 fuser unit (HP 4250).</div></div></li>
-                  <li class="td-entry" data-entry data-author="Praisen" data-when="26/09/2026 11:42" data-kind="attachment" data-ocr="Item: Fuser unit HP 4250 · Qty 1 · Requested by IT Support"><span class="td-av">EA</span><div><div class="td-entry__meta"><b>Praisen</b> attached a file · 26/09/2026 11:42</div><div class="td-entry__text"><span class="td-file" data-entry-text>Store requisition SR-0921.pdf</span></div></div></li>
-                  <li class="td-entry" data-entry data-author="Damola Tunde" data-when="26/09/2026 15:05" data-kind="remark"><span class="td-av">DT</span><div><div class="td-entry__meta"><b>Damola Tunde</b> (Central Store) added a remark · 26/09/2026 15:05</div><div class="td-entry__text" data-entry-text>Fuser unit HP 4250 is not in stock at Central Store. Kano store has 2 units. The transfer is pending approval.</div></div></li>
-                  <li class="td-entry" data-entry data-author="Damola Tunde" data-when="27/09/2026 08:30" data-kind="remark"><span class="td-av">DT</span><div><div class="td-entry__meta"><b>Damola Tunde</b> added a remark · 27/09/2026 08:30</div><div class="td-entry__text" data-entry-text>Prince Ekpenyong, please approve the transfer of 1 unit from Kano store so it can be dispatched today.</div></div></li>
-                </ol>
-
-                <div class="td-remark">
-                  <div data-ai-spot="CICOD-AI · Suggest reply (above remark box)">
-                    <ai-task-brief id="reply" mode="reply" source="#task-detail" viewer="Prince Ekpenyong" intent="#remark"></ai-task-brief>
-                  </div>
-                  <label class="g-label" for="remark" style="padding:8px 12px 0">Add a remark</label>
-                  <textarea class="g-textarea" id="remark" placeholder="Write a remark or reply to the requester"></textarea>
-                  <div class="td-remark__foot">
-                    <span><button class="g-btn g-btn--sm" type="button">+ Attach</button> <label style="font-size:12px;color:var(--text-2)"><input type="checkbox" id="to-req" checked> Also email requester</label></span>
-                    <button class="g-btn g-btn--sm g-btn--primary" type="button" id="post">Post remark</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <aside class="g-card td-card">
-              <h3>Details</h3>
-              <dl class="td-dl">
-                <dt>Queue</dt><dd>IT Support</dd>
-                <dt>Queue Type</dt><dd>Hardware &amp; Network</dd>
-                <dt>Status</dt><dd id="st-side">In Progress</dd>
-                <dt>Priority</dt><dd>High</dd>
-                <dt>Assigned To</dt><dd>Praisen</dd>
-                <dt>Date Created</dt><dd>26/09/2026</dd>
-                <dt>Date Assigned</dt><dd>26/09/2026</dd>
-                <dt>Contact</dt><dd>Francis</dd>
-                <dt>CC'd</dt><dd>Prince Ekpenyong</dd>
-                <dt>Awaiting Approval</dt><dd id="aw-side">Yes (stock transfer)</dd>
-              </dl>
-            </aside>
-          </div>
+      <div class="lv-main" id="lv-main">
+        <div class="lv-top">
+          <span class="lv-btn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Quick Actions</span>
+          <span class="lv-spacer"></span>
+          <span class="lv-btn lv-hide-sm">Paperless Service Portal</span>
+          <span class="lv-icon lv-hide-sm" style="color:#16a34a"><svg viewBox="0 0 24 24"><path d="M2 9a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/></svg></span>
+          <span class="lv-icon lv-hide-sm"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
+          <span class="lv-icon"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><i class="lv-badge">94</i></span>
+          <span class="lv-icon lv-hide-sm"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+          <span class="lv-avatar"><b>AN</b><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span>
         </div>
+
+        <div class="lv-body">
+          <!-- ALL TASKS: live layout; the only addition is the ✦ button in the Task ID cell -->
+          <div class="lv-view" id="view-list">
+            <div class="lv-page-head"><h2>Tasks</h2><span class="lv-primary"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Create Task</span></div>
+            <div class="lv-panel">
+              <div class="lv-tabs"><span>Assigned to me</span><span>Assigned by me</span><span>Created by me</span><span class="lv-tab--on">All Tasks</span><span>CC'd to me</span><span>Inactive Tasks</span></div>
+              <div class="lv-stats">
+                <div class="lv-stat lv-stat--g"><span class="lv-stat__ic"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></span><div><b>15892</b><small>Total Tasks</small></div></div>
+                <div class="lv-stat lv-stat--b"><span class="lv-stat__ic"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 11h18"/></svg></span><div><b>15399</b><small>Tasks Open</small></div></div>
+                <div class="lv-stat lv-stat--o"><span class="lv-stat__ic"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v2"/><path d="M3 7v10a2 2 0 0 0 2 2h5"/><circle cx="16" cy="16" r="4"/><path d="M16 14v2l1 1"/></svg></span><div><b>493</b><small>Tasks In Progress</small></div></div>
+              </div>
+
+              <div class="lv-tablecard">
+                <div class="lv-toolbar">
+                  <span class="lv-btn">All Tasks <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></span>
+                  <label class="lv-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="lv-q" placeholder="Search ID, title, contact or company name" aria-label="Search tasks"></label>
+                  <span class="lv-spacer"></span>
+                  <span class="lv-btn"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.6-4.5L4 8M4 13a8 8 0 0 0 14.6 4.5L20 16"/><path d="M4 4v4h4M20 20v-4h-4"/></svg>Sync</span>
+                  <span class="lv-btn"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10M15 10v10"/></svg>Custom View</span>
+                  <span class="lv-btn"><svg viewBox="0 0 24 24"><path d="M3 4h18l-7 8v6l-4 2v-8z"/></svg>Filters</span>
+                </div>
+                <div class="lv-table-wrap" id="table-wrap">
+                  <table class="lv-table">
+                    <thead><tr><th style="width:34px"></th><th>Task ID<span class="lv-sort">▲<br>▼</span></th><th>Title<span class="lv-sort">▲<br>▼</span></th><th>Priority</th><th>Date Created<span class="lv-sort">▲<br>▼</span></th><th>Queue<span class="lv-sort">▲<br>▼</span></th><th>Queue Type<span class="lv-sort">▲<br>▼</span></th><th>Status<span class="lv-sort">▲<br>▼</span></th><th>Assigned To</th><th>Date Assigned<span class="lv-sort">▲<br>▼</span></th><th>Awaiting Approval</th><th>Approval Status</th></tr></thead>
+                    <tbody id="rows"></tbody>
+                  </table>
+                </div>
+                <div class="lv-pager"><span>«</span><span>‹</span><span class="lv-pg-on">1</span><span>2</span><span>3</span><span>…</span><span>›</span><span>»</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TASK DETAIL: live layout; CICOD-AI adds the brief (Overview) and Suggest reply (Add comment) -->
+          <div class="lv-view" id="view-detail" hidden></div>
+        </div>
+
+        <div class="td-actbar" id="actbar" hidden><span class="lv-primary" id="act-now" role="button" tabindex="0">Act Now</span></div>
+        <div class="lv-pop" id="pop" hidden></div>
+        <div id="pv-src" hidden></div>
+        <div id="task-src" hidden></div>
+        <div class="lv-toast" id="toast" role="status" hidden></div>
       </div>
     </div>
-    <div class="doc__where" style="margin-top:12px">
-      <div class="doc__where-item"><b>Primary placement</b>Top of the task detail page <code>/ecms/tasks/:id</code>, above the timeline, plus a bar above the remark box</div>
-      <div class="doc__where-item"><b>Also appears in</b>The hover preview of a row in All Tasks (brief only), memo minute boxes, and the Workspace "Needs you today" list</div>
-      <div class="doc__where-item"><b>Trigger</b>The brief builds when the task opens and rebuilds after a new remark. Replies are drafted only when the officer clicks Suggest reply</div>
-      <div class="doc__where-item"><b>Who sees it</b>Anyone who can open the task. The brief only uses remarks and files the viewer is allowed to see</div>
-    </div>
+    <p class="note">Every row, count, name, comment, history entry, attachment and approval shown here comes from govtest (All Tasks and the task pages for 17578, 17573, 17572 and 17571, crawled 28 Sep 2026). The other rows open a task page built from their All Tasks row. Parts that weren't captured (description, comments, history, files) are marked as such. The form that <b>Act Now</b> opens, and the box that <b>Add comment</b> opens, weren't captured. The comment box shown here is a stand-in, built to hold the Suggest reply bar.</p>
     <div style="margin-top:12px"><div class="doc__audit" data-audit-log></div></div>
   </section>
 
-  <!-- 2. HOW IT WORKS -->
   <section class="doc__section">
-    <h2>2. How it works</h2>
-    <p class="doc__lede">A summariser reads the timeline in order. Rules find the blocker and the ask. A writer model drafts replies from templates and similar resolved tasks.</p>
+    <h2>Exactly where it goes</h2>
+    <div class="doc__where">
+      <div class="doc__where-item"><b>① Task brief (main)</b>The first block of the task's <b>Overview</b> tab, under the "Approval Required" banner and above <b>Description</b>. It builds when the task opens and rebuilds after each new comment. The <b>Next best action</b> chip lives here because it acts on this task.</div>
+      <div class="doc__where-item"><b>② Suggest reply</b>A bar on top of the <b>Add comment</b> box, on the Comments tab and from the Activity Feed. The draft goes into the box only when the officer clicks Insert. They then edit it and post it.</div>
+      <div class="doc__where-item"><b>③ ✦ on All Tasks</b>A small button right after the Task ID in each row. Clicking it opens a preview of the same brief beside the row, with <b>Open task →</b>. Nothing else on the list changes.</div>
+      <div class="doc__where-item"><b>Unchanged</b>Act Now, Reassign, Change workflow, the tabs and Progress stay exactly as they are. Briefs are never built for all 15,399 open tasks, only when someone clicks ✦ or opens a task.</div>
+    </div>
+  </section>
+
+  <section class="doc__section">
+    <h2>How it works</h2>
+    <p class="doc__lede">A summariser reads what ECMS already stores on the task: description, progress steps, approval, people, comments, history and attachments. Rules find the blocker and the ask. A writer model drafts the comment.</p>
     <div class="doc__flow">
-      <div class="doc__step"><h4>Capture</h4><p>Task header fields, every remark, status change and attachment name, plus OCR text of attached images and PDFs, are sent to <code>/ecms/task-brief</code>.</p></div>
-      <div class="doc__step"><h4>Protect</h4><p>The gateway removes personal data (NIN, phone, email) and trims remarks the viewer cannot see. Secret-classified tasks stay on the sovereign model.</p></div>
-      <div class="doc__step"><h4>Summarise</h4><p>An LLM writes exactly five lines: request, progress, attachments, activity and deadline. Rules pick out the blocker ("not in stock", "pending") and any ask that names the viewer.</p></div>
-      <div class="doc__step"><h4>Next action</h4><p>The ask is mapped to an ECMS action (approve, reassign, nudge, close) and the status it leads to. It is shown as one chip and never runs on its own.</p></div>
-      <div class="doc__step"><h4>Draft reply</h4><p><code>/ecms/suggest-reply</code> retrieves similar closed tasks and the MDA's tone guide, then writes a remark in the chosen tone, using anything the officer has already typed.</p></div>
-      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer inserts, edits or discards the draft and rates the brief. Every decision is sent to <code>/feedback</code> and used to tune prompts and templates.</p></div>
+      <div class="doc__step"><h4>Capture</h4><p>The task's fields from Overview, plus Comments, History (status and approval) and Attachments with their classification, are sent to <code>/ecms/task-brief</code>.</p></div>
+      <div class="doc__step"><h4>Protect</h4><p>The gateway removes personal data (NIN, phone, email) and leaves out content the viewer can't open. OFFICIAL and SECRET files stay on the sovereign model.</p></div>
+      <div class="doc__step"><h4>Summarise</h4><p>An LLM writes exactly five lines: request, progress, attachments, activity and priority or age.</p></div>
+      <div class="doc__step"><h4>Blocker &amp; ask</h4><p>Rules read the approval level (for example "Level 1 · Admin Officer · Pending"), missing assignees and silence since assignment, then work out what the viewer should do.</p></div>
+      <div class="doc__step"><h4>Draft</h4><p><code>/ecms/suggest-reply</code> writes the comment addressed to the right person, such as the approver or the assignee, in the chosen tone, using anything the officer has typed.</p></div>
+      <div class="doc__step"><h4>Confirm &amp; learn</h4><p>The officer inserts, edits or discards the draft and rates the brief. Every decision is sent to <code>/feedback</code> and the ECMS Audit Log.</p></div>
     </div>
   </section>
 
-  <!-- 3. BENEFITS -->
   <section class="doc__section">
-    <h2>3. Benefits to this feature</h2>
-    <p class="doc__lede">Baselines are from the cicod tenant on 27 Sep 2026. Percentages are targets.</p>
+    <h2>Benefits to this feature</h2>
+    <p class="doc__lede">Counts are from govtest on 28 Sep 2026. Percentages are targets.</p>
     <div class="doc__benefits">
-      <div class="doc__benefit"><div class="doc__benefit-kpi">−30 to 50%</div><h4>Handling time per task</h4><p>Target. Officers read five lines instead of scrolling a long remark history before they act.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">488 in progress</div><h4>Faster hand-offs</h4><p>All Tasks shows 488 tasks in progress. A clear blocker and ask on each one cuts the "what is this waiting for?" calls.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">1 click</div><h4>Next step is obvious</h4><p>The next best action turns "please approve" remarks into one click that also updates the status.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">−60%</div><h4>Time to reply</h4><p>Target. Replies start from a draft in the MDA's tone instead of a blank box.</p></div>
-      <div class="doc__benefit"><div class="doc__benefit-kpi">Consistent</div><h4>Better citizen replies</h4><p>Citizen-friendly drafts use plain language and always give a status and a next step.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">15,399 open</div><h4>Triage from the list</h4><p>The ✦ preview shows at a glance which open tasks aren't assigned or are stuck on approval. On the first page, 11 of 20 rows are waiting on an Admin Officer approval.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">Approval stalls</div><h4>Blockers named, not hunted</h4><p>"Approval Required" today says what is blocked, not who needs to act. The brief names the level, role and alternate, and drafts the nudge.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−30 to 50%</div><h4>Handling time per task</h4><p>Target. There is no need to click through Overview, Comments, History and Attachments before acting.</p></div>
+      <div class="doc__benefit"><div class="doc__benefit-kpi">−60%</div><h4>Time to reply</h4><p>Target. Comments start from a draft in the MDA's tone instead of a blank box.</p></div>
     </div>
   </section>
 
-  <!-- 4. INTEGRATION -->
   <section class="doc__section">
-    <h2>4. How to implement it in ECMS</h2>
+    <h2>How to implement it in ECMS</h2>
     <div class="doc__cols">
       <div>
-        <div class="doc__panel"><h4>Mount (Task detail page)</h4>
+        <div class="doc__panel"><h4>Three additions to existing screens</h4>
 <pre class="doc__code">&lt;link rel="stylesheet" href="/ai/components/task-brief.css"&gt;
 &lt;script src="/ai/shared/ai-gateway.js"&gt;&lt;/script&gt;
 &lt;script src="/ai/components/task-brief.js"&gt;&lt;/script&gt;
 
-&lt;ai-task-brief mode="brief" source="#task"
+&lt;!-- Task JSON the page already loads, exposed once --&gt;
+&lt;div id="task-src" hidden&gt;
+  &lt;script type="application/json" data-task&gt;{{task | json}}&lt;/script&gt;
+&lt;/div&gt;
+
+&lt;!-- 1. /ecms/tasks/:id?tab=overview, first block --&gt;
+&lt;ai-task-brief mode="brief" source="#task-src"
                viewer="{{user.fullName}}"&gt;&lt;/ai-task-brief&gt;
-…
-&lt;ai-task-brief mode="reply" source="#task"
-               intent="#remark"&gt;&lt;/ai-task-brief&gt;
-&lt;textarea id="remark"&gt;&lt;/textarea&gt;
+
+&lt;!-- 2. On top of the Add comment box --&gt;
+&lt;ai-task-brief mode="reply" source="#task-src"
+               intent="#comment"&gt;&lt;/ai-task-brief&gt;
+
+&lt;!-- 3. /ecms/tasks?tab=all, after the Task ID --&gt;
+&lt;button class="ai-brief-ic" data-task="{{task.id}}"&gt;✦&lt;/button&gt;
+&lt;!-- on click, mount in a popover: --&gt;
+&lt;ai-task-brief mode="brief" variant="preview" source="#row-src"&gt;&lt;/ai-task-brief&gt;
 
 &lt;script&gt;
-document.addEventListener('ai-reply-insert', e =&gt;
-  remarkBox.setValue(e.detail.text));
-document.addEventListener('ai-task-action', e =&gt;
-  taskStore.runAction(e.detail));   // host owns the task
+document.addEventListener('ai-brief-open', e =&gt; router.push(taskUrl(e.detail.taskId)));
+document.addEventListener('ai-task-action', e =&gt; e.detail.action === 'draft'
+  ? comments.openComposer(e.detail.to) : people.openReassign());
+document.addEventListener('ai-reply-insert', e =&gt; comments.setDraft(e.detail.text));
 &lt;/script&gt;</pre></div>
-        <div class="doc__panel" style="margin-top:12px"><h4>Build steps</h4>
-          <ol class="doc__list">
-            <li>Expose the task timeline (remarks, status changes, attachments) as one ordered list for the gateway.</li>
-            <li>Run OCR on image and PDF attachments when they are uploaded and store the text with the file.</li>
-            <li>Add <code>/ecms/task-brief</code>: five-line prompt, blocker and ask rules, action mapping.</li>
-            <li>Add <code>/ecms/suggest-reply</code>: retrieval of similar closed tasks, and a tone guide per MDA.</li>
-            <li>Mount both placements on task detail and wire the two events to the task store.</li>
-            <li>Pilot on IT Support and Complaints. Track "Useful" rate and how much officers edit drafts.</li>
-          </ol></div>
       </div>
       <div>
         <div class="doc__panel"><h4>API contract</h4>
 <pre class="doc__code">POST /ai/ecms/task-brief
-{ "taskId": "17572", "viewer": "Prince Ekpenyong",
-  "timeline": [{ "author": "Francis", "when": "…",
-                 "kind": "remark" | "attachment",
-                 "text": "…", "ocr": "…" }] }
+{ "taskId": "17573", "viewer": "Ann Nya",
+  "status": "OPEN", "progress": ["OPEN","Staging","CLOSED"],
+  "assignee": "Chinwuba Okafor", "assignedBy": "Ann Nya",
+  "approval": { "group": "Testiing Approval Group",
+    "level": "Level 1", "role": "Admin Officer",
+    "alternate": "api support", "state": "Pending" },
+  "comments": [], "history": [{ "author": "Ann Nya",
+    "when": "28/09/2026 - 10:12 am", "text": "…" }],
+  "attachments": [{ "name": "Memo with Reviewer.pdf",
+    "classification": "OFFICIAL" }] }
 → 200
-{ "model": "cicod-summariser-v1",
-  "confidence": 0.88,
+{ "model": "cicod-summariser-v1", "confidence": 0.9,
   "lines": ["Request: …", "Progress: …", "…"],
-  "blocker": "Fuser unit not in stock …",
-  "neededFromYou": "Approve the stock transfer",
-  "nextAction": { "action": "approve",
-                  "label": "Approve Kano store transfer",
-                  "status": "Awaiting Delivery" } }
+  "blocker": "Waiting for Level 1 in \"Testiing Approval Group\" …",
+  "neededFromYou": "You raised or assigned this task. Ask …",
+  "nextAction": { "action": "draft", "to": "Admin Officer",
+                  "label": "Nudge the Admin Officer to approve" } }
 
-POST /ai/ecms/suggest-reply
-{ "taskId": "17572", "tone": "formal" | "citizen" | "brief",
-  "intent": "Technician will fit it on Tuesday" }
-→ 200
-{ "model": "cicod-writer-v1", "confidence": 0.9,
-  "text": "Dear Ann, …", "basedOn": ["#17492 …"] }</pre></div>
+POST /ai/ecms/suggest-reply   (same task + tone, intent, to)
+→ 200 { "text": "Dear Admin Officer, …", "basedOn": ["…"] }</pre></div>
         <div class="doc__panel" style="margin-top:12px"><h4>Controls</h4>
           <ul class="doc__list">
-            <li>Feature flag <code>ai.ecms.taskBrief</code> in ECMS Settings, on/off per tenant. Suggested reply can be switched off on its own.</li>
-            <li>The next best action is never run automatically. Actions that need approval rights only appear for users who have them.</li>
+            <li>Feature flag <code>ai.ecms.taskBrief</code> in ECMS Settings, on/off per tenant. The list ✦ and Suggest reply can each be switched off on their own.</li>
+            <li>The next best action never runs on its own. It only opens Add comment or Reassign, and the officer finishes the action.</li>
             <li>Every brief, draft and decision is written to the ECMS Audit Log (feature: <i>CICOD-AI Task Brief</i>).</li>
-            <li>The brief is built only from remarks and files the viewer is allowed to see. Drafts are labelled as CICOD-AI-assisted in the audit trail.</li>
+            <li>Only comments, history and files the viewer is allowed to see are sent. Posted drafts are marked as CICOD-AI-assisted.</li>
           </ul></div>
       </div>
     </div>
   </section>
 </main>
 
-<script src="../../../shared/shell.js"></script>
 <script src="../../../shared/ai-gateway.js"></script>
 <script src="../../../shared/doc.js"></script>
 <script src="task-brief.js"></script>
 <script>
-  // Host-page wiring: the component emits events; the page owns the task and changes it.
-  const VIEWER = 'Prince Ekpenyong';
-  const tl = document.getElementById('timeline');
-  const remark = document.getElementById('remark');
-  const flash = el => { el.classList.remove('td-flash'); void el.offsetWidth; el.classList.add('td-flash'); };
-  const now = () => { const d = new Date(); return `27/09/2026 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  // Host page: behaves like live ECMS and owns the task data; <ai-task-brief> reads it and emits events.
+  const esc = AIGateway.esc;
+  const VIEWER = 'Ann Nya'; // signed-in govtest user ("Welcome, Ann", avatar AN)
 
-  function addEntry(text, verb) {
-    const li = document.createElement('li');
-    li.className = 'td-entry td-entry--new';
-    li.dataset.entry = ''; li.dataset.author = VIEWER; li.dataset.when = now(); li.dataset.kind = 'remark';
-    li.innerHTML = `<span class="td-av">PE</span><div><div class="td-entry__meta"><b>${VIEWER}</b> ${verb} · ${li.dataset.when}</div><div class="td-entry__text" data-entry-text></div></div>`;
-    li.querySelector('[data-entry-text]').textContent = text;
-    tl.appendChild(li);
+  // All Tasks, page 1, exactly as on govtest (28/09/2026).
+  // [id, title, contact, priority, created, queue, queueType, status, assignedTo, dateAssigned, awaitingApproval, approvalStatus, attach]
+  const ROWS = [
+    ['17581', 'Test', 'Ann Nya', 'high', '28/09/2026 - 04:33 pm', 'TEST AUTOMATION', 'Testiing', 'open', 'N/A', 'N/A', 'Admin Officer', 'pending'],
+    ['17580', 'Testing', 'Ann Nya', 'high', '28/09/2026 - 04:28 pm', 'QA TEST MOBILE', 'MOBILE TEST', 'open', 'Judtih Judtih', '28/09/2026 - 04:28 pm', 'Admin Officer', 'pending'],
+    ['17579', 'Testing for (duplicated)', '', 'low', '28/09/2026 - 02:12 pm', 'TEST AUTOMATION', 'Testiing', 'open', 'N/A', 'N/A', 'Admin Officer', 'pending', true],
+    ['17578', 'testing update testing updating again', 'Ayomide Olusanya', 'medium', '28/09/2026 - 01:00 pm', 'ADMIN', 'test', 'backlog', 'Judtih Judtih', '28/09/2026 - 04:58 pm', 'N/A', 'N/A'],
+    ['17577', 'Test task update', 'Ann Nya', 'low', '28/09/2026 - 12:41 pm', 'TEST AUTOMATION', 'Testiing', 'open', 'Judtih Judtih', '28/09/2026 - 04:16 pm', 'Admin Officer', 'pending'],
+    ['17576', 'Test updateing task', 'Ann Nya', 'low', '28/09/2026 - 12:39 pm', 'TEST AUTOMATION', 'Testiing', 'open', 'N/A', 'N/A', 'Admin Officer', 'pending'],
+    ['17575', 'TEST', 'api support', 'low', '28/09/2026 - 12:00 pm', 'QA TEST MOBILE', 'MOBILE', 'open', 'N/A', 'N/A', 'N/A', 'N/A'],
+    ['17574', 'testing attach file from Gov drive and M...', 'Ann Nya', 'medium', '28/09/2026 - 11:32 am', 'TEST AUTOMATION', 'Testiing', 'open', 'N/A', 'N/A', 'Admin Officer', 'pending'],
+    ['17573', 'Send Email toggle changes to Off and text activites record', 'Ann Nya', 'high', '28/09/2026 - 10:12 am', 'TEST AUTOMATION', 'Testiing', 'open', 'Chinwuba Okafor', '28/09/2026 - 10:12 am', 'Admin Officer', 'pending'],
+    ['17572', 'Testing Task Assigned to Workgroup 2a another time again', 'Ann Nya', 'high', '26/09/2026 - 10:17 pm', 'TEST AUTOMATION', 'Testiing', 'open', 'Chinwuba Okafor', '26/09/2026 - 10:39 pm', 'Admin Officer', 'pending'],
+    ['17571', 'testing the activity log', 'api support', 'high', '26/09/2026 - 09:56 pm', 'TEST AUTOMATION', 'Automated Testing', 'open', 'Chinwuba Okafor', '26/09/2026 - 09:56 pm', 'N/A', 'N/A'],
+    ['17570', 'Product Discovery', 'Tomilayo Balogun', 'low', '26/09/2026 - 02:22 pm', 'Product development', 'New Product', 'open', 'N/A', 'N/A', 'N/A', 'N/A'],
+    ['17569', 'Testing Activity field', 'Ann Nya', 'medium', '25/09/2026 - 01:09 pm', 'Toriolatest', 'Workflow Management', 'open', 'Tori (workgroup)', '25/09/2026 - 01:09 pm', 'N/A', 'N/A'],
+    ['17567', 'Testing Assigned by me count', 'Oladeji Toriola', 'low', '25/09/2026 - 09:52 am', 'QA TEST MOBILE', 'MOBILE', 'open', 'Ann Nya', '25/09/2026 - 09:52 am', 'N/A', 'N/A'],
+    ['17566', 'ACTIVITY 2', 'TESTING ACCOUNT', 'low', '25/09/2026 - 09:37 am', 'AI IMPLEMENTATION', 'testing', 'open', 'N/A', 'N/A', 'SUPER ADMIN', 'pending'],
+    ['17564', 'Product Discovery', 'Tomilayo Balogun', 'low', '25/09/2026 - 08:22 am', 'Product Management Test', 'User Research', 'open', 'N/A', 'N/A', 'N/A', 'N/A'],
+    ['17563', 'test', 'Chinwuba Okafor', 'high', '25/09/2026 - 07:39 am', 'TEST AUTOMATION', 'Automated Testing', 'open', 'N/A', 'N/A', 'N/A', 'N/A'],
+    ['17556', 'Testing Assign to Favour', 'Ann Nya', 'high', '24/09/2026 - 03:38 pm', 'TEST AUTOMATION', 'Testiing', 'open', 'Tori (workgroup)', '25/09/2026 - 01:07 pm', 'Admin Officer', 'pending'],
+    ['17555', 'ECMS Playwright 1790258867412-gkiws5', 'api support', 'medium', '24/09/2026 - 03:08 pm', 'TEST AUTOMATION', 'Automated Testing', 'open', 'api support', '25/09/2026 - 05:56 pm', 'N/A', 'N/A'],
+    ['17554', 'Test Task Assigning 5', 'Ann Nya', 'low', '24/09/2026 - 02:19 pm', 'TEST AUTOMATION', 'Testiing', 'open', 'Rebecca saku', '24/09/2026 - 02:19 pm', 'Admin Officer', 'pending'],
+  ].map(r => ({ id: r[0], title: r[1], contact: r[2], priority: r[3], created: r[4], queue: r[5], queueType: r[6], status: r[7], assignee: r[8], assignedOn: r[9], awaiting: r[10], approvalStatus: r[11], attach: !!r[12] }));
+
+  // Task pages captured from govtest (Overview, Comments, History, Attachments).
+  const APPROVAL = { group: 'Testiing Approval Group', level: 'Level 1', role: 'Admin Officer', alternate: 'api support', state: 'Pending' };
+  const DETAIL = {
+    '17578': { status: 'Backlog', description: 'teasting if the update works well', channel: 'ADMIN', createdBy: 'Ayomide Olusanya', createdDate: '28/09/2026',
+      progress: ['OPEN', 'TEST', 'QA', 'To do', 'Backlog', 'CLOAKED', 'CLOSED'], assignedBy: 'Ann Nya', assignedByEmail: 'anthonia.nya@cicod.com', assignedOnDate: '28/09/2026', cc: [],
+      comments: [{ author: 'Ann Nya', when: '28/09/2026', text: 'Okay' }],
+      history: [{ author: 'Ann Nya', when: '28/09/2026 - 04:59 pm', verb: 'updated the task status to', tag: 'Backlog' }, { author: 'Ayomide Olusanya', when: '28/09/2026 - 01:00 pm', verb: 'updated the task status to', tag: 'OPEN' }, { author: 'Ayomide Olusanya', when: '28/09/2026', verb: 'opened this task via ADMIN', tag: 'OPEN' }],
+      attachments: [] },
+    '17573': { status: 'OPEN', description: 'update task', channel: 'ADMIN', createdBy: 'Ann Nya', createdDate: '28/09/2026', approval: APPROVAL,
+      progress: ['OPEN', 'Staging', 'CLOSED'], assignedBy: 'Ann Nya', assignedByEmail: 'anthonia.nya@cicod.com', assignedOnDate: '28/09/2026', cc: ['OT'],
+      comments: [],
+      history: [{ author: 'Ann Nya', when: '28/09/2026 - 10:12 am', verb: 'updated the task status to', tag: 'OPEN' }, { author: 'Ann Nya', when: '28/09/2026', verb: 'opened this task via ADMIN', tag: 'OPEN' }],
+      attachments: [{ name: 'LU4_Hypersensitivity_2020.pdf', classification: 'OFFICIAL', by: 'Ann Nya', when: '28/09/2026' }, { name: 'Memo with Reviewer.pdf', classification: 'OFFICIAL', by: 'Ann Nya', when: '28/09/2026' }] },
+    '17572': { status: 'OPEN', description: 'Task assigned to a Workgroup is not recorded in the Activity Feed', channel: 'ADMIN', createdBy: 'Ann Nya', createdDate: '26/09/2026', approval: APPROVAL,
+      progress: ['OPEN', 'Staging', 'CLOSED'], assignedBy: 'Ann Nya', assignedByEmail: 'anthonia.nya@cicod.com', assignedOnDate: '26/09/2026', cc: [],
+      comments: [{ author: 'Ann Nya', when: '26/09/2026', text: 'Testing Task updates are not recorded in the Activity Feed' }],
+      history: [{ author: 'Ann Nya', when: '26/09/2026 - 10:17 pm', verb: 'updated the task status to', tag: 'OPEN' }, { author: 'Ann Nya', when: '26/09/2026', verb: 'opened this task via ADMIN', tag: 'OPEN' }],
+      attachments: [] },
+    '17571': { status: 'OPEN', description: 'ECMS UI — check the workflow form against the approved interface design. Confirm every field on the form matches the spec, that required fields are marked, and that the validation messages read in pl...', channel: 'ADMIN', createdBy: 'api support', createdDate: '26/09/2026',
+      progress: ['OPEN', 'PENDING', 'CLOSED'], assignedBy: 'apisupport@cicod.com', assignedByEmail: '', assignedOnDate: '26/09/2026', cc: ['TB'],
+      comments: [{ author: 'api support', when: '26/09/2026', text: 'TEST' }],
+      history: [{ author: 'api support', when: '26/09/2026 - 09:56 pm', verb: 'updated the task status to', tag: 'OPEN' }, { author: 'api support', when: '26/09/2026', verb: 'opened this task via ADMIN', tag: 'OPEN' }],
+      attachments: [{ name: 'a1.jpg', classification: 'PUBLIC', by: 'api support', when: '26/09/2026' }, { name: 'Budget FMLD_1224_V 3.pdf', classification: 'PUBLIC', by: 'Favour Ifeanacho', when: '28/09/2026' }] },
+  };
+
+  // Rows whose task page wasn't crawled still open: the page is built from the All Tasks row only,
+  // and every part that wasn't captured says so instead of being made up.
+  function partialDetail(r) {
+    const status = r.status === 'backlog' ? 'Backlog' : r.status.toUpperCase();
+    return { partial: true, status, description: null, channel: null, createdBy: r.contact || 'Unknown contact', createdDate: r.created.split(' ')[0],
+      approval: r.awaiting !== 'N/A' ? { group: null, level: 'approval', role: r.awaiting, alternate: null, state: 'Pending' } : null,
+      progress: [status], assignedBy: null, assignedByEmail: '', assignedOnDate: r.assignedOn === 'N/A' ? 'N/A' : r.assignedOn.split(' ')[0], cc: [],
+      comments: [], history: [], attachments: [] };
   }
-  function setStatus(s) {
-    document.querySelector('[data-task-field="status"]').textContent = s;
-    document.getElementById('st-side').textContent = s;
-    flash(document.getElementById('st-chip')); flash(document.getElementById('st-side'));
+  const detailOf = id => DETAIL[id] || (DETAIL[id] = partialDetail(byId(id)));
+  const NOT_CAPTURED = 'Not captured from govtest for this task. In ECMS this loads from the task record.';
+
+  const byId = id => ROWS.find(t => t.id === id);
+  const initials = n => n ? n.replace(/\(.*\)/, '').split(/\s+/).filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase() : '?';
+  const short = (s, n = 40) => s.length > n ? s.slice(0, n) + '...' : s;
+  const flash = el => { if (!el) return; el.classList.remove('td-flash'); void el.offsetWidth; el.classList.add('td-flash'); };
+  const main = document.getElementById('lv-main'), pop = document.getElementById('pop'), toast = document.getElementById('toast');
+  let toastT;
+  function say(msg) { toast.textContent = msg; toast.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { toast.hidden = true; }, 4200); }
+
+  // What the component reads: the task as ECMS shows it (row only, or row + captured detail page).
+  function taskJson(r) {
+    const d = DETAIL[r.id];
+    const t = { taskId: r.id, title: r.title, status: d ? d.status : r.status.toUpperCase(), priority: r.priority[0].toUpperCase() + r.priority.slice(1),
+      queue: r.queue, queueType: r.queueType, createdBy: r.contact || (d && d.createdBy) || '', created: r.created,
+      assignee: r.assignee, assignedOn: r.assignedOn,
+      approval: d ? (d.approval || null) : (r.awaiting !== 'N/A' ? { role: r.awaiting, level: 'approval', state: r.approvalStatus } : null) };
+    if (d && !d.partial) Object.assign(t, { description: d.description, channel: d.channel, createdBy: d.createdBy, progress: d.progress, assignedBy: d.assignedBy, cc: d.cc,
+      comments: d.comments, history: d.history.map(h => ({ author: h.author, when: h.when, text: `${h.author} ${h.verb} ${h.tag}` })), attachments: d.attachments });
+    else if (d && d.comments.length) t.comments = d.comments; // comments posted in this session
+    return t;
+  }
+  const writeSrc = (el, r) => { el.innerHTML = `<script type="application/json" data-task>${JSON.stringify(taskJson(r)).replace(/</g, '\\u003c')}<\/script>`; };
+
+  /* ---------- All Tasks ---------- */
+  function renderRows(q = '') {
+    q = q.trim().toLowerCase();
+    document.getElementById('rows').innerHTML = ROWS.filter(t => !q || (t.id + t.title + t.contact).toLowerCase().includes(q)).map(t => `<tr>
+      <td><svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2-5.5-2.9-5.5 2.9 1-6.2L3 9.6l6.2-.9z"/></svg></td>
+      <td><span class="lv-id"><a data-task-open="${t.id}">${t.id}</a><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+        <button class="lv-ai-ic" type="button" data-brief="${t.id}" aria-expanded="false" aria-label="CICOD-AI brief for task ${t.id}" title="CICOD-AI brief"${t.id === '17581' ? ' data-ai-spot="③ ✦ Brief preview"' : ''}>✦</button></span></td>
+      <td><div class="lv-title"><span class="lv-title__av">${initials(t.contact)}</span><div><a data-task-open="${t.id}">${esc(short(t.title))}</a>${t.attach ? ' <svg viewBox="0 0 24 24" style="vertical-align:-3px"><path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/></svg>' : ''}${t.contact ? `<small>${esc(t.contact)}</small>` : ''}</div></div></td>
+      <td><span class="lv-pri lv-pri--${t.priority}">${t.priority}</span></td>
+      <td>${t.created}</td><td>${esc(t.queue)}</td><td>${esc(t.queueType)}</td>
+      <td><span class="lv-st lv-st--${t.status}">${t.status}</span></td>
+      <td>${esc(t.assignee)}</td><td>${t.assignedOn}</td><td>${esc(t.awaiting)}</td>
+      <td class="${t.approvalStatus === 'pending' ? 'lv-pend' : ''}">${t.approvalStatus}</td></tr>`).join('');
+  }
+  document.getElementById('lv-q').addEventListener('input', ev => { closePop(); renderRows(ev.target.value); });
+
+  let popFor = null, popAt = 0;
+  function closePop() { pop.hidden = true; pop.innerHTML = ''; document.querySelectorAll('.lv-ai-ic[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false')); popFor = null; }
+  function openPop(btn) {
+    const t = byId(btn.dataset.brief);
+    if (popFor === t.id) return closePop();
+    closePop(); popFor = t.id; popAt = Date.now(); btn.setAttribute('aria-expanded', 'true');
+    writeSrc(document.getElementById('pv-src'), t);
+    const r = btn.getBoundingClientRect(), m = main.getBoundingClientRect();
+    const below = m.bottom - r.bottom, above = r.top - m.top;
+    pop.style.top = pop.style.bottom = '';
+    if (below >= 440 || below >= above) pop.style.top = (r.bottom - m.top + 8) + 'px'; else pop.style.bottom = (m.bottom - r.top + 8) + 'px';
+    pop.style.left = Math.max(12, Math.min(r.left - m.left, m.width - Math.min(460, m.width - 24) - 12)) + 'px';
+    pop.hidden = false;
+    pop.innerHTML = `<ai-task-brief mode="brief" variant="preview" source="#pv-src" viewer="${VIEWER}"></ai-task-brief>`;
+  }
+  // Close on a real scroll by the user, not the scroll that brings the clicked row into view.
+  document.getElementById('table-wrap').addEventListener('scroll', () => { if (Date.now() - popAt > 400) closePop(); });
+  main.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-brief]'); if (b) return openPop(b);
+    const o = ev.target.closest('[data-task-open]'); if (o) return openTask(o.dataset.taskOpen);
+    if (!ev.target.closest('#pop')) closePop();
+  });
+  document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closePop(); });
+  document.addEventListener('ai-brief-open', ev => openTask(ev.detail.taskId, ev.detail.action));
+
+  /* ---------- Task detail ---------- */
+  let cur = null, tab = 'overview', feedOpen = false, composerOpen = false;
+  const chip = s => `td-chip td-chip--${String(s).toLowerCase()}`;
+  const tag = s => `<span class="${chip(s)}" style="padding:0 7px;border-radius:99px">${esc(s)}</span>`;
+
+  /** action (optional): the brief's next best action, started as soon as the task is open. */
+  function openTask(id, action) {
+    closePop();
+    cur = byId(id); detailOf(id); tab = 'overview'; feedOpen = false; composerOpen = false;
+    writeSrc(document.getElementById('task-src'), cur);
+    document.getElementById('view-list').hidden = true;
+    document.getElementById('view-detail').hidden = false;
+    document.getElementById('actbar').hidden = false;
+    renderDetail();
+    if (action) runAction(action);
+    else main.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function runAction(a) {
+    if (a.action === 'draft') openComposer(a.to || '');
+    else if (a.action === 'assign') {
+      if (tab !== 'overview') { tab = 'overview'; renderDetail(); }
+      const p = document.getElementById('people'); p.scrollIntoView({ behavior: 'smooth', block: 'center' }); flash(p);
+      say('Reassign opens the ECMS assignment form. Pick a user or workgroup there.');
+    }
+  }
+  function showList() { document.getElementById('view-detail').hidden = true; document.getElementById('view-list').hidden = false; document.getElementById('actbar').hidden = true; cur = null; }
+  document.getElementById('nav-all').addEventListener('click', showList);
+
+  function renderDetail() {
+    const r = cur, d = detailOf(r.id);
+    const step = d.progress.findIndex(s => s.toLowerCase() === d.status.toLowerCase());
+    const tabs = ['Overview', 'Comments', 'History', 'Attachments', 'Engagements', 'Linked Tasks', 'Asset Requests'];
+    const v = document.getElementById('view-detail');
+    v.innerHTML = `
+      <div class="lv-crumbs"><a data-back>All Tasks</a> <svg viewBox="0 0 24 24" style="width:14px;height:14px"><path d="m9 6 6 6-6 6"/></svg> <b>${esc(short(r.title, 30))}</b></div>
+      <div class="td-chips"><span class="td-chip">Task ID: ${r.id} <svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></span>
+        <span class="${chip(d.status)}">${esc(d.status)}</span><span class="${chip(r.priority)}">${r.priority[0].toUpperCase() + r.priority.slice(1)} priority</span>
+        <span class="td-chip"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>change priority</span></div>
+      <h2 class="td-title">${esc(r.title)}</h2>
+      <div class="td-by"><span class="td-av">${initials(d.createdBy)}</span><div>${esc(d.createdBy)}<small>Created ${d.createdDate}</small></div></div>
+      <div class="td-tabs" role="tablist">${tabs.map(t => { const k = t.toLowerCase().replace(/\s+/g, '-'); const live = ['overview', 'comments', 'history', 'attachments'].includes(k);
+        return `<button role="tab" type="button" data-tab="${k}" aria-selected="${tab === k}"${live ? '' : ' disabled title="Not captured in this prototype"'}>${t}</button>`; }).join('')}</div>
+      <div id="td-pane"></div>`;
+    v.querySelector('[data-back]').addEventListener('click', showList);
+    v.querySelectorAll('[data-tab]:not([disabled])').forEach(b => b.addEventListener('click', () => { tab = b.dataset.tab; composerOpen = false; renderDetail(); }));
+    const pane = v.querySelector('#td-pane');
+
+    if (tab === 'overview') {
+      const feed = [...d.history.map(h => ({ ...h, kind: 'h' })), ...d.comments.map(c => ({ ...c, kind: 'c' }))];
+      pane.innerHTML = `<div class="td-grid">
+        <div class="td-col">
+          ${d.approval ? '<div class="td-banner"><small>Approval Required</small><b>This task needs to be approved before its status can be changed.</b></div>' : ''}
+          <div data-ai-spot="① CICOD-AI Task brief (first block of Overview)"><ai-task-brief id="brief" mode="brief" source="#task-src" viewer="${VIEWER}"></ai-task-brief></div>
+          <div class="td-card"><div class="td-pad">
+            <div class="td-card__head"><h3>Description</h3><span class="td-glinks"><span class="td-glink">+ Assign to workgroup</span><span class="td-glink">+ CC users</span></span></div>
+            <p class="td-sub">${d.partial ? `<i>${NOT_CAPTURED}</i>` : esc(d.description)}</p>${d.channel ? `<span class="td-channel">Channel: <b>${d.channel}</b></span>` : ''}</div>
+            <div class="td-wf"><small>Workflow</small>${esc(r.queue)} → ${esc(r.queueType)} <span class="td-glink" style="margin-left:8px">Change workflow</span></div></div>
+          <div class="td-card td-pad">
+            <div class="td-card__head"><h3>Activity Feed</h3><button class="td-glink" type="button" data-addc>⊕ Add comment</button></div>
+            <p class="td-sub">Here's everything that happened</p>
+            ${feedOpen ? `<ul class="td-feed">${feed.map(x => `<li><span class="td-av">${initials(x.author)}</span><div>${x.kind === 'h' ? `<b>${esc(x.author)}</b> ${esc(x.verb)} ${tag(x.tag)}` : `<b>${esc(x.author)}</b> commented: ${esc(x.text)}`}<small>${esc(x.when)}</small></div></li>`).join('')}</ul>` : ''}
+            <button class="td-show" type="button" data-feed>${feedOpen ? '⌃ Hide' : '⌄ Show'}</button></div>
+          <div class="td-card td-pad"><h3>Status Form Responses</h3><p class="td-sub">No status form responses recorded yet</p></div>
+        </div>
+        <div class="td-col">
+          <div class="td-card td-pad"><h3>Progress</h3><ol class="td-steps">${d.progress.map((s, i) => `<li class="${i < step ? 'done' : i === step ? 'cur' : ''}"><span class="td-dot"></span>${esc(s)}${i === step ? ' <em>CURRENT</em>' : ''}</li>`).join('')}</ol>${d.partial ? '<p class="td-sub" style="font-size:12px"><i>Other workflow steps weren\'t captured.</i></p>' : ''}</div>
+          <div class="td-card" id="people"><div class="td-pad"><div class="td-card__head"><h3>People</h3><span class="td-glink" id="reassign">Reassign</span></div>
+            <div class="td-people">
+              <div class="td-person"><span class="td-av">${initials(r.assignee)}</span><div><small>Assigned to user</small>${esc(r.assignee)}</div></div>
+              ${d.assignedBy ? `<div class="td-person"><span class="td-av">${d.assignedByEmail ? initials(d.assignedBy) : '@'}</span><div><small>Assigned by</small>${esc(d.assignedBy)}${d.assignedByEmail ? `<i>${esc(d.assignedByEmail)}</i>` : ''}</div></div>` : ''}
+              <div><small style="color:var(--lv-muted);font-size:11.5px">Assigned on</small><div>${d.assignedOnDate}</div></div></div></div>
+            <div class="td-cc">${d.cc.length ? "CC'd Users" : "No CC'd users"}<span><span class="td-glink">+ Add</span> ${d.cc.map(c => `<span class="td-av" style="display:inline-grid;width:24px;height:24px;font-size:10px">${c}</span>`).join('')}</span></div></div>
+        </div></div>`;
+      pane.querySelector('[data-feed]').addEventListener('click', () => { feedOpen = !feedOpen; renderDetail(); });
+      pane.querySelector('[data-addc]').addEventListener('click', () => openComposer());
+    } else if (tab === 'comments') {
+      pane.innerHTML = `<div class="td-card__head" style="margin-bottom:14px"><h3 style="font-weight:500">Comments</h3><button class="td-glink" type="button" data-addc>⊕ Add comment</button></div>
+        ${composerOpen ? `<div class="td-composer" id="composer">
+          <div data-ai-spot="② CICOD-AI Suggest reply (on Add comment)"><ai-task-brief id="reply" mode="reply" source="#task-src" viewer="${VIEWER}" intent="#comment"></ai-task-brief></div>
+          <textarea id="comment" aria-label="Add a comment" placeholder="Write a comment"></textarea>
+          <div class="td-composer__foot"><span class="lv-btn" role="button" tabindex="0" data-cancel>Cancel</span><span class="lv-primary" role="button" tabindex="0" data-post>Add comment</span></div></div>` : ''}
+        <div class="td-comments">${d.comments.length ? d.comments.slice().reverse().map(c => `<div class="td-comment${c.isNew ? ' td-flash' : ''}"><div class="td-person"><span class="td-av">${initials(c.author)}</span><div>${esc(c.author)}<small>${esc(c.when)}</small></div></div><div class="td-bubble">${esc(c.text)}</div></div>`).join('')
+          : d.partial ? `<div class="td-empty"><i>${NOT_CAPTURED}</i></div>`
+          : '<div class="td-empty"><b style="color:var(--lv-text);font-weight:500">No comments yet</b><br>Be the first to add a comment on this task.</div>'}</div>`;
+      pane.querySelector('[data-addc]').addEventListener('click', () => openComposer());
+      if (composerOpen) {
+        pane.querySelector('[data-cancel]').addEventListener('click', () => { composerOpen = false; renderDetail(); });
+        pane.querySelector('[data-post]').addEventListener('click', post);
+      }
+    } else if (d.partial && (tab === 'history' || tab === 'attachments')) {
+      pane.innerHTML = `<div class="td-card td-pad"><h3>${tab === 'history' ? 'History' : 'Attachments'}</h3><p class="td-sub"><i>${NOT_CAPTURED}</i></p></div>`;
+    } else if (tab === 'history') {
+      pane.innerHTML = `<div class="td-card td-pad"><h3>History</h3>
+        <div class="lv-tabs" style="margin:10px 0 14px"><span class="lv-tab--on">Status Updates</span><span>Workflow Updates</span><span>Comments &amp; Assignments</span></div>
+        ${d.approval ? `<div class="td-appr"><div class="td-card__head"><b style="font-weight:600">Approval — ${esc(d.approval.group)}</b>${tag('ACTIVE')}</div>
+          <div class="td-appr__lvl"><div>${d.approval.level}<small>Role: ${d.approval.role} · Department: N/A · Alternate: ${d.approval.alternate}</small></div><span class="td-chip td-chip--medium" style="border-radius:99px">${d.approval.state}</span></div></div>` : ''}
+        <ul class="td-hist" style="padding:0;margin:14px 0 0">${d.history.map(h => `<li><span class="td-av">⌗</span><div><b>${esc(h.author)}</b> ${esc(h.verb)} ${tag(h.tag)}<small>${esc(h.when)}</small></div></li>`).join('')}</ul></div>`;
+    } else if (tab === 'attachments') {
+      pane.innerHTML = `<div class="td-card td-pad"><div class="td-card__head"><h3>Attachments</h3><span class="lv-btn">Upload File</span></div>
+        ${d.attachments.length ? `<div class="lv-table-wrap" style="margin-top:12px"><table class="td-files"><thead><tr><th>Name</th><th>Classification</th><th>Description</th><th>Uploaded by</th><th>Create time</th></tr></thead>
+          <tbody>${d.attachments.map(a => `<tr><td>${esc(a.name)}</td><td>${a.classification}</td><td>—</td><td>${esc(a.by)}</td><td>${a.when}</td></tr>`).join('')}</tbody></table></div>`
+          : '<p class="td-sub" style="text-align:center;padding:30px 0"><b style="color:var(--lv-text);font-weight:500">No attachments</b><br>No files have been attached to this task.</p>'}</div>`;
+    }
   }
 
-  document.addEventListener('ai-task-action', e => {
-    const a = e.detail;
-    if (a.action === 'approve') {
-      addEntry(a.remark, 'approved');
-      setStatus(a.status);
-      document.getElementById('aw-side').textContent = 'No';
-      setTimeout(() => document.getElementById('brief').refresh(), 600);
-    } else if (a.action === 'reply') {
-      const r = document.getElementById('reply');
-      r.querySelector('[data-tone]').value = 'citizen';
-      r.suggest();
-      remark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else if (a.status) setStatus(a.status);
-  });
+  function openComposer(to) {
+    tab = 'comments'; composerOpen = true; renderDetail();
+    const c = document.getElementById('composer');
+    c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (to !== undefined) document.getElementById('reply').suggest(to);
+    else document.getElementById('comment').focus();
+  }
+  function post() {
+    const box = document.getElementById('comment');
+    if (!box.value.trim()) { box.focus(); return; }
+    const d = DETAIL[cur.id];
+    const now = new Date(), h = now.getHours();
+    d.comments.forEach(c => { c.isNew = false; });
+    d.comments.push({ author: VIEWER, when: `28/09/2026 - ${String(h % 12 || 12).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'}`, text: box.value.trim(), isNew: true });
+    writeSrc(document.getElementById('task-src'), cur);
+    composerOpen = false; renderDetail();
+    say('Comment added. The Task brief on Overview has been rebuilt with it.');
+  }
 
-  document.addEventListener('ai-reply-insert', e => { remark.value = e.detail.text; flash(remark); remark.focus(); });
+  document.addEventListener('ai-task-action', ev => runAction(ev.detail));
+  document.addEventListener('ai-reply-insert', ev => { const c = document.getElementById('comment'); if (!c) return; c.value = ev.detail.text; flash(c); c.focus(); });
+  document.getElementById('act-now').addEventListener('click', () => say(DETAIL[cur.id].approval ? 'Act Now: this task needs approval before its status can be changed.' : 'Act Now opens the ECMS status update form (not captured in this prototype).'));
 
-  document.getElementById('post').addEventListener('click', () => {
-    if (!remark.value.trim()) return;
-    addEntry(remark.value.trim(), 'added a remark');
-    remark.value = '';
-    document.getElementById('brief').refresh();
-  });
+  renderRows();
 </script>
 </body>
 </html>

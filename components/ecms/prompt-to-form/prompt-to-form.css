@@ -2,17 +2,19 @@
    All classes are prefixed `aifb-` so the component can be dropped into any ECMS page. */
 ai-form-builder { display: block; min-width: 0; }
 
-.aifb { background: var(--surface); border: 1px solid color-mix(in srgb, var(--ai-500) 35%, var(--border)); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
-.aifb__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 12px 14px; background: var(--ai-50); border-bottom: 1px solid var(--border); }
-.aifb__title { font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-.aifb__tabs { display: flex; gap: 4px 16px; flex-wrap: wrap; padding: 0 14px; border-bottom: 1px solid var(--border); }
-.aifb__tab { background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 2px; font-size: 13px; color: var(--text-2); cursor: pointer; }
-.aifb__tab--on { color: var(--ai-600); border-bottom-color: var(--ai-500); font-weight: 600; }
-.aifb__body { padding: 12px 14px; }
-.aifb__desc { min-height: 70px; font-size: 13px; }
-.aifb__row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
-.aifb__muted { color: var(--text-3); font-size: 12px; }
-.aifb__mode { margin-left: auto; font-size: 11px; }
+.aifb { background: var(--surface); border: 2px dashed var(--ai-400); border-radius: var(--radius-lg); padding: 16px; margin-bottom: 20px; }
+.aifb__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.aifb__title { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 10px; color: var(--text); }
+.aifb__title .ai-badge { background: var(--ai-50); color: var(--ai-600); padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; border: 1px solid var(--ai-100); }
+.aifb__mode { font-family: var(--mono); font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }
+.aifb__tabs { display: flex; gap: 4px 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.aifb__tab { background: none; border: 0; padding: 6px 12px; border-radius: 99px; font-size: 13px; color: var(--text-2); cursor: pointer; }
+.aifb__tab--on { background: var(--ai-50); color: var(--ai-600); font-weight: 600; }
+.aifb__body { display: flex; flex-direction: column; gap: 12px; }
+.aifb__desc { min-height: 80px; font-size: 14px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); width: 100%; box-sizing: border-box; }
+.aifb__desc:focus { outline: none; border-color: var(--ai-400); box-shadow: 0 0 0 3px var(--ai-50); }
+.aifb__row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.aifb__muted { color: var(--text-3); font-size: 13px; }
 .aifb h5 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-3); }
 
 .aifb__drop { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 12px; border: 2px dashed var(--border-strong); border-radius: var(--radius); cursor: pointer; font-size: 13px; color: var(--text-2); text-align: center; }
@@ -58,3 +60,15 @@ ai-form-builder { display: block; min-width: 0; }
   .aifb__meta { grid-template-columns: 1fr; }
   .aifb__sugg-row { flex-direction: column; align-items: flex-start; }
 }
+
+/* Trigger + modal */
+.aifb-trigger { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--ai-500); background: var(--ai-500); color: #fff; font: 600 13px var(--font); cursor: pointer; box-shadow: var(--shadow); white-space: nowrap; }
+.aifb-trigger:hover { background: var(--ai-600); }
+.aifb-modal { width: min(1080px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; border: 0; border-radius: var(--radius-lg); background: var(--surface); color: var(--text); box-shadow: var(--shadow-lg); overflow: auto; }
+.aifb-modal::backdrop { background: rgba(15, 20, 32, .55); }
+.aifb-modal .aifb { border: 0; margin: 0; padding: 20px; }
+.aifb-modal .aifb__head { position: sticky; top: -20px; background: var(--surface); padding: 20px 0 10px; margin-top: -20px; z-index: 2; }
+.aifb-x { border: 0; background: none; color: var(--text-2); font-size: 16px; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; }
+.aifb-x:hover { background: var(--surface-2); color: var(--text); }
+.aifb__dest { display: grid; gap: 4px; margin: -2px 0 10px; padding: 8px 10px; border-radius: var(--radius); background: var(--surface); border: 1px dashed var(--border-strong); font-size: 12px; color: var(--text-2); }
+.aifb__dest b { color: var(--text); margin-right: 6px; }

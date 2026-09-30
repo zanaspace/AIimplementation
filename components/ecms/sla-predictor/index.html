@@ -44,7 +44,7 @@
     <div>
       <span class="ai-badge">ECMS · E-T3 · Priority 1</span>
       <h1>SLA Risk &amp; Smart Escalation</h1>
-      <p>Predicts which open tasks will <b>breach their SLA</b> before it happens. Every row in All Tasks gets a <b>Breach risk</b> badge, and the list can be sorted by risk. Clicking a badge opens a drawer that explains <b>why</b> (time in stage against the median, assignee load, approvals pending). It also proposes an <b>early escalation</b> to the line manager or alternate approver, with a drafted note. The officer edits and sends it.</p>
+      <p>Predicts which open tasks are likely to <b>breach their SLA</b> and flags them with a <b>Breach risk</b> badge. Click a badge to see the reason for the delay and quickly send an <b>early escalation</b> note to the right manager.</p>
       <div class="doc__meta"><span class="g-chip">Screen: ECMS → Tasks → All Tasks</span><span class="g-chip">Component: &lt;ai-sla-risk&gt;</span><span class="g-chip">Endpoint: /ecms/sla-risk</span></div>
     </div>
     <div class="doc__toolbar">
@@ -56,7 +56,7 @@
   <!-- 1. LIVE PLACEMENT -->
   <section class="doc__section">
     <h2>1. Where it goes: live demo</h2>
-    <p class="doc__lede">This is a copy of the ECMS <b>All Tasks</b> screen, with the tenant's real counters and columns. The live list returned no rows, so the nine rows below are realistic examples. Click <b>Sort by risk</b>, then click the red badge on <b>#17578</b> (a refund stuck with an approver). Switch between line manager and alternate approver to see the note change. Edit it if you want, then click <b>Escalate now</b> and watch the row update.</p>
+    <p class="doc__lede">This demo uses real <b>All Tasks</b> data. Click <b>Sort by risk</b> to prioritize, then click a red badge (e.g., <b>#17578</b>) to review the delay reason. Choose who to escalate to, edit the drafted note, and click <b>Escalate now</b>.</p>
     <div id="screen" class="shell" data-app="ecms" data-active="All Tasks">
       <div class="shell__content">
         <div class="at-head"><h2>Tasks</h2><button class="g-btn g-btn--primary g-btn--sm" type="button">+ Create</button></div>
@@ -71,14 +71,14 @@
             <select class="g-select" style="width:auto"><option>All Tasks</option></select>
             <input class="g-input" placeholder="Search ID, title, contact or company name">
             <span class="at-tools__spacer"></span>
+            <div data-ai-spot="CICOD-AI · Risk summary" style="display:inline-flex; align-items:center;">
+              <ai-sla-risk table="#tasks-table" drawer="#sla-drawer" horizon-hours="48"></ai-sla-risk>
+            </div>
             <button class="g-btn g-btn--sm" type="button">Sync</button><button class="g-btn g-btn--sm" type="button">Custom View</button><button class="g-btn g-btn--sm" type="button">Filters</button>
-          </div>
-          <div data-ai-spot="CICOD-AI · Risk summary + Sort by risk" style="margin-bottom:10px">
-            <ai-sla-risk table="#tasks-table" drawer="#sla-drawer" horizon-hours="48"></ai-sla-risk>
           </div>
           <div class="g-table-wrap">
             <table class="g-table at-table" id="tasks-table">
-              <thead><tr><th>Task ID</th><th>Title</th><th>Priority</th><th class="at-risk-h" data-ai-spot="CICOD-AI · Breach risk column">✦ Breach risk</th><th>Date Created</th><th>Queue</th><th>Queue Type</th><th>Status</th><th>Assigned To</th><th>Date Assigned</th><th>Awaiting Approval</th><th>Approval Status</th></tr></thead>
+              <thead><tr><th>Task ID</th><th>Title</th><th>Priority</th><th class="at-risk-h">✦ SLA Status</th><th>Date Created</th><th>Queue</th><th>Queue Type</th><th>Status</th><th>Assigned To</th><th>Date Assigned</th><th>Awaiting Approval</th><th>Approval Status</th></tr></thead>
               <tbody>
                 <tr data-task="17580" data-title="Delivery of 40 reams of A4 paper to Kano store" data-queue="Order Fulfilment" data-priority="Normal" data-assignee="Nathan Wilson" data-line-manager="Jane" data-stage-hours="118" data-median-hours="20" data-sla-hours="72" data-load="214" data-approval-days="0">
                   <td>#17580</td><td class="at-title">Delivery of 40 reams of A4 paper to Kano store</td><td>Normal</td><td data-sla-slot></td><td>22/09/2026</td><td>Order Fulfilment</td><td>Delivery</td><td data-status><span class="g-chip g-chip--info">Open</span></td><td data-assigned>Nathan Wilson</td><td>22/09/2026</td><td>No</td><td>-</td></tr>
@@ -107,7 +107,7 @@
       </div>
     </div>
     <div class="doc__where" style="margin-top:12px">
-      <div class="doc__where-item"><b>Primary placement</b>A "Breach risk" column and a Sort by risk control in <code>/ecms/tasks</code> (every tab), plus the reason drawer</div>
+      <div class="doc__where-item"><b>Primary placement</b>A "Breach risk" column and a Sort by risk control in the toolbar of <code>/ecms/tasks</code>, plus the reason drawer</div>
       <div class="doc__where-item"><b>Also appears in</b><b style="display:inline;text-transform:none;letter-spacing:0;font-size:inherit;color:inherit">Workflows → Create Workflow → Escalation</b> step: "Escalate early when CICOD-AI risk is above 70%", as an option next to the fixed time rules. Also the Workspace "Needs you today" list</div>
       <div class="doc__where-item"><b>Trigger</b>Scores are refreshed every 15 minutes and whenever a task changes stage. The drawer re-explains a task on click</div>
       <div class="doc__where-item"><b>Who sees it</b>Assignees see their own rows. Supervisors and line managers see their team. Escalation targets are limited to the workflow's approver chain</div>
